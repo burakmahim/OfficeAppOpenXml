@@ -20,7 +20,7 @@ namespace OfficeAppOpenXmlLibrary
                     PresentationPart presentationPart = presentationDoc.AddPresentationPart();
                     presentationPart.Presentation = new Presentation();
 
-                    SlideMasterPart slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();
+                    SlideMasterPart slideMasterPart = presentationPart.AddNewPart<SlideMasterPart>();        
 
                 }
             }
