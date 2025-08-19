@@ -1,0 +1,88 @@
+﻿@{
+    ViewBag.Title = "Sunum ve Excel Oluştur";
+    var xml = ViewBag.XmlContent as string ?? "";
+}
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+
+<div class="container-fluid mt-5">
+    <h1 class="mb-4">📄 XML İçeriğini Düzenle</h1>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <form id="mainForm" method="post">
+        <textarea id="xmlContent" name="xmlContent" hidden>@xml</textarea>
+
+        <textarea id="xmlEditor" rows="30">@xml</textarea>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadPptx">
+                PowerPoint Olarak İndir
+            </button>
+
+            <button type="submit" class="btn btn-success me-2" formaction="/Presentation/ViewPdf">
+                PDF Olarak Görüntüle
+            </button>
+
+            <button type="submit" class="btn btn-success" formaction="/Presentation/GenerateExcelFromXml">
+                Excel Oluştur ve İndir
+            </button>
+
+            <button type="submit" class="btn btn-success" formaction="/Presentation/GenerateExcelPdf">
+                Pdf Görüntüle(Excel)
+            </button>
+
+            <button type="submit" class="btn btn-warning" formaction="/Presentation/ShowHtmlTable" formtarget="_blank">
+                HTML Tablo Göster
+            </button>
+
+
+            @if (ViewBag.PowerPointPdf != null)
+            {
+                <hr />
+                <h4>📊 PowerPoint PDF:</h4>
+                <iframe src="@ViewBag.PowerPointPdf" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
+            }
+
+            @if (ViewBag.ExcelPdf != null)
+            {
+                <hr />
+                <h4>📈 Excel PDF:</h4>
+                <iframe src="@ViewBag.ExcelPdf" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
+            }
+
+
+
+
+        </div>
+    </form>
+</div>
+
+<script>
+    const editor = CodeMirror.fromTextArea(document.getElementById("xmlEditor"), {
+        mode: "application/xml",
+        lineNumbers: true,
+        theme: "eclipse",
+        lineWrapping: true,
+        indentUnit: 4,
+        tabSize: 4
+    });
+
+    editor.setSize("100%", "700px");
+
+    document.getElementById("mainForm").addEventListener("submit", function () {
+        document.getElementById("xmlContent").value = editor.getValue();
+    });
+</script>

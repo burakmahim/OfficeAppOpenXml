@@ -54,18 +54,18 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             )
                 ;
 
-            defaultShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 457200, 7315200, 1000000,
-                fontSize: 32, bold: true
-            ));
+            //defaultShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 457200, 7315200, 1000000,
+            //    fontSize: 32, bold: true
+            //));
 
-            defaultShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Body, text: "", "Content", 914400, 1600200, 7315200, 4572000
-            ));
+            //defaultShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.Body, text: "", "Content", 914400, 1600200, 7315200, 4572000
+            //));
 
-            defaultShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
-            ));
+            //defaultShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
+            //));
 
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(defaultShapeTree),
@@ -97,19 +97,19 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 new GroupShapeProperties()
             );
 
-            headerShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 2286000, 7315200, 1000000,
-                fontSize: 32, bold: true
-            ));
+            //headerShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 2286000, 7315200, 1000000,
+            //    fontSize: 32, bold: true
+            //));
 
-            headerShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.SubTitle, text: "", "Subtitle", 914400, 3429000, 7315200, 2000000,
-                fontSize: 24
-            ));
+            //headerShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.SubTitle, text: "", "Subtitle", 914400, 3429000, 7315200, 2000000,
+            //    fontSize: 24
+            //));
 
-            headerShapeTree.Append(CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
-            ));
+            //headerShapeTree.Append(CreatePlaceholderShape(
+            //    shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
+            //));
 
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(headerShapeTree),
