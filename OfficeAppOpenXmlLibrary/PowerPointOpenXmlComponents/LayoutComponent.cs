@@ -26,10 +26,13 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(blankShapeTree),
                 new A.ColorMap()
-            )
-            { Type = SlideLayoutValues.Blank };
+            );
 
-            slideLayout.CommonSlideData.Name = "Boş İçerik";
+            if (slideLayout.CommonSlideData != null)
+            {
+                slideLayout.CommonSlideData.Name = "Boş İçerik";
+            }
+
             slideLayout.Type = SlideLayoutValues.Blank;
             slideLayout.Preserve = true;
             slideLayout.ShowMasterShapes = true;
@@ -70,10 +73,13 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(defaultShapeTree),
                 new A.ColorMap()
-            )
-            { Type = SlideLayoutValues.VerticalTitleAndText };
+            );
 
-            slideLayout.CommonSlideData.Name = "Başlık ve İçerik";
+            if (slideLayout.CommonSlideData != null)
+            {
+                slideLayout.CommonSlideData.Name = "Başlık ve İçerik";
+            }
+
             slideLayout.Type = SlideLayoutValues.VerticalTitleAndText;
             slideLayout.Preserve = true;
             slideLayout.ShowMasterShapes = true;
@@ -114,11 +120,66 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(headerShapeTree),
                 new A.ColorMap()
-            )
-            { Type = SlideLayoutValues.TitleOnly };
+            );
 
-            slideLayout.CommonSlideData.Name = "Başlık Slaydı";
+            if (slideLayout.CommonSlideData != null)
+            {
+                slideLayout.CommonSlideData.Name = "Başlık Slaydı";
+
+            }
+
             slideLayout.Type = SlideLayoutValues.TitleOnly;
+            slideLayout.Preserve = true;
+            slideLayout.ShowMasterShapes = true;
+
+            slideLayoutPart.SlideLayout = slideLayout;
+            slideLayoutPart.SlideLayout.Save();
+
+            return slideLayoutPart;
+        }
+
+        public SlideLayoutPart CreateTwoContentLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
+        {
+            SlideLayoutPart slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
+
+            ShapeTree twoContentShapeTree = new ShapeTree(
+                new NonVisualGroupShapeProperties(
+                    new NonVisualDrawingProperties() { Id = shapeId++, Name = "TwoContent Tree" },
+                    new NonVisualGroupShapeDrawingProperties(),
+                    new ApplicationNonVisualDrawingProperties()
+                ),
+                new GroupShapeProperties()
+            );
+
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
+                shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 457200, 7315200, 1051560,
+                fontSize: 32, bold: true
+            ));
+
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
+                shapeId++, PlaceholderValues.Body, text: "", "Left Content", 914400, 1810000, 3578400, 4352400
+            ));
+
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
+                shapeId++, PlaceholderValues.Body, text: "", "Right Content", 4651200, 1810000, 3578400, 4352400,
+                index: 1
+            ));
+
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
+                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E", ""
+            ));
+
+            SlideLayout slideLayout = new SlideLayout(
+                new CommonSlideData(twoContentShapeTree),
+                new A.ColorMap()
+            );
+
+            if (slideLayout.CommonSlideData != null)
+            {
+                slideLayout.CommonSlideData.Name = "İki İçerik";
+            }
+
+            slideLayout.Type = SlideLayoutValues.TwoObjectsAndText;
             slideLayout.Preserve = true;
             slideLayout.ShowMasterShapes = true;
 
