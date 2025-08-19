@@ -10,7 +10,7 @@ namespace OfficeAppOpenXml.Mvc.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Presentation");
         }
 
         public ActionResult About()
