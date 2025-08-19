@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
-    class Z_OrderComponent
+    internal class Z_OrderComponent
     {
     }
 }

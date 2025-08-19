@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
-    class TextBoxComponent
+    internal class TableComponent
     {
     }
 }
