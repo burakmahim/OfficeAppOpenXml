@@ -21,8 +21,23 @@ namespace OfficeAppOpenXml.Mvc.Controllers
             {
                 byte[] pptBytes = OfficeAppOpenXmlLibrary.PowerPointLibrary.CreatePowerPointPresentation(xmlContent);
                 return File(pptBytes,
-                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                    "Sunum.pptx");
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation","Sunum.pptx");
+            }
+            catch (Exception ex)
+            {
+                return Content("Hata oluştu: " + ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ValidateInput(false)]
+        public ActionResult DownloadExcel(string xmlContent)
+        {
+            try
+            {
+                byte[] pptBytes = OfficeAppOpenXmlLibrary.ExcelLibrary.CreateExcel(xmlContent);
+                return File(pptBytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","Rapor.xlsx");
             }
             catch (Exception ex)
             {

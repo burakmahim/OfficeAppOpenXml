@@ -1,0 +1,62 @@
+﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System.Xml.Linq;
+using System.IO;
+using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
+
+namespace OfficeAppOpenXmlLibrary
+{
+    public class ExcelLibrary
+    {
+        public static byte[] CreateExcel(string xmlContent)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (SpreadsheetDocument document = SpreadsheetDocument.Create(memoryStream, SpreadsheetDocumentType.Workbook))
+                {
+                    WorkbookPart workbookPart = document.AddWorkbookPart();
+                    workbookPart.Workbook = new Workbook();
+
+                    Sheets sheets = new Sheets();
+                    workbookPart.Workbook.Append(sheets);
+
+                    XDocument doc = XDocument.Parse(xmlContent);
+                    int sheetCounter = 1;
+
+                    foreach (XElement sheetElement in doc.Root.Elements("sheet"))
+                    {
+                        string sheetName = sheetElement.Attribute("name")?.Value ?? $"Sayfa {sheetCounter}";
+
+                        WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                        Worksheet worksheet = new Worksheet();
+                        SheetData sheetData = new SheetData();
+
+                        worksheet.Append(sheetData);
+
+                        foreach (XElement tableElement in sheetElement.Elements("table"))
+                        {
+                            TableComponent.AddTable(tableElement, worksheet, out int rowCount, out int colCount);
+                        }
+
+                        worksheetPart.Worksheet = worksheet;
+
+                        Sheet sheet = new Sheet()
+                        {
+                            Id = workbookPart.GetIdOfPart(worksheetPart),
+                            SheetId = (uint)sheetCounter,
+                            Name = sheetName
+                        };
+                        sheets.Append(sheet);
+
+                        sheetCounter++;
+                    }
+
+                    workbookPart.Workbook.Save();
+                }
+                return memoryStream.ToArray();
+            }
+        }
+    }
+}

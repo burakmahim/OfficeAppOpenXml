@@ -10,7 +10,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class LayoutComponent
     {
-        public SlideLayoutPart CreateBlankLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
+        public static SlideLayoutPart CreateBlankLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
         {
             SlideLayoutPart slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
 
@@ -43,7 +43,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             return slideLayoutPart;
         }
 
-        public SlideLayoutPart CreateDefaultLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
+        public static SlideLayoutPart CreateDefaultLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
         {
             SlideLayoutPart slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
 
@@ -90,7 +90,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             return slideLayoutPart;
         }
 
-        public SlideLayoutPart CreateHeaderLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
+        public static SlideLayoutPart CreateHeaderLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
         {
             SlideLayoutPart slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
 
@@ -138,7 +138,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             return slideLayoutPart;
         }
 
-        public SlideLayoutPart CreateTwoContentLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
+        public static SlideLayoutPart CreateTwoContentLayout(SlideMasterPart slideMasterPart, ref uint shapeId)
         {
             SlideLayoutPart slideLayoutPart = slideMasterPart.AddNewPart<SlideLayoutPart>();
 
