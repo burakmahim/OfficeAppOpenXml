@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Presentation;
+﻿using System.Xml.Linq;
+using DocumentFormat.OpenXml.Presentation;
 using A = DocumentFormat.OpenXml.Drawing;
 
 namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
@@ -51,5 +52,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             return shape;
         }
+
     }
 }
