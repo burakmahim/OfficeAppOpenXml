@@ -6,9 +6,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
     public class TableComponent
     {
-        public static void AddTable(XElement table, Worksheet worksheet, out int rowCount, out int colCount)
+        public static void AddTable(XElement table, Worksheet worksheet, out int rowCount, out int colCount, int startRow)
         {
-            string startCell = table.Attribute("startCell")?.Value ?? "A1";
             List<XElement> rows = table.Elements("row").ToList();
             rowCount = rows.Count;
             colCount = rows.Max(r => r.Elements("cell").Count());
@@ -22,7 +21,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
             {
-                Row newRow = new Row() { RowIndex = (UInt32Value)(uint)(rowIndex + 1) };
+                Row newRow = new Row() { RowIndex = (UInt32Value)(uint)(rowIndex + startRow) };
                 List<XElement> cells = rows[rowIndex].Elements("cell").ToList();
 
                 for (int colIndex = 0; colIndex < cells.Count; colIndex++)
@@ -41,10 +40,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     {
                         cell.DataType = CellValues.Number;
                     }
-                    //else if (DateTime.TryParse(cellValue, out DateTime dateValue))
-                    //{
-                    //    cell.DataType = CellValues.Date;
-                    //}
                     else
                     {
                         cell.DataType = CellValues.String;

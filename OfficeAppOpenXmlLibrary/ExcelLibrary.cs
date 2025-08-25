@@ -35,12 +35,22 @@ namespace OfficeAppOpenXmlLibrary
 
                         worksheet.Append(sheetData);
 
+                        int rowCount = 0;
+                        int colCount = 0;
+                        int currentRow = 1;
+
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
-                            TableComponent.AddTable(tableElement, worksheet, out int rowCount, out int colCount);
+                            TableComponent.AddTable(tableElement, worksheet, out rowCount, out colCount, currentRow);
+                            currentRow += rowCount+1;
                         }
 
                         worksheetPart.Worksheet = worksheet;
+
+                        foreach (XElement chartElement in sheetElement.Elements("chart"))
+                        {
+                            ChartComponent.AddChart(worksheetPart, chartElement);
+                        }
 
                         Sheet sheet = new Sheet()
                         {
