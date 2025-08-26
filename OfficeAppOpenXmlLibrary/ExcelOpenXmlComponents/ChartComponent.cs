@@ -19,10 +19,43 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
     public class ChartComponent
     {
+        public static class XElementAttributeGetter
+        {
+            public static string AsString(XElement element, string attributeName)
+            {
+                return element?.Attribute(attributeName)?.Value ?? string.Empty;
+            }
+
+            public static bool AsDouble(XElement element, string attributeName, out double result)
+            {
+                result = 0;
+                string value = AsString(element, attributeName);
+                return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
+            }
+
+            public static bool AsBool(XElement element, string attributeName, out bool result)
+            {
+                result = false;
+                string value = AsString(element, attributeName);
+                return bool.TryParse(value, out result);
+            }
+
+            public static T? AsEnum<T>(XElement element, string attributeName) where T : struct, Enum
+            {
+                string value = AsString(element, attributeName);
+                if (string.IsNullOrWhiteSpace(value))
+                    return null;
+
+                if (Enum.TryParse<T>(value, true, out T result))
+                    return result;
+
+                return null;
+            }
+        }
         public static void AddChart(WorksheetPart worksheetPart, XElement chartNode)
         {
-            string? chartType = chartNode.Attribute("type")?.Value;
-            
+            string chartType = XElementAttributeGetter.AsString(chartNode, "type").ToLowerInvariant();
+
             if (string.IsNullOrEmpty(chartType))
             {
                 return;
@@ -67,7 +100,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     chart = getBubbleChart(chartNode);
                     break;
                 case "radar":
-                    //chart = getRadarChart(chartNode);
+                    chart = getRadarChart(chartNode);
                     break;
                 default:
                     break;
@@ -731,7 +764,94 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             return chart;
 
         }
+        private static Chart getRadarChart(XElement chartNode)
+        {
+            uint categoryAxisId = getSafeId();
+            uint valueAxisId = getSafeId();
 
+            PlotArea plotArea = new();
+            plotArea.Append(new Layout());
+
+            RadarChart radarChart = new(
+                new C.RadarStyle() { Val = RadarStyleValues.Standard },
+                new C.VaryColors() { Val = false }
+            );
+
+            uint seriesIndex = 0;
+
+            foreach (XElement seriesNode in chartNode.Elements("series"))
+            {
+                RadarChartSeries series = new RadarChartSeries(
+                    new C.Index() { Val = seriesIndex },
+                    new Order() { Val = seriesIndex },
+                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                );
+
+                List<XElement> points = seriesNode.Elements("point").ToList();
+                uint pointCount = (uint)points.Count;
+
+                CategoryAxisData catAxisData = new CategoryAxisData();
+                C.Values values = new C.Values();
+
+                StringLiteral stringLiteral = new StringLiteral();
+                NumberLiteral numberLiteral = new NumberLiteral();
+
+                stringLiteral.Append(new PointCount() { Val = (uint)pointCount });
+
+                for (int i = 0; i < pointCount; i++)
+                {
+                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+                    stringLiteral.Append(new StringPoint()
+                    {
+                        Index = (uint)i,
+                        NumericValue = new NumericValue(categoryName)
+                    });
+                    numberLiteral.Append(new NumericPoint()
+                    {
+                        Index = (uint)i,
+                        NumericValue = new NumericValue(valueStr)
+                    });
+                }
+
+                catAxisData.Append(stringLiteral);
+                values.Append(numberLiteral);
+
+                series.Append(catAxisData);
+                series.Append(values);
+
+                radarChart.Append(series);
+
+                seriesIndex++;
+            }
+
+            addAxisIds(radarChart, categoryAxisId, valueAxisId);
+
+            plotArea.Append(radarChart);
+
+            addCategoryAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Bottom);
+            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
+
+            Chart chart = new Chart();
+
+            string chartTitle = chartNode.Attribute("title")?.Value ?? "";
+
+            A.Text text = new A.Text(chartTitle);
+            A.Run run = new A.Run(text);
+            A.Paragraph paragraph = new A.Paragraph(run);
+            C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+            C.ChartText chartText = new C.ChartText(richText);
+            C.Title title = new C.Title(chartText, new Overlay() { Val = false });
+            Overlay overlay = new Overlay() { Val = false };
+
+            chart.Append(title);
+
+            chart.Append(plotArea);
+
+            return chart;
+
+        }
         private static uint getSafeId()
         {
             byte[] guidBytes = Guid.NewGuid().ToByteArray();
