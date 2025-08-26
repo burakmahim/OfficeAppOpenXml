@@ -19,6 +19,91 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
     public class ChartComponent
     {
+        class ChartDefinition
+        {
+            public bool IsAreaBased
+            {
+                get
+                {
+                    switch (Type)
+                    {
+                        case ChartType.Area:
+                        case ChartType.Bar:
+                        case ChartType.Column:
+                        case ChartType.Pie:
+                        case ChartType.Doughnut:
+                        case ChartType.Bubble:
+                            return true;
+                        case ChartType.Radar:
+                            return RadarStyle == RadarStyle.Filled;
+                        default:
+                            return false;
+                    }
+                }
+            }
+            public bool IsLineBased
+            {
+                get
+                {
+                    switch (Type)
+                    {
+                        case ChartType.Line:
+                            return true;
+                        case ChartType.Scatter:
+                            return ScatterStyle is ScatterStyle.Line
+                                                or ScatterStyle.LineMarker
+                                                or ScatterStyle.Smooth
+                                                or ScatterStyle.SmoothMarker;
+                        case ChartType.Radar:
+                            return RadarStyle is RadarStyle.Standard or RadarStyle.Marker;
+                        default:
+                            return false;
+                    }
+                }
+            }
+            public ChartType Type { get; set; }
+            public int? GapWidth { get; set; }   // Bar, Column only    0 500
+            public int? Overlap { get; set; }   // Bar, Column only     -100 100
+            public ScatterStyle ScatterStyle { get; set; }
+            public RadarStyle RadarStyle { get; set; }
+            public bool? AutoTitle { get; set; } //default: false
+            public bool? PlotVisibleOnly { get; set; }
+            public bool? RoundedCorners { get; set; }
+            public bool? VaryColors { get; set; }
+            public bool? ShowDataLabelsOverMaximum { get; set; }
+            public bool CreateNewParagraph { get; set; } //default true
+            public bool ShowCategoryAxis { get; set; } //default true
+            public bool ShowValueAxis { get; set; } //default true
+            public int? FirstSliceAngle { get; set; } // Pie/Doughnut: 0..360
+            public int? DoughnutHoleSize { get; set; } // Doughnut: 10..90
+            public int? BubbleScale { get; set; } // Bubble: 0..300 (yüzde)
+            public bool? Bubble3D { get; set; } // Bubble: true/false
+        }
+
+        private static ChartDefinition GetChartDefinitionFromXml(XElement chartNode)
+        {
+            ChartDefinition chartDefinition = new ChartDefinition();
+
+            Nullable<ChartType> chartType = XElementAttributeGetter.AsEnum<ChartType>(chartNode, "type");
+            if (chartType.HasValue)
+                chartDefinition.Type = chartType.Value;
+
+            Nullable<RadarStyle> radarStyle = XElementAttributeGetter.AsEnum<RadarStyle>(chartNode, "radarStyle");
+            if (radarStyle.HasValue)
+                chartDefinition.RadarStyle = radarStyle.Value;
+
+            if (XElementAttributeGetter.AsInt32(chartNode, "gap_width", out int gapWidth))
+            {
+                chartDefinition.GapWidth = gapWidth;
+            }
+
+            if (XElementAttributeGetter.AsInt32(chartNode, "overlap", out int overlap))
+            {
+                chartDefinition.Overlap = overlap;
+            }
+
+            return chartDefinition;
+        }
         public static class XElementAttributeGetter
         {
             public static string AsString(XElement element, string attributeName)
@@ -40,6 +125,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 return bool.TryParse(value, out result);
             }
 
+            public static bool AsInt32(XElement element, string attributeName, out int result)
+            {
+                result = 0;
+                string value = AsString(element, attributeName);
+                return int.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
+            }
+
             public static T? AsEnum<T>(XElement element, string attributeName) where T : struct, Enum
             {
                 string value = AsString(element, attributeName);
@@ -54,12 +146,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         }
         public static void AddChart(WorksheetPart worksheetPart, XElement chartNode)
         {
-            string chartType = XElementAttributeGetter.AsString(chartNode, "type").ToLowerInvariant();
-
-            if (string.IsNullOrEmpty(chartType))
-            {
-                return;
-            }
+            ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
             DrawingsPart drawingsPart = worksheetPart.DrawingsPart ?? worksheetPart.AddNewPart<DrawingsPart>();
             if (drawingsPart.WorksheetDrawing == null)
@@ -71,37 +158,36 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             ChartSpace chartSpace = new ChartSpace();
             chartSpace.Append(new EditingLanguage() { Val = "tr-TR" });
 
-            Chart chart = null;
+            Chart? chart = null;
 
-            switch (chartType)
+            switch (chartDefinition.Type)
             {
-                case "bar":
-                    chart = getBarChart(chartNode, BarDirectionValues.Bar);
+                case ChartType.Bar:
+                    chart = getBarChart(chartNode, chartDefinition, BarDirectionValues.Bar);
                     break;
-                case "column":
-                    chart = getBarChart(chartNode, BarDirectionValues.Column);
+                case ChartType.Column:
+                    chart = getBarChart(chartNode, chartDefinition, BarDirectionValues.Column);
                     break;
-                case "line":
+                case ChartType.Line:
                     chart = getLineChart(chartNode);
                     break;
-                case "area":
+                case ChartType.Area:
                     chart = getAreaChart(chartNode);
                     break;
-                case "pie":
+                case ChartType.Pie:
                     chart = getPieChart(chartNode);
                     break;
-                case "doughnut":
+                case ChartType.Doughnut:
                     chart = getDoughnutChart(chartNode);
                     break;
-                case "scatter":
+                case ChartType.Scatter:
                     chart = getScatterChart(chartNode);
                     break;
-                case "bubble":
+                case ChartType.Bubble:
                     chart = getBubbleChart(chartNode);
                     break;
-                case "radar":
-                    chart = getRadarChart(chartNode);
-                    break;
+                case ChartType.Radar:
+                    chart = getRadarChart(chartNode
                 default:
                     break;
             }
@@ -155,7 +241,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             worksheetPart.Worksheet.Save();
         }
 
-        private static Chart getBarChart(XElement chartNode, BarDirectionValues direction)
+        private static Chart getBarChart(XElement chartNode, ChartDefinition chartDefinition, BarDirectionValues direction)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
@@ -212,6 +298,12 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 barChart.Append(series);
                 seriesIndex++;
             }
+
+            if (chartDefinition.Overlap.HasValue)
+                barChart.Append(new Overlap() { Val = new SByteValue((sbyte)chartDefinition.Overlap.Value) });
+
+            if (chartDefinition.GapWidth.HasValue)
+                barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth.Value) });
 
             plotArea.Append(barChart);
 
@@ -857,7 +949,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             byte[] guidBytes = Guid.NewGuid().ToByteArray();
             return BitConverter.ToUInt32(guidBytes, 0) & 0x7FFFFFFF; 
         }
-
         private static void addAxisIds(OpenXmlCompositeElement owner, params uint[] ids)
         {
             if (owner is null || ids is null)
@@ -866,7 +957,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             foreach (uint id in ids)
                 owner.Append(new C.AxisId { Val = id });
         }
-
         private static void addValueAxis(XElement chartNode, PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null) 
         {
             AxisPositionValues axisPos = position ?? AxisPositionValues.Left;
@@ -916,6 +1006,20 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         Scatter,
         Bubble,
         Radar,
+    }
+    enum ScatterStyle
+    {
+        Line,
+        LineMarker,
+        Marker,
+        Smooth,
+        SmoothMarker,
+    }
+    enum RadarStyle
+    {
+        Standard,   // sadece çizgi
+        Marker,   // çizgi + marker
+        Filled,   // dolu alan (area gibi)
     }
 
 }

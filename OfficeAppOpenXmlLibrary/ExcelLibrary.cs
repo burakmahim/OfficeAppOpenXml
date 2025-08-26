@@ -39,6 +39,7 @@ namespace OfficeAppOpenXmlLibrary
                         int colCount = 0;
                         int currentRow = 1;
 
+
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
                             TableComponent.AddTable(tableElement, worksheet, out rowCount, out colCount, currentRow);
