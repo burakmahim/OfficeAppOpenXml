@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OfficeAppOpenXmlLibrary;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -19,7 +21,7 @@ namespace OfficeAppOpenXml.Mvc.Controllers
         {
             try
             {
-                byte[] pptBytes = OfficeAppOpenXmlLibrary.PowerPointLibrary.CreatePowerPointPresentation(xmlContent);
+                byte[] pptBytes = PowerPointLibrary.CreatePowerPointPresentation(xmlContent);
                 return File(pptBytes,
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation","Sunum.pptx");
             }
@@ -35,14 +37,17 @@ namespace OfficeAppOpenXml.Mvc.Controllers
         {
             try
             {
-                byte[] pptBytes = OfficeAppOpenXmlLibrary.ExcelLibrary.CreateExcel(xmlContent);
-                return File(pptBytes,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","Rapor.xlsx");
+                byte[] bytes = ExcelLibrary.CreateExcel(xmlContent);
+                const string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                return File(bytes, contentType, "sales.xlsx");
             }
             catch (Exception ex)
             {
-                return Content("Hata oluştu: " + ex.Message);
+                return Content("Excel hata:\n" + ex);
             }
         }
+
+
+
     }
 }
