@@ -7,13 +7,8 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using A = DocumentFormat.OpenXml.Drawing;
 using C = DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using System.Globalization;
-using System.Xml;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using System;
-using DocumentFormat.OpenXml.Bibliography;
-using System.Security.Cryptography;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
@@ -62,13 +57,14 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 }
             }
             public ChartType Type { get; set; }
-            public int? GapWidth { get; set; }   // Bar, Column only    0 500
-            public int? Overlap { get; set; }   // Bar, Column only     -100 100
+            public int? GapWidth { get; set; }   // Bar, Column only
+            public int? Overlap { get; set; }   // Bar, Column only
             public ScatterStyle ScatterStyle { get; set; }
             public RadarStyle RadarStyle { get; set; }
             public bool? AutoTitle { get; set; } //default: false
             public bool? PlotVisibleOnly { get; set; }
             public bool? RoundedCorners { get; set; }
+            public GroupingType? GroupingType { get; set; }
             public bool? VaryColors { get; set; }
             public bool? ShowDataLabelsOverMaximum { get; set; }
             public bool CreateNewParagraph { get; set; } //default true
@@ -78,6 +74,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             public int? DoughnutHoleSize { get; set; } // Doughnut: 10..90
             public int? BubbleScale { get; set; } // Bubble: 0..300 (yüzde)
             public bool? Bubble3D { get; set; } // Bubble: true/false
+            public BlanksDisplayedAs? BlanksDisplayedAs { get; set; }
+            public ThreeDViewDefinition ThreeDView { get; set; }
         }
 
         private static ChartDefinition GetChartDefinitionFromXml(XElement chartNode)
@@ -88,19 +86,42 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (chartType.HasValue)
                 chartDefinition.Type = chartType.Value;
 
-            Nullable<RadarStyle> radarStyle = XElementAttributeGetter.AsEnum<RadarStyle>(chartNode, "radarStyle");
+            Nullable<RadarStyle> radarStyle = XElementAttributeGetter.AsEnum<RadarStyle>(chartNode, "radar-style");
             if (radarStyle.HasValue)
                 chartDefinition.RadarStyle = radarStyle.Value;
 
-            if (XElementAttributeGetter.AsInt32(chartNode, "gap_width", out int gapWidth))
-            {
-                chartDefinition.GapWidth = gapWidth;
-            }
+            Nullable<GroupingType> groupingType = XElementAttributeGetter.AsEnum<GroupingType>(chartNode, "grouping-type");
+            if (groupingType.HasValue)
+                chartDefinition.GroupingType = groupingType.Value;
 
-            if (XElementAttributeGetter.AsInt32(chartNode, "overlap", out int overlap))
-            {
-                chartDefinition.Overlap = overlap;
-            }
+            Nullable<ScatterStyle> scatterStyle = XElementAttributeGetter.AsEnum<ScatterStyle>(chartNode, "scatter-style");
+            if (scatterStyle.HasValue)
+                chartDefinition.ScatterStyle = scatterStyle.Value;
+
+            Nullable<BlanksDisplayedAs> displayBlanksAs = XElementAttributeGetter.AsEnum<BlanksDisplayedAs>(chartNode, "display-blank-as");
+            if (displayBlanksAs.HasValue)
+                chartDefinition.BlanksDisplayedAs = displayBlanksAs.Value;
+
+            XElementAttributeGetter.AsBool(chartNode, "vary-colors", out bool varyColorsValue);
+            chartDefinition.VaryColors = varyColorsValue;
+
+            XElementAttributeGetter.AsBool(chartNode, "auto-title", out bool autoTitleValue, defaultValue: false);
+            chartDefinition.AutoTitle = autoTitleValue;
+
+            XElementAttributeGetter.AsBool(chartNode, "show-category-axis", out bool showCategoryAxisValue, defaultValue: true);
+            chartDefinition.ShowCategoryAxis = showCategoryAxisValue;
+
+            XElementAttributeGetter.AsBool(chartNode, "show-value-axis", out bool showValueAxisValue, defaultValue: true);
+            chartDefinition.ShowValueAxis = showValueAxisValue;
+
+            if (XElementAttributeGetter.AsInt32(chartNode, "overlap", out int overlapValue))
+                chartDefinition.Overlap = overlapValue;
+
+            if (XElementAttributeGetter.AsInt32(chartNode, "gap-width", out int gapWidthValue))
+                chartDefinition.GapWidth = gapWidthValue;
+
+
+
 
             return chartDefinition;
         }
@@ -117,21 +138,14 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 string value = AsString(element, attributeName);
                 return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
             }
-
-            public static bool AsBool(XElement element, string attributeName, out bool result)
+            public static bool AsBool(XElement element, string attributeName, out bool result, bool defaultValue = false)
             {
-                result = false;
                 string value = AsString(element, attributeName);
-                return bool.TryParse(value, out result);
+                if (bool.TryParse(value, out result))
+                    return true;    // Parse başarılı
+                result = defaultValue;  // Parse başarısızsa default değeri ata
+                return false;       // Parse başarısız
             }
-
-            public static bool AsInt32(XElement element, string attributeName, out int result)
-            {
-                result = 0;
-                string value = AsString(element, attributeName);
-                return int.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
-            }
-
             public static T? AsEnum<T>(XElement element, string attributeName) where T : struct, Enum
             {
                 string value = AsString(element, attributeName);
@@ -142,6 +156,12 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     return result;
 
                 return null;
+            }
+            public static bool AsInt32(XElement element, string attributeName, out int result)
+            {
+                result = 0;
+                string value = AsString(element, attributeName);
+                return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
             }
         }
         public static void AddChart(WorksheetPart worksheetPart, XElement chartNode)
@@ -155,39 +175,40 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             ChartPart chartPart = drawingsPart.AddNewPart<ChartPart>();
             string relId = drawingsPart.GetIdOfPart(chartPart);
 
-            ChartSpace chartSpace = new ChartSpace();
+            C.ChartSpace chartSpace = new C.ChartSpace();
             chartSpace.Append(new EditingLanguage() { Val = "tr-TR" });
 
-            Chart? chart = null;
+            C.Chart? chart = null;
 
             switch (chartDefinition.Type)
             {
                 case ChartType.Bar:
-                    chart = getBarChart(chartNode, chartDefinition, BarDirectionValues.Bar);
+                    chart = getBarChart(chartDefinition, chartNode, BarDirectionValues.Bar);
                     break;
                 case ChartType.Column:
-                    chart = getBarChart(chartNode, chartDefinition, BarDirectionValues.Column);
+                    chart = getBarChart(chartDefinition, chartNode, BarDirectionValues.Column);
                     break;
                 case ChartType.Line:
-                    chart = getLineChart(chartNode);
+                    chart = getLineChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Area:
-                    chart = getAreaChart(chartNode);
+                    chart = getAreaChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Pie:
-                    chart = getPieChart(chartNode);
+                    chart = getPieChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Doughnut:
-                    chart = getDoughnutChart(chartNode);
+                    chart = getDoughnutChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Scatter:
-                    chart = getScatterChart(chartNode);
+                    chart = getScatterChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Bubble:
-                    chart = getBubbleChart(chartNode);
+                    chart = getBubbleChart(chartDefinition, chartNode);
                     break;
                 case ChartType.Radar:
-                    chart = getRadarChart(chartNode
+                    chart = getRadarChart(chartDefinition, chartNode);
+                    break;
                 default:
                     break;
             }
@@ -241,19 +262,19 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             worksheetPart.Worksheet.Save();
         }
 
-        private static Chart getBarChart(XElement chartNode, ChartDefinition chartDefinition, BarDirectionValues direction)
+        private static C.Chart getBarChart(ChartDefinition chartDefinition, XElement chartNode, BarDirectionValues direction)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
             BarChart barChart = new BarChart()
             {
                 BarDirection = new BarDirection() { Val = direction },
-                BarGrouping = new BarGrouping() { Val = BarGroupingValues.Clustered },
-                VaryColors = new VaryColors() { Val = false }
+                BarGrouping = new BarGrouping() { Val = mapBarGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
+                VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
             };
 
             addAxisIds(barChart, categoryAxisId, valueAxisId);
@@ -264,8 +285,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             {
                 BarChartSeries series = new BarChartSeries(
                     new C.Index() { Val = seriesIndex },
-                    new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.Order() { Val = seriesIndex },
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -285,8 +306,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
                     string valueStr = points[i].Attribute("value")?.Value ?? "0";
                     
-                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new NumericValue(categoryName) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(valueStr) });
+                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(categoryName) });
+                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(valueStr) });
                 }
 
                 catAxisData.Append(stringLiteral);
@@ -300,21 +321,21 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             }
 
             if (chartDefinition.Overlap.HasValue)
-                barChart.Append(new Overlap() { Val = new SByteValue((sbyte)chartDefinition.Overlap.Value) });
+                barChart.Append(new Overlap() { Val = new SByteValue((sbyte)chartDefinition.Overlap) });
 
             if (chartDefinition.GapWidth.HasValue)
-                barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth.Value) });
+                barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth) });
 
             plotArea.Append(barChart);
 
             AxisPositionValues categoryAxisPosition = direction == BarDirectionValues.Bar ? AxisPositionValues.Left : AxisPositionValues.Bottom;
             AxisPositionValues valueAxisPosition = direction == BarDirectionValues.Bar ? AxisPositionValues.Bottom : AxisPositionValues.Left;
 
-            addCategoryAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
+            addCategoryAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, categoryAxisPosition);
+            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, valueAxisPosition );
 
-            Chart chart = new Chart();
-
+            C.Chart chart = new C.Chart();
+                
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
             A.Text text = new A.Text(chartTitle);
@@ -327,22 +348,25 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getLineChart(XElement chartNode)
+        private static C.Chart getLineChart(ChartDefinition chartDefinition, XElement chartNode)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
             LineChart lineChart = new LineChart()
             {
                 Grouping = new Grouping() { Val = GroupingValues.Standard },
-                VaryColors = new VaryColors() { Val = false }
+                VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
             };
 
             addAxisIds(lineChart, categoryAxisId, valueAxisId);
@@ -354,7 +378,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 LineChartSeries series = new LineChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -367,7 +391,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 NumberLiteral numberLiteral = new NumberLiteral();
 
                 stringLiteral.Append(new PointCount() { Val = pointCount });
-                //numberLiteral.Append(new PointCount() { Val = pointCount });
+                numberLiteral.Append(new PointCount() { Val = pointCount });
 
                 for (int i = 0; i < pointCount; i++)
                 {
@@ -377,13 +401,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     stringLiteral.Append(new StringPoint() 
                     { 
                         Index = (uint)i, 
-                        NumericValue = new NumericValue(categoryName) 
+                        NumericValue = new C.NumericValue(categoryName) 
                     });
 
                     numberLiteral.Append(new NumericPoint() 
                     { 
                         Index = (uint)i, 
-                        NumericValue = new NumericValue(valueStr) 
+                        NumericValue = new C.NumericValue(valueStr) 
                     });
                 }
 
@@ -399,10 +423,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(lineChart);
 
-            addCategoryAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
+            addCategoryAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId);
+            addValueAxis(chartDefinition, chartNode, plotArea, valueAxisId, categoryAxisId);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -416,22 +440,25 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getAreaChart(XElement chartNode)
+        private static C.Chart getAreaChart(ChartDefinition chartDefinition, XElement chartNode)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
             AreaChart areaChart = new()
             {
                 Grouping = new Grouping() { Val = GroupingValues.Standard },
-                VaryColors = new VaryColors() { Val = false }
+                VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
             };
 
             addAxisIds(areaChart, categoryAxisId, valueAxisId);
@@ -443,7 +470,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 AreaChartSeries series = new AreaChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -456,7 +483,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 NumberLiteral numberLiteral = new NumberLiteral();
 
                 stringLiteral.Append(new PointCount() { Val = pointCount });
-                //numberLiteral.Append(new PointCount() { Val = pointCount });
+                numberLiteral.Append(new PointCount() { Val = pointCount });
 
                 for (int i = 0; i < pointCount; i++)
                 {
@@ -466,13 +493,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     stringLiteral.Append(new StringPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(categoryName)
+                        NumericValue = new C.NumericValue(categoryName)
                     });
 
                     numberLiteral.Append(new NumericPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(valueStr)
+                        NumericValue = new C.NumericValue(valueStr)
                     });
                 }
 
@@ -488,10 +515,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(areaChart);
 
-            addCategoryAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId);
+            addCategoryAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId);
+            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -505,17 +532,20 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getPieChart(XElement chartNode)
+        private static C.Chart getPieChart(ChartDefinition chartDefinition, XElement chartNode)
         {
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
-            PieChart pieChart = new(new VaryColors() { Val = true });
+            PieChart pieChart = new(new VaryColors() { Val = chartDefinition.VaryColors ?? false });
 
             uint seriesIndex = 0;
 
@@ -524,7 +554,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 PieChartSeries series  = new PieChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -537,7 +567,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 NumberLiteral numberLiteral = new NumberLiteral();
 
                 stringLiteral.Append(new PointCount() { Val = pointCount });
-                //numberLiteral.Append(new PointCount() { Val = pointCount });
+                numberLiteral.Append(new PointCount() { Val = pointCount });
 
                 for (int i = 0; i < pointCount; i++)
                 {
@@ -547,13 +577,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     stringLiteral.Append(new StringPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(categoryName)
+                        NumericValue = new C.NumericValue(categoryName)
                     });
 
                     numberLiteral.Append(new NumericPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(valueStr)
+                        NumericValue = new C.NumericValue(valueStr)
                     });
                 }
 
@@ -569,7 +599,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(pieChart);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -583,17 +613,20 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getDoughnutChart(XElement chartNode)
+        private static C.Chart getDoughnutChart(ChartDefinition chartDefinition, XElement chartNode)
         {
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
-            DoughnutChart doughnutChart = new(new VaryColors() { Val = true });
+            DoughnutChart doughnutChart = new(new VaryColors() { Val = chartDefinition.VaryColors ?? false });
 
             uint seriesIndex = 0;
 
@@ -602,7 +635,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 PieChartSeries series = new PieChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -615,7 +648,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 NumberLiteral numberLiteral = new NumberLiteral();
 
                 stringLiteral.Append(new PointCount() { Val = pointCount });
-                //numberLiteral.Append(new PointCount() { Val = pointCount });
+                numberLiteral.Append(new PointCount() { Val = pointCount });
 
                 for (int i = 0; i < pointCount; i++)
                 {
@@ -625,13 +658,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     stringLiteral.Append(new StringPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(categoryName)
+                        NumericValue = new C.NumericValue(categoryName)
                     });
 
                     numberLiteral.Append(new NumericPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(valueStr)
+                        NumericValue = new C.NumericValue(valueStr)
                     });
                 }
 
@@ -649,7 +682,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(doughnutChart);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -663,21 +696,24 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getScatterChart(XElement chartNode)
+        private static C.Chart getScatterChart(ChartDefinition chartDefinition, XElement chartNode)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new PlotArea();
+            C.PlotArea plotArea = new C.PlotArea();
             plotArea.Append(new Layout());
 
             ScatterChart scatterChart = new(
-                new C.ScatterStyle() { Val = ScatterStyleValues.Marker },
-                new C.VaryColors() { Val = false }
+                new C.ScatterStyle() { Val = mapScatterStyle(chartDefinition.ScatterStyle) },
+                new C.VaryColors() { Val = chartDefinition.VaryColors ?? false }
             );
 
             uint seriesIndex = 0;
@@ -687,7 +723,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 ScatterChartSeries series = new ScatterChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -733,10 +769,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(scatterChart);
 
-            addValueAxis(chartNode, plotArea, valueAxisId, categoryAxisId, position: AxisPositionValues.Bottom);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
+            addValueAxis(chartDefinition, chartNode, plotArea, valueAxisId, categoryAxisId, position: AxisPositionValues.Bottom);
+            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -750,20 +786,23 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
         }
-        private static Chart getBubbleChart(XElement chartNode)
+        private static C.Chart getBubbleChart(ChartDefinition chartDefinition, XElement chartNode)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new();
+            C.PlotArea plotArea = new();
             plotArea.Append(new Layout());
 
             BubbleChart bubbleChart = new(
-                new VaryColors() { Val =  false }
+                new VaryColors() { Val =  chartDefinition.VaryColors ?? false }
             );
 
             uint seriesIndex = 0;
@@ -773,7 +812,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 BubbleChartSeries series = new BubbleChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -834,10 +873,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(bubbleChart);
 
-            addValueAxis(chartNode, plotArea, valueAxisId, categoryAxisId, position: AxisPositionValues.Bottom);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
+            addValueAxis(chartDefinition, chartNode, plotArea, valueAxisId, categoryAxisId, position: AxisPositionValues.Bottom);
+            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -851,22 +890,25 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chart.Append(title);
 
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
+
             chart.Append(plotArea);
 
             return chart;
 
         }
-        private static Chart getRadarChart(XElement chartNode)
+        private static C.Chart getRadarChart(ChartDefinition chartDefinition, XElement chartNode)
         {
             uint categoryAxisId = getSafeId();
             uint valueAxisId = getSafeId();
 
-            PlotArea plotArea = new();
+            C.PlotArea plotArea = new();
             plotArea.Append(new Layout());
 
             RadarChart radarChart = new(
                 new C.RadarStyle() { Val = RadarStyleValues.Standard },
-                new C.VaryColors() { Val = false }
+                new C.VaryColors() { Val = chartDefinition.VaryColors ?? false }
             );
 
             uint seriesIndex = 0;
@@ -876,7 +918,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 RadarChartSeries series = new RadarChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new C.SeriesText(new NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
                 List<XElement> points = seriesNode.Elements("point").ToList();
@@ -898,12 +940,12 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     stringLiteral.Append(new StringPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(categoryName)
+                        NumericValue = new C.NumericValue(categoryName)
                     });
                     numberLiteral.Append(new NumericPoint()
                     {
                         Index = (uint)i,
-                        NumericValue = new NumericValue(valueStr)
+                        NumericValue = new C.NumericValue(valueStr)
                     });
                 }
 
@@ -922,10 +964,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(radarChart);
 
-            addCategoryAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Bottom);
-            addValueAxis(chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
+            addCategoryAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Bottom);
+            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, position: AxisPositionValues.Left);
 
-            Chart chart = new Chart();
+            C.Chart chart = new C.Chart();
 
             string chartTitle = chartNode.Attribute("title")?.Value ?? "";
 
@@ -938,6 +980,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             Overlay overlay = new Overlay() { Val = false };
 
             chart.Append(title);
+
+            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+            chart.Append(new AutoTitleDeleted() { Val = (!chartDefinition.AutoTitle ?? false) });
 
             chart.Append(plotArea);
 
@@ -957,16 +1002,18 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             foreach (uint id in ids)
                 owner.Append(new C.AxisId { Val = id });
         }
-        private static void addValueAxis(XElement chartNode, PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null) 
+        private static void addValueAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null) 
         {
             AxisPositionValues axisPos = position ?? AxisPositionValues.Left;
 
             ValueAxis valAx = new ValueAxis(
-                new AxisId() { Val = valueAxisId },
-                new Delete() { Val = false },
+                new C.AxisId() { Val = valueAxisId },
                 new Scaling(new Orientation() { Val = C.OrientationValues.MinMax }),
+                new Delete() { Val = !chartDefinition.ShowValueAxis },
                 new AxisPosition() { Val = position },
-                new C.MajorGridlines(),
+                new C.MajorTickMark() { Val = chartDefinition.Type == ChartType.Radar ? C.TickMarkValues.Cross : C.TickMarkValues.Outside },
+                new C.MinorTickMark() { Val = C.TickMarkValues.None },
+                new C.NumberingFormat() { FormatCode = "General", SourceLinked = true },
                 new TickLabelPosition() { Val = TickLabelPositionValues.NextTo },
                 new CrossingAxis() { Val = categoryAxisId },
                 new Crosses() { Val = CrossesValues.AutoZero },
@@ -975,26 +1022,87 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(valAx);
         }
-        private static void addCategoryAxis(XElement chartNode, PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
+        private static void addCategoryAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
         {
             AxisPositionValues axisPos = position ?? AxisPositionValues.Bottom;
 
             CategoryAxis catAxis = new CategoryAxis(
-                new AxisId() { Val = categoryAxisId },
-                new Delete() { Val = false },
+                new C.AxisId() { Val = categoryAxisId },
+                new Delete() { Val = !chartDefinition.ShowCategoryAxis },
                 new Scaling(new Orientation() { Val = C.OrientationValues.MinMax }),
                 new AxisPosition() { Val = position },
                 new TickLabelPosition() { Val = TickLabelPositionValues.NextTo },
                 new CrossingAxis() { Val = valueAxisId },
                 new Crosses() { Val = CrossesValues.AutoZero },
                 new AutoLabeled() { Val = true },
-                new LabelAlignment() { Val = LabelAlignmentValues.Center }
+                new LabelAlignment() { Val = LabelAlignmentValues.Center },
+                new LabelOffset() { Val = 100 },
+                new C.TickLabelSkip() { Val = 1 },
+                new C.TickMarkSkip() { Val = 1 },
+                new C.NoMultiLevelLabels() { Val = true }
             );
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar:
+                case ChartType.Column:
+                case ChartType.Line:
+                case ChartType.Area:
+                case ChartType.Radar:
+                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None }, 3);
+                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.Outside }, 4);
+                    break;
+                case ChartType.Scatter:
+                case ChartType.Bubble:
+                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.Outside }, 3);
+                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None }, 4);
+                    break;
+                case ChartType.Pie:
+                case ChartType.Doughnut:
+                default:
+                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None }, 3);
+                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None }, 4);
+                    break;
+            }
 
             plotArea.Append(catAxis);
         }
-
+        private static BarGroupingValues mapBarGrouping(GroupingType value)
+        {
+            return value switch
+            {
+                GroupingType.Clustered => BarGroupingValues.Clustered,
+                GroupingType.Stacked => BarGroupingValues.Stacked,
+                GroupingType.PercentStacked => BarGroupingValues.PercentStacked,
+                GroupingType.Standard => BarGroupingValues.Standard,
+                _ => BarGroupingValues.Clustered
+            };
+        }
+        private static ScatterStyleValues mapScatterStyle(ScatterStyle value)
+        {
+            return value switch
+            {
+                ScatterStyle.Line => ScatterStyleValues.Line,
+                ScatterStyle.LineMarker => ScatterStyleValues.LineMarker,
+                ScatterStyle.Marker => ScatterStyleValues.Marker,
+                ScatterStyle.Smooth => ScatterStyleValues.Smooth,
+                ScatterStyle.SmoothMarker => ScatterStyleValues.SmoothMarker,
+                _ => ScatterStyleValues.Marker
+            };
+        }
+        private static DisplayBlanksAsValues mapBlanksDisplayedAs(BlanksDisplayedAs value)
+        {
+            return value switch
+            {
+                BlanksDisplayedAs.Gap => DisplayBlanksAsValues.Gap,
+                BlanksDisplayedAs.Zero => DisplayBlanksAsValues.Zero,
+                BlanksDisplayedAs.Span => DisplayBlanksAsValues.Span,
+                _ => DisplayBlanksAsValues.Gap
+            };
+        }
     }
+
+
     public enum ChartType
     {
         Bar,
@@ -1021,6 +1129,57 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         Marker,   // çizgi + marker
         Filled,   // dolu alan (area gibi)
     }
+    enum GroupingType
+    {
+        Standard,
+        Clustered,
+        Stacked,
+        PercentStacked
+    }
+    enum LayoutMode
+    {
+        Edge,
+        Factor,
+    }
+
+    enum ThreeDShape
+    {
+        Cone,
+        ConeToMax,
+        Box,
+        Cylinder,
+        Pyramid,
+        PyramidToMaximum,
+    }
+    enum BlanksDisplayedAs
+    {
+        Span,
+        Gap,
+        Zero
+    }
+    class ThreeDViewDefinition
+    {
+        //  <view-3d > <floor-format /> <back-wall-format /> <side-wall-format /> </view-3d>
+        // View3D ortak
+        public int? RotationX { get; set; } // -90..90
+        public int? RotationY { get; set; } // 0..360
+        public bool? RightAngleAxes { get; set; } // true -> Perspective yok sayılır
+        public int? Perspective { get; set; } // 0..240 (RightAngleAxes=false iken)
+        public int? DepthPercent { get; set; } // 20..2000
+        public int? HeightPercent { get; set; } // 5..500
+
+        // Bar/Column 3D özel
+        public int? GapWidth { get; set; } // 0..500
+        public int? GapDepth { get; set; } // 0..500
+        public ThreeDShape? Shape { get; set; } // box, cylinder, cone, cone-to-max, pyramid, pyramid-to-max
+
+        // Duvar/zemin (opsiyonel)
+        public bool? ShowFloor { get; set; }
+        public bool? ShowBackWall { get; set; }
+        public bool? ShowSideWall { get; set; }
+
+    }
+
 
 }
 
