@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OfficeAppOpenXmlLibrary\OfficeAppOpenXmlLibrary.csproj" />
-    <ProjectReference Include="..\OfficeAppOpenXml\OfficeAppOpenXmlLibrary.csproj" />
   </ItemGroup>
 
 </Project>
