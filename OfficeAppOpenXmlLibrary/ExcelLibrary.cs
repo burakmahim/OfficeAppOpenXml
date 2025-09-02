@@ -43,7 +43,7 @@ namespace OfficeAppOpenXmlLibrary
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
                             TableComponent.AddTable(tableElement, worksheet, out rowCount, out colCount, currentRow);
-                            currentRow += rowCount+1;
+                            currentRow += rowCount + 1;
                         }
 
                         worksheetPart.Worksheet = worksheet;
