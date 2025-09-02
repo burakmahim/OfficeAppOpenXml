@@ -674,6 +674,169 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             }
 
+            //grid
+
+            XElement? gridNode = chartNode.Element("grid");
+            if (gridNode != null)
+            {
+                chartDefinition.Grid = new GridDefinition();
+
+                if (XElementAttributeGetter.AsBool(gridNode, "show-horizontal", out bool showHorizontal))
+                    chartDefinition.Grid.ShowHorizontal = showHorizontal;
+
+                if (XElementAttributeGetter.AsBool(gridNode, "show-vertical", out bool showVertical))
+                    chartDefinition.Grid.ShowVertical = showVertical;
+
+                XElement? horizontalFormatNode = gridNode.Element("horizontal-format");
+                if (horizontalFormatNode != null)
+                {
+                    chartDefinition.Grid.HorizontalFormat = new FormatDefinition();
+
+                    XElement? lineNode = horizontalFormatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.Grid.HorizontalFormat.LineDefinition = new LineDefinition();
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
+                        chartDefinition.Grid.HorizontalFormat.LineDefinition.Visible = visible;
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            chartDefinition.Grid.HorizontalFormat.LineDefinition.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            chartDefinition.Grid.HorizontalFormat.LineDefinition.CompoundPreset = compoundLine.Value;
+
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.Grid.HorizontalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                    }
+
+                    XElement? effectsNode = horizontalFormatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.Grid.HorizontalFormat.EffectsDefinition = new EffectsDefinition();
+
+                        XElement? shadowNode = effectsNode.Element("shadow");
+                        if (shadowNode != null)
+                        {
+                            chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition = new ShadowDefinition();
+
+                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
+                            if (shadowType.HasValue)
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Type = shadowType.Value;
+
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
+                            if (shadowColor != null)
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Color = shadowColor;
+                        }
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            chartDefinition.Grid.HorizontalFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+                        }
+                    }
+                }
+
+                // Vertical format (benzer yapı)
+                XElement? vertFormatNode = gridNode.Element("vertical-format");
+                if (vertFormatNode != null)
+                {
+                    chartDefinition.Grid.VerticalFormat = new FormatDefinition();
+
+                    XElement? lineNode = vertFormatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.Grid.VerticalFormat.LineDefinition = new LineDefinition();
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
+                        chartDefinition.Grid.VerticalFormat.LineDefinition.Visible = visible;
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            chartDefinition.Grid.VerticalFormat.LineDefinition.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            chartDefinition.Grid.VerticalFormat.LineDefinition.CompoundPreset = compoundLine.Value;
+
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.Grid.HorizontalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                    }
+
+                    XElement? effectsNode = vertFormatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.Grid.VerticalFormat.EffectsDefinition = new EffectsDefinition();
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            chartDefinition.Grid.VerticalFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.Grid.VerticalFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+                        }
+                    }
+                }
+            }
+
+            //value-labels
+
+            XElement? valueLabelsNode = chartNode.Element("value-labels");
+            if (valueLabelsNode != null)
+            {
+                chartDefinition.ValueLabels = new ValueLabelDefinition();
+
+                Nullable<DataLabelPosition> position = XElementAttributeGetter.AsEnum<DataLabelPosition>(valueLabelsNode, "position");
+                if (position.HasValue)
+                    chartDefinition.ValueLabels.Position = position.Value;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show", out bool show))
+                    chartDefinition.ValueLabels.Show = show;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-legend-key", out bool showLegendKey))
+                    chartDefinition.ValueLabels.ShowLegendKey = showLegendKey;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-category-name", out bool showCategoryName))
+                    chartDefinition.ValueLabels.ShowCategoryName = showCategoryName;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-series-name", out bool showSeriesName))
+                    chartDefinition.ValueLabels.ShowSeriesName = showSeriesName;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-percent", out bool showPercent))
+                    chartDefinition.ValueLabels.ShowPercent = showPercent;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-bubble-size", out bool showBubbleSize))
+                    chartDefinition.ValueLabels.ShowBubbleSize = showBubbleSize;
+
+            }
+
 
             return chartDefinition;
         }
@@ -845,7 +1008,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addBarSeries(chartDefinition, chartNode, bar3DChart);
 
-                //addDataLabels(bar3DChart, chartDefinition);
+                addDataLabels(bar3DChart, chartDefinition);
 
                 plotArea.Append(bar3DChart);
             }
@@ -868,7 +1031,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 if (chartDefinition.GapWidth.HasValue)
                     barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth.Value) });
 
-                //addDataLabels(barChart, chartDefinition);
+                addDataLabels(barChart, chartDefinition);
 
                 plotArea.Append(barChart);
             }
@@ -900,7 +1063,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addAxisIds(line3DChart, catId, valId);
                 addLineSeries(chartDefinition, chartNode, line3DChart);
-                //addDataLabels(line3DChart, chartDefinition);
+                addDataLabels(line3DChart, chartDefinition);
 
                 plotArea.Append(line3DChart);
 
@@ -921,7 +1084,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 addAxisIds(lineChart, catId, valId);
 
                 addLineSeries(chartDefinition, chartNode, lineChart);
-                //addDataLabels(lineChart, chartDefinition);
+                addDataLabels(lineChart, chartDefinition);
 
                 plotArea.Append(lineChart);
 
@@ -1943,7 +2106,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 idx++;
             }
         }
-
         private static uint getSafeId()
         {
             byte[] guidBytes = Guid.NewGuid().ToByteArray();
@@ -2017,15 +2179,30 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(valAx, targetAxisDefinition);
 
-            //if (addMajorGridLines)
-            //    addMajorGridlines(valAx, targetMajorGridlinesFormat);
+            if (addMajorGridLines)
+                addMajorGridlines(valAx, targetMajorGridlinesFormat);
 
             valAx.InsertAt(new Delete() { Val = !showAxis }, 2);
 
             plotArea.Append(valAx);
         }
+        private static void addMajorGridlines(OpenXmlCompositeElement owner, FormatDefinition gridFormatDefinition)
+        {
+            if (owner is null)
+                return;
+
+            MajorGridlines majorGridlines = new();
+
+            if (gridFormatDefinition is not null)
+                applyFormat(majorGridlines, gridFormatDefinition);
+
+            owner.Append(majorGridlines);
+        }
         private static void addCategoryAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
         {
+            if (chartDefinition is null || plotArea is null)
+                return;
+
             AxisPositionValues axisPos = position ?? AxisPositionValues.Bottom;
 
             CategoryAxis catAxis = new CategoryAxis(
@@ -2069,8 +2246,92 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
 
+            bool addMajorGridLines;
+            FormatDefinition targetMajorGridlinesFormat = null;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar:
+                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
+                    break;
+                case ChartType.Column:
+                case ChartType.Line:
+                case ChartType.Area:
+                case ChartType.Radar:
+                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
+                    break;
+                case ChartType.Pie:
+                case ChartType.Doughnut:
+                case ChartType.Bubble:
+                case ChartType.Scatter:
+                default:
+                    addMajorGridLines = false;
+                    break;
+            }
+
+            if (addMajorGridLines)
+                addMajorGridlines(catAxis, targetMajorGridlinesFormat);
+
             plotArea.Append(catAxis);
         }
+        private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
+        {
+            if (owner == null || chartDefinition == null)
+                return;
+
+            ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
+
+            if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
+                return;
+
+            C.DataLabels dataLabels = new();
+            dataLabels.Append(new C.ShowValue() { Val = true });
+
+            DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
+
+            if (position != null)
+                dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
+
+            bool showPercent = false;
+            bool showBubbleSize = false;
+            bool showLeaderLines = false;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Pie:
+                    showPercent = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
+                    break;
+                case ChartType.Doughnut:
+                    showPercent = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = true;
+                    break;
+                case ChartType.Bubble:
+                    showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
+                    break;
+                default:
+                    break;
+            }
+
+            dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
+            dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
+            dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
+            dataLabels.Append(new C.ShowPercent() { Val = showPercent });
+            dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
+            dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
+
+            if (valueLabelsDefinition.TextFormat != null)
+            {
+                //C.TextProperties textProperties = new();
+                //if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
+                //    dataLabels.Append(textProperties);
+            }
+
+            owner.Append(dataLabels);
+        }
+
         private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
         {
             if (axisDefinition is null || axisNode is null)
@@ -3750,8 +4011,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         None,
         Square,
     }
-
-
 
 }
 
