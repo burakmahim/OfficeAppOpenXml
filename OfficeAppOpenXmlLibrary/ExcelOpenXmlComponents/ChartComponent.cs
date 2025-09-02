@@ -651,7 +651,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             }
 
-            //grşd
+            //grid
 
             XElement? gridNode = chartNode.Element("grid");
             if (gridNode != null)
@@ -783,6 +783,36 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 }
             }
 
+            //value-labels
+
+            XElement? valueLabelsNode = chartNode.Element("value-labels");
+            if (valueLabelsNode != null)
+            {
+                chartDefinition.ValueLabels = new ValueLabelDefinition();
+
+                Nullable<DataLabelPosition> position = XElementAttributeGetter.AsEnum<DataLabelPosition>(valueLabelsNode, "position");
+                if (position.HasValue)
+                    chartDefinition.ValueLabels.Position = position.Value;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show", out bool show))
+                    chartDefinition.ValueLabels.Show = show;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-legend-key", out bool showLegendKey))
+                    chartDefinition.ValueLabels.ShowLegendKey = showLegendKey;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-category-name", out bool showCategoryName))
+                    chartDefinition.ValueLabels.ShowCategoryName = showCategoryName;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-series-name", out bool showSeriesName))
+                    chartDefinition.ValueLabels.ShowSeriesName = showSeriesName;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-percent", out bool showPercent))
+                    chartDefinition.ValueLabels.ShowPercent = showPercent;
+
+                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-bubble-size", out bool showBubbleSize))
+                    chartDefinition.ValueLabels.ShowBubbleSize = showBubbleSize;
+
+            }
 
 
             return chartDefinition;
@@ -954,7 +984,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addBarSeries(chartDefinition, chartNode, bar3DChart);
 
-                //addDataLabels(bar3DChart, chartDefinition);
+                addDataLabels(bar3DChart, chartDefinition);
 
                 plotArea.Append(bar3DChart);
             }
@@ -977,7 +1007,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 if (chartDefinition.GapWidth.HasValue)
                     barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth.Value) });
 
-                //addDataLabels(barChart, chartDefinition);
+                addDataLabels(barChart, chartDefinition);
 
                 plotArea.Append(barChart);
             }
@@ -1009,7 +1039,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addAxisIds(line3DChart, catId, valId);
                 addLineSeries(chartDefinition, chartNode, line3DChart);
-                //addDataLabels(line3DChart, chartDefinition);
+                addDataLabels(line3DChart, chartDefinition);
 
                 plotArea.Append(line3DChart);
 
@@ -1030,7 +1060,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 addAxisIds(lineChart, catId, valId);
 
                 addLineSeries(chartDefinition, chartNode, lineChart);
-                //addDataLabels(lineChart, chartDefinition);
+                addDataLabels(lineChart, chartDefinition);
 
                 plotArea.Append(lineChart);
 
@@ -1854,6 +1884,62 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(catAxis);
         }
+        private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
+        {
+            if (owner == null || chartDefinition == null)
+                return;
+
+            ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
+
+            if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
+                return;
+
+            C.DataLabels dataLabels = new();
+            dataLabels.Append(new C.ShowValue() { Val = true });
+
+            DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
+
+            if (position != null)
+                dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
+
+            bool showPercent = false;
+            bool showBubbleSize = false;
+            bool showLeaderLines = false;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Pie:
+                    showPercent = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
+                    break;
+                case ChartType.Doughnut:
+                    showPercent = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = true;
+                    break;
+                case ChartType.Bubble:
+                    showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
+                    break;
+                default:
+                    break;
+            }
+
+            dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
+            dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
+            dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
+            dataLabels.Append(new C.ShowPercent() { Val = showPercent });
+            dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
+            dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
+
+            if (valueLabelsDefinition.TextFormat != null)
+            {
+                //C.TextProperties textProperties = new();
+                //if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
+                //    dataLabels.Append(textProperties);
+            }
+
+            owner.Append(dataLabels);
+        }
+
         private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
         {
             if (axisDefinition is null || axisNode is null)
@@ -3533,8 +3619,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         None,
         Square,
     }
-
-
 
 }
 
