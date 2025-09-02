@@ -163,32 +163,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (XElementAttributeGetter.AsInt32(chartNode, "bubble-scale", out int bubbleScaleValue))
                 chartDefinition.BubbleScale = bubbleScaleValue;
 
-            // 1) Chart genel text-format (başlık vb. için default)
-            //chartDefinition.TextFormat = parseTextFormat(chartNode);
+            //category-axis 
 
-            // 2) <title> düğümü (opsiyonel)
-            //    <chart title="..."> kullanımın varsa TitleDefinition.Text'i bulamayabilir; ikisini destekleyelim.
-            var titleNode = chartNode.Element("title");
-            if (titleNode != null)
-            {
-                chartDefinition.Title = new TitleDefinition
-                {
-                    Text = titleNode.Attribute("text")?.Value ?? titleNode.Value ?? chartNode.Attribute("title")?.Value,
-                    //TextFormat = parseTextFormat(titleNode)
-                };
-            }
-            else
-            {
-                // sadece attribute'tan geliyor olabilir
-                var t = chartNode.Attribute("title")?.Value;
-                if (!string.IsNullOrEmpty(t))
-                    chartDefinition.Title = new TitleDefinition { Text = t, TextFormat = chartDefinition.TextFormat };
-            }
-
-
-            //category-axis
             XElement? categoryAxisNode = chartNode.Element("category-axis");
-            //chartDefinition.CategoryAxis.TickLabelTextFormat = parseTextFormat(categoryAxisNode);
             if (categoryAxisNode != null)
             {
                 chartDefinition.CategoryAxis = new AxisDefinition();
@@ -674,169 +651,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             }
 
-            //grid
-
-            XElement? gridNode = chartNode.Element("grid");
-            if (gridNode != null)
-            {
-                chartDefinition.Grid = new GridDefinition();
-
-                if (XElementAttributeGetter.AsBool(gridNode, "show-horizontal", out bool showHorizontal))
-                    chartDefinition.Grid.ShowHorizontal = showHorizontal;
-
-                if (XElementAttributeGetter.AsBool(gridNode, "show-vertical", out bool showVertical))
-                    chartDefinition.Grid.ShowVertical = showVertical;
-
-                XElement? horizontalFormatNode = gridNode.Element("horizontal-format");
-                if (horizontalFormatNode != null)
-                {
-                    chartDefinition.Grid.HorizontalFormat = new FormatDefinition();
-
-                    XElement? lineNode = horizontalFormatNode.Element("line");
-                    if (lineNode != null)
-                    {
-                        chartDefinition.Grid.HorizontalFormat.LineDefinition = new LineDefinition();
-
-                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
-                        chartDefinition.Grid.HorizontalFormat.LineDefinition.Visible = visible;
-
-                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
-                        if (dashPreset.HasValue)
-                            chartDefinition.Grid.HorizontalFormat.LineDefinition.DashPreset = dashPreset.Value;
-
-                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
-                        if (compoundLine.HasValue)
-                            chartDefinition.Grid.HorizontalFormat.LineDefinition.CompoundPreset = compoundLine.Value;
-
-                        string? widthStr = lineNode.Attribute("width")?.Value;
-                        if (!string.IsNullOrEmpty(widthStr))
-                            chartDefinition.Grid.HorizontalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
-
-                    }
-
-                    XElement? effectsNode = horizontalFormatNode.Element("effects");
-                    if (effectsNode != null)
-                    {
-                        chartDefinition.Grid.HorizontalFormat.EffectsDefinition = new EffectsDefinition();
-
-                        XElement? shadowNode = effectsNode.Element("shadow");
-                        if (shadowNode != null)
-                        {
-                            chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition = new ShadowDefinition();
-
-                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
-                            if (shadowType.HasValue)
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Type = shadowType.Value;
-
-                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
-                            if (shadowPreset.HasValue)
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
-
-                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
-
-                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
-                            if (!string.IsNullOrEmpty(blurStr))
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
-
-                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
-                            if (!string.IsNullOrEmpty(distanceStr))
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
-
-                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
-                            if (shadowColor != null)
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Color = shadowColor;
-                        }
-
-                        XElement? glowNode = effectsNode.Element("glow");
-                        if (glowNode != null)
-                        {
-                            chartDefinition.Grid.HorizontalFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
-
-                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
-                            if (glowColor != null)
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
-                        }
-                    }
-                }
-
-                // Vertical format (benzer yapı)
-                XElement? vertFormatNode = gridNode.Element("vertical-format");
-                if (vertFormatNode != null)
-                {
-                    chartDefinition.Grid.VerticalFormat = new FormatDefinition();
-
-                    XElement? lineNode = vertFormatNode.Element("line");
-                    if (lineNode != null)
-                    {
-                        chartDefinition.Grid.VerticalFormat.LineDefinition = new LineDefinition();
-
-                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
-                        chartDefinition.Grid.VerticalFormat.LineDefinition.Visible = visible;
-
-                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
-                        if (dashPreset.HasValue)
-                            chartDefinition.Grid.VerticalFormat.LineDefinition.DashPreset = dashPreset.Value;
-
-                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
-                        if (compoundLine.HasValue)
-                            chartDefinition.Grid.VerticalFormat.LineDefinition.CompoundPreset = compoundLine.Value;
-
-                        string? widthStr = lineNode.Attribute("width")?.Value;
-                        if (!string.IsNullOrEmpty(widthStr))
-                            chartDefinition.Grid.HorizontalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
-
-                    }
-
-                    XElement? effectsNode = vertFormatNode.Element("effects");
-                    if (effectsNode != null)
-                    {
-                        chartDefinition.Grid.VerticalFormat.EffectsDefinition = new EffectsDefinition();
-
-                        XElement? glowNode = effectsNode.Element("glow");
-                        if (glowNode != null)
-                        {
-                            chartDefinition.Grid.VerticalFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
-
-                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
-                            if (glowColor != null)
-                                chartDefinition.Grid.VerticalFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
-                        }
-                    }
-                }
-            }
-
-            //value-labels
-
-            XElement? valueLabelsNode = chartNode.Element("value-labels");
-            if (valueLabelsNode != null)
-            {
-                chartDefinition.ValueLabels = new ValueLabelDefinition();
-
-                Nullable<DataLabelPosition> position = XElementAttributeGetter.AsEnum<DataLabelPosition>(valueLabelsNode, "position");
-                if (position.HasValue)
-                    chartDefinition.ValueLabels.Position = position.Value;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show", out bool show))
-                    chartDefinition.ValueLabels.Show = show;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-legend-key", out bool showLegendKey))
-                    chartDefinition.ValueLabels.ShowLegendKey = showLegendKey;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-category-name", out bool showCategoryName))
-                    chartDefinition.ValueLabels.ShowCategoryName = showCategoryName;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-series-name", out bool showSeriesName))
-                    chartDefinition.ValueLabels.ShowSeriesName = showSeriesName;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-percent", out bool showPercent))
-                    chartDefinition.ValueLabels.ShowPercent = showPercent;
-
-                if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-bubble-size", out bool showBubbleSize))
-                    chartDefinition.ValueLabels.ShowBubbleSize = showBubbleSize;
-
-            }
-
 
             return chartDefinition;
         }
@@ -1008,7 +822,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addBarSeries(chartDefinition, chartNode, bar3DChart);
 
-                addDataLabels(bar3DChart, chartDefinition);
+                //addDataLabels(bar3DChart, chartDefinition);
 
                 plotArea.Append(bar3DChart);
             }
@@ -1031,7 +845,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 if (chartDefinition.GapWidth.HasValue)
                     barChart.Append(new GapWidth() { Val = new UInt16Value((ushort)chartDefinition.GapWidth.Value) });
 
-                addDataLabels(barChart, chartDefinition);
+                //addDataLabels(barChart, chartDefinition);
 
                 plotArea.Append(barChart);
             }
@@ -1063,7 +877,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addAxisIds(line3DChart, catId, valId);
                 addLineSeries(chartDefinition, chartNode, line3DChart);
-                addDataLabels(line3DChart, chartDefinition);
+                //addDataLabels(line3DChart, chartDefinition);
 
                 plotArea.Append(line3DChart);
 
@@ -1084,7 +898,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 addAxisIds(lineChart, catId, valId);
 
                 addLineSeries(chartDefinition, chartNode, lineChart);
-                addDataLabels(lineChart, chartDefinition);
+                //addDataLabels(lineChart, chartDefinition);
 
                 plotArea.Append(lineChart);
 
@@ -1622,374 +1436,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             return chart;
         }
-
-
-        // -----------------------------
-        // (A) <text-format> PARSER
-        //// -----------------------------
-        //private static TextFormatDefinition parseTextFormat(XElement parent, string elementName = "text-format")
-        //{
-        //    var tfNode = parent?.Element(elementName);
-        //    if (tfNode is null) return null;
-
-        //    var tf = new TextFormatDefinition();
-
-        //    // hizalama / wrap / margin / rotate
-        //    if (XElementAttributeGetter.AsEnum<HorizontalAlign>(tfNode, "align-h") is HorizontalAlign ha) tf.AlignHorizontal = ha;
-        //    if (XElementAttributeGetter.AsEnum<VerticalAlign>(tfNode, "align-v") is VerticalAlign va) tf.AlignVertical = va;
-        //    if (XElementAttributeGetter.AsEnum<TextWrapPreset>(tfNode, "wrap") is TextWrapPreset wrap) tf.Wrap = wrap;
-
-        //    tf.MarginLeft = Dimension.Parse(tfNode.Attribute("margin-left")?.Value ?? "");
-        //    tf.MarginRight = Dimension.Parse(tfNode.Attribute("margin-right")?.Value ?? "");
-        //    tf.MarginTop = Dimension.Parse(tfNode.Attribute("margin-top")?.Value ?? "");
-        //    tf.MarginBottom = Dimension.Parse(tfNode.Attribute("margin-bottom")?.Value ?? "");
-
-        //    if (XElementAttributeGetter.AsInt32(tfNode, "rotate", out int rot)) tf.Rotate = rot;
-
-        //    // <font ... />
-        //    var fontNode = tfNode.Element("font");
-        //    if (fontNode != null)
-        //    {
-        //        var f = new FontDefinition();
-        //        f.Family = fontNode.Attribute("family")?.Value;
-
-        //        // size pt; örnek: size="12pt" ya da "12"
-        //        var sizeStr = fontNode.Attribute("size")?.Value;
-        //        f.Size = !string.IsNullOrWhiteSpace(sizeStr) ? Dimension.Parse(sizeStr) : null;
-
-        //        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool b)) f.Bold = b;
-        //        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool i)) f.Italic = i;
-        //        if (XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline") is TextUnderlineStyle ul) f.Underline = ul;
-        //        if (XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike") is TextStrikeStyle st) f.Strike = st;
-        //        if (XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps") is TextCapsStyle caps) f.Caps = caps;
-
-        //        var kerningStr = fontNode.Attribute("kerning")?.Value;
-        //        if (!string.IsNullOrWhiteSpace(kerningStr)) f.Kerning = Dimension.Parse(kerningStr, allowNegative: true);
-
-        //        var spacingStr = fontNode.Attribute("spacing")?.Value;
-        //        if (!string.IsNullOrWhiteSpace(spacingStr)) f.Spacing = Dimension.Parse(spacingStr, allowNegative: true);
-
-        //        tf.FontDefinition = f;
-        //    }
-
-        //    // <text-fill> -> <solid|pattern|gradient>
-        //    var textFillNode = tfNode.Element("text-fill");
-        //    if (textFillNode != null)
-        //    {
-        //        tf.TextFillDefinition = parseFill(textFillNode);
-        //    }
-
-        //    // <text-outline> -> <line ...> (solid/gradient + width/dash/cap/join/ends vs. desteklenir)
-        //    var textOutlineNode = tfNode.Element("text-outline");
-        //    if (textOutlineNode != null)
-        //    {
-        //        // Tek child'ı <line> varsayıyoruz
-        //        var lineNode = textOutlineNode.Element("line");
-        //        if (lineNode != null)
-        //            tf.TextOutlineDefinition = parseLine(lineNode);
-        //    }
-
-        //    // <effects> (shadow/glow/soft-edges/reflection)
-        //    var effectsNode = tfNode.Element("effects");
-        //    if (effectsNode != null)
-        //    {
-        //        tf.EffectsDefinition = parseEffects(effectsNode);
-        //    }
-
-        //    return tf;
-        //}
-
-        //private static FillDefinition parseFill(XElement fillContainer) // <text-fill> VEYA <format><fill>
-        //{
-        //    var fd = new FillDefinition();
-
-        //    var solidNode = fillContainer.Element("solid");
-        //    if (solidNode != null)
-        //    {
-        //        fd.SolidFillDefinition = new SolidDefinition
-        //        {
-        //            Color = ColorA.Parse(solidNode, "color", "transparency")
-        //        };
-        //    }
-
-        //    var patternNode = fillContainer.Element("pattern");
-        //    if (patternNode != null)
-        //    {
-        //        var p = new PatternDefinition();
-        //        if (XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset") is PatternFillPreset preset)
-        //            p.Preset = preset;
-        //        p.ForegroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
-        //        p.BackgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
-        //        fd.PatternFillDefinition = p;
-        //    }
-
-        //    var gradientNode = fillContainer.Element("gradient");
-        //    if (gradientNode != null)
-        //    {
-        //        var g = new GradientDefinition();
-        //        if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angle)) g.Angle = angle;
-        //        XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaled);
-        //        g.Scaled = scaled;
-
-        //        foreach (var stopNode in gradientNode.Elements("stop"))
-        //        {
-        //            var gs = new GradientStopDefinition();
-        //            if (XElementAttributeGetter.AsDouble(stopNode, "position", out double pos))
-        //                gs.Position = (int)Math.Round(pos * 100); // 0..100
-        //            gs.Color = ColorA.Parse(stopNode, "color", "transparency");
-        //            g.Stops.Add(gs);
-        //        }
-        //        fd.GradientFillDefinition = g;
-        //    }
-
-        //    return fd;
-        //}
-
-        //private static LineDefinition parseLine(XElement lineNode)
-        //{
-        //    var ld = new LineDefinition();
-
-        //    XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible, defaultValue: true);
-        //    ld.Visible = visible;
-
-        //    var widthStr = lineNode.Attribute("width")?.Value; // örn: "1pt"
-        //    if (!string.IsNullOrWhiteSpace(widthStr))
-        //        ld.Width = Dimension.Parse(widthStr);
-
-        //    // stroke rengi/stili
-        //    var solidNode = lineNode.Element("solid");
-        //    if (solidNode != null)
-        //    {
-        //        ld.SolidLineDefinition = new SolidDefinition
-        //        {
-        //            Color = ColorA.Parse(solidNode, "color", "transparency")
-        //        };
-        //    }
-
-        //    var gradientNode = lineNode.Element("gradient");
-        //    if (gradientNode != null)
-        //        ld.GradientLineDefinition = new GradientDefinition
-        //        {
-        //            Angle = XElementAttributeGetter.AsInt32(gradientNode, "angle", out int a) ? a : null
-        //        };
-
-        //    // dash/compound/cap/join/arrow uçları
-        //    if (XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash") is DashPreset dash) ld.DashPreset = dash;
-        //    if (XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound") is CompoundLinePreset comp) ld.CompoundPreset = comp;
-        //    if (XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap") is LineCapPreset cap) ld.CapPreset = cap;
-        //    if (XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join") is LineJoinPreset join) ld.JoinPreset = join;
-        //    if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int miter)) ld.JoinMiterLimit = clamp(miter, 1, 500);
-
-        //    if (XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "begin-arrow-type") is LineEndPreset bat) ld.Begin_Arrow_Type = bat;
-        //    if (XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "begin-arrow-width") is LineEndWidthPreset baw) ld.Begin_Arrow_Width = baw;
-        //    if (XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "begin-arrow-length") is LineEndLengthPreset bal) ld.Begin_Arrow_Length = bal;
-
-        //    if (XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "end-arrow-type") is LineEndPreset eat) ld.End_Arrow_Type = eat;
-        //    if (XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "end-arrow-width") is LineEndWidthPreset eaw) ld.End_Arrow_Width = eaw;
-        //    if (XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "end-arrow-length") is LineEndLengthPreset eal) ld.End_Arrow_Length = eal;
-
-        //    return ld;
-        //}
-
-        //private static EffectsDefinition parseEffects(XElement effectsNode)
-        //{
-        //    var ed = new EffectsDefinition();
-
-        //    var shadowNode = effectsNode.Element("shadow");
-        //    if (shadowNode != null)
-        //    {
-        //        var sd = new ShadowDefinition();
-        //        if (XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type") is ShadowType st) sd.Type = st;
-        //        if (XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset") is ShadowPreset sp) sd.Preset = sp;
-        //        sd.BlurRadius = Dimension.Parse(shadowNode.Attribute("blur-radius")?.Value ?? "");
-        //        sd.Distance = Dimension.Parse(shadowNode.Attribute("distance")?.Value ?? "");
-        //        if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int ang)) sd.Angle = ang;
-        //        sd.Color = ColorA.Parse(shadowNode, "color", "transparency");
-        //        ed.ShadowDefinition = sd;
-        //    }
-
-        //    var glowNode = effectsNode.Element("glow");
-        //    if (glowNode != null)
-        //    {
-        //        ed.GlowDefinition = new GlowDefinition
-        //        {
-        //            Color = ColorA.Parse(glowNode, "color", "transparency"),
-        //            Size = Dimension.Parse(glowNode.Attribute("size")?.Value ?? "")
-        //        };
-        //    }
-
-        //    var softNode = effectsNode.Element("soft-edges");
-        //    if (softNode != null)
-        //    {
-        //        ed.SoftEdgesDefinition = new SoftEdgesDefinition
-        //        {
-        //            Size = Dimension.Parse(softNode.Attribute("size")?.Value ?? "")
-        //        };
-        //    }
-
-        //    var reflNode = effectsNode.Element("reflection");
-        //    if (reflNode != null)
-        //    {
-        //        var rd = new ReflectionDefinition();
-        //        rd.Blur = Dimension.Parse(reflNode.Attribute("blur-radius")?.Value ?? "");
-        //        rd.Distance = Dimension.Parse(reflNode.Attribute("distance")?.Value ?? "");
-        //        if (XElementAttributeGetter.AsInt32(reflNode, "start-transparency", out int st)) rd.StartTransparency = st;
-        //        if (XElementAttributeGetter.AsInt32(reflNode, "end-transparency", out int et)) rd.EndTransparency = et;
-        //        if (XElementAttributeGetter.AsInt32(reflNode, "start-position", out int sp)) rd.StartPosition = sp;
-        //        if (XElementAttributeGetter.AsInt32(reflNode, "end-position", out int ep)) rd.EndPosition = ep;
-        //        ed.ReflectionDefinition = rd;
-        //    }
-
-        //    return ed;
-        //}
-
-        //private static void applyTextFormatDefinition(OpenXmlCompositeElement node, TextFormatDefinition tf)
-        //{
-        //    if (node == null || tf == null) return;
-
-        //    var txPr = getOrAddTextProperties(node);
-        //    txPr.RemoveAllChildren();
-
-        //    // BodyProperties (dikey hizalama, margin, wrap, rotate)
-        //    var bodyPr = new A.BodyProperties();
-        //    if (tf.AlignVertical is VerticalAlign va) bodyPr.Anchor = mapTextAnchor(va);
-        //    if (tf.Wrap is TextWrapPreset wrap) bodyPr.Wrap = mapTextWrap(wrap);
-        //    if (tf.MarginLeft != null) bodyPr.LeftInset = tf.MarginLeft.ToEmu();
-        //    if (tf.MarginRight != null) bodyPr.RightInset = tf.MarginRight.ToEmu();
-        //    if (tf.MarginTop != null) bodyPr.TopInset = tf.MarginTop.ToEmu();
-        //    if (tf.MarginBottom != null) bodyPr.BottomInset = tf.MarginBottom.ToEmu();
-        //    if (tf.Rotate.HasValue) bodyPr.Rotation = tf.Rotate.Value * 60000; // deg -> OOXML units
-        //    txPr.Append(bodyPr);
-        //    txPr.Append(new A.ListStyle());
-
-        //    // Paragraf + paragraf hizası
-        //    var p = new A.Paragraph();
-        //    if (tf.AlignHorizontal is HorizontalAlign ha)
-        //        p.Append(new A.ParagraphProperties { Alignment = mapTextAlign(ha) });
-
-        //    // Varsayılan run stili (metin runtime tarafından üretildiğinde de uygulasın diye boş metinli run)
-        //    var rPr = buildRunPropertiesFromTextFormat(tf);
-        //    p.Append(new A.Run(rPr, new A.Text("")));
-
-        //    txPr.Append(p);
-        //}
-
-        //private static A.RunProperties buildRunPropertiesFromTextFormat(TextFormatDefinition tf)
-        //{
-        //    var rPr = new A.RunProperties();
-
-        //    // Font
-        //    if (tf.FontDefinition != null)
-        //    {
-        //        var f = tf.FontDefinition;
-        //        if (!string.IsNullOrWhiteSpace(f.Family))
-        //        {
-        //            rPr.Append(new A.LatinFont { Typeface = f.Family });
-        //            rPr.Append(new A.EastAsianFont { Typeface = f.Family });
-        //            rPr.Append(new A.ComplexScriptFont { Typeface = f.Family });
-        //        }
-        //        if (f.Size != null) rPr.FontSize = (int)(f.Size.Value * 100); // pt -> 1/100pt
-        //        if (f.Bold == true) rPr.Bold = true;
-        //        if (f.Italic == true) rPr.Italic = true;
-        //        if (f.Underline != null) rPr.Underline = mapUnderline(f.Underline.Value);
-        //        if (f.Strike != null) rPr.Strike = mapStrike(f.Strike.Value);
-        //        if (f.Caps != null) rPr.Caps = mapCaps(f.Caps.Value);
-
-        //        // Not: Kerning/Spacing'in DrawingML birimleri projeye göre farklı yorumlanabilir;
-        //        // istersen burayı açabilirsin:
-        //        // if (f.Kerning != null) rPr.Kerning = (int)(f.Kerning.Value * 100);
-        //        // if (f.Spacing != null) rPr.Spacing = (int)(f.Spacing.Value * 100);
-        //    }
-
-        //    // Text Fill
-        //    if (tf.TextFillDefinition != null)
-        //    {
-        //        var fd = tf.TextFillDefinition;
-        //        if (fd.GradientFillDefinition != null)
-        //            rPr.Append(buildGradientFill(fd.GradientFillDefinition));
-        //        else if (fd.PatternFillDefinition != null)
-        //            rPr.Append(buildPatternFill(fd.PatternFillDefinition));
-        //        else if (fd.SolidFillDefinition != null)
-        //            rPr.Append(buildSolidFill(fd.SolidFillDefinition.Color, "000000"));
-        //    }
-
-        //    // Text Outline
-        //    if (tf.TextOutlineDefinition != null)
-        //    {
-        //        var ld = tf.TextOutlineDefinition;
-        //        var outline = new A.Outline();
-        //        if (ld.Width != null) outline.Width = ld.Width.ToEmu();
-
-        //        // renk/stil
-        //        outline.RemoveAllChildren<A.SolidFill>();
-        //        outline.RemoveAllChildren<A.GradientFill>();
-        //        if (ld.GradientLineDefinition != null)
-        //            outline.Append(buildGradientFill(ld.GradientLineDefinition));
-        //        else if (ld.SolidLineDefinition != null)
-        //            outline.Append(buildSolidFill(ld.SolidLineDefinition.Color, "000000"));
-
-        //        // dash/compound/cap/join/ends
-        //        if (ld.DashPreset is DashPreset dp) outline.Append(new A.PresetDash { Val = mapDash(dp) });
-        //        if (ld.CompoundPreset is CompoundLinePreset cp) outline.CompoundLineType = mapCompound(cp);
-        //        if (ld.CapPreset is LineCapPreset cap) outline.CapType = mapLineCap(cap);
-        //        applyFormatJoin(outline, ld);
-        //        if (ld.Begin_Arrow_Type is LineEndPreset bat)
-        //            outline.Append(new A.HeadEnd { Type = mapLineEndType(bat), Width = mapLineEndWidth(ld.Begin_Arrow_Width ?? LineEndWidthPreset.Medium), Length = mapLineEndLength(ld.Begin_Arrow_Length ?? LineEndLengthPreset.Medium) });
-        //        if (ld.End_Arrow_Type is LineEndPreset eat)
-        //            outline.Append(new A.TailEnd { Type = mapLineEndType(eat), Width = mapLineEndWidth(ld.End_Arrow_Width ?? LineEndWidthPreset.Medium), Length = mapLineEndLength(ld.End_Arrow_Length ?? LineEndLengthPreset.Medium) });
-
-        //        rPr.Append(outline);
-        //    }
-
-        //    // Effects (glow/shadow/soft-edges/reflection) -> rPr.effectLst
-        //    if (tf.EffectsDefinition != null)
-        //    {
-        //        var effectList = new A.EffectList();
-        //        var ph = new Dimension(4, UnitType.Pt);
-        //        if (tf.EffectsDefinition.GlowDefinition != null)
-        //            applyGlow(effectList, tf.EffectsDefinition.GlowDefinition, ph);
-        //        if (tf.EffectsDefinition.ShadowDefinition != null)
-        //            applyShadow(effectList, tf.EffectsDefinition.ShadowDefinition, ph, ShadowType.Inner);
-        //        if (tf.EffectsDefinition.SoftEdgesDefinition != null)
-        //            applySoftEdges(effectList, tf.EffectsDefinition.SoftEdgesDefinition, ph);
-        //        if (tf.EffectsDefinition.ReflectionDefinition != null)
-        //            applyReflection(effectList, tf.EffectsDefinition.ReflectionDefinition);
-
-        //        if (effectList.HasChildren) rPr.Append(effectList);
-        //    }
-
-        //    return rPr;
-        //}
-
-
-        //private static A.RichText buildRichTextFromTextFormat(string text, TextFormatDefinition tf)
-        //{
-        //    var body = new A.BodyProperties();
-        //    if (tf?.AlignVertical is VerticalAlign va) body.Anchor = mapTextAnchor(va);
-        //    if (tf?.Rotate is int rot) body.Rotation = rot * 60000;
-
-        //    var p = new A.Paragraph();
-        //    if (tf?.AlignHorizontal is HorizontalAlign ha)
-        //        p.Append(new A.ParagraphProperties { Alignment = mapTextAlign(ha) });
-
-        //    var run = new A.Run();
-        //    run.Append(buildRunPropertiesFromTextFormat(tf ?? new TextFormatDefinition()));
-        //    run.Append(new A.Text(text ?? string.Empty));
-
-        //    p.Append(run);
-
-        //    var rich = new A.RichText();
-        //    rich.Append(body);
-        //    rich.Append(new A.ListStyle());
-        //    rich.Append(p);
-
-        //    return rich;
-        //}
-
-
-
-
-
         private static void applyBar3DOptions(C.Bar3DChart bar3DChart, ThreeDViewDefinition viewDefinition)
         {
             if (bar3DChart is null || viewDefinition is null)
@@ -2106,6 +1552,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 idx++;
             }
         }
+
         private static uint getSafeId()
         {
             byte[] guidBytes = Guid.NewGuid().ToByteArray();
@@ -2179,30 +1626,15 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(valAx, targetAxisDefinition);
 
-            if (addMajorGridLines)
-                addMajorGridlines(valAx, targetMajorGridlinesFormat);
+            //if (addMajorGridLines)
+            //    addMajorGridlines(valAx, targetMajorGridlinesFormat);
 
             valAx.InsertAt(new Delete() { Val = !showAxis }, 2);
 
             plotArea.Append(valAx);
         }
-        private static void addMajorGridlines(OpenXmlCompositeElement owner, FormatDefinition gridFormatDefinition)
-        {
-            if (owner is null)
-                return;
-
-            MajorGridlines majorGridlines = new();
-
-            if (gridFormatDefinition is not null)
-                applyFormat(majorGridlines, gridFormatDefinition);
-
-            owner.Append(majorGridlines);
-        }
         private static void addCategoryAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
         {
-            if (chartDefinition is null || plotArea is null)
-                return;
-
             AxisPositionValues axisPos = position ?? AxisPositionValues.Bottom;
 
             CategoryAxis catAxis = new CategoryAxis(
@@ -2246,92 +1678,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
 
-            bool addMajorGridLines;
-            FormatDefinition targetMajorGridlinesFormat = null;
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
-                    break;
-                case ChartType.Column:
-                case ChartType.Line:
-                case ChartType.Area:
-                case ChartType.Radar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
-                    break;
-                case ChartType.Pie:
-                case ChartType.Doughnut:
-                case ChartType.Bubble:
-                case ChartType.Scatter:
-                default:
-                    addMajorGridLines = false;
-                    break;
-            }
-
-            if (addMajorGridLines)
-                addMajorGridlines(catAxis, targetMajorGridlinesFormat);
-
             plotArea.Append(catAxis);
         }
-        private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
-        {
-            if (owner == null || chartDefinition == null)
-                return;
-
-            ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
-
-            if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
-                return;
-
-            C.DataLabels dataLabels = new();
-            dataLabels.Append(new C.ShowValue() { Val = true });
-
-            DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
-
-            if (position != null)
-                dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
-
-            bool showPercent = false;
-            bool showBubbleSize = false;
-            bool showLeaderLines = false;
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Pie:
-                    showPercent = valueLabelsDefinition.ShowPercent;
-                    showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
-                    break;
-                case ChartType.Doughnut:
-                    showPercent = valueLabelsDefinition.ShowPercent;
-                    showLeaderLines = true;
-                    break;
-                case ChartType.Bubble:
-                    showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
-                    break;
-                default:
-                    break;
-            }
-
-            dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
-            dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
-            dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
-            dataLabels.Append(new C.ShowPercent() { Val = showPercent });
-            dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
-            dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
-
-            if (valueLabelsDefinition.TextFormat != null)
-            {
-                //C.TextProperties textProperties = new();
-                //if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
-                //    dataLabels.Append(textProperties);
-            }
-
-            owner.Append(dataLabels);
-        }
-
         private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
         {
             if (axisDefinition is null || axisNode is null)
@@ -4011,6 +3359,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         None,
         Square,
     }
+
+
 
 }
 
