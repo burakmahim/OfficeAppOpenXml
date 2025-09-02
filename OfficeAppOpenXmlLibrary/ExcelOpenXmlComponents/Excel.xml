@@ -1,219 +1,28 @@
 ﻿<excel>
-	<sheet name="Charts">
+	<sheet name="SampleChart">
+		<chart type="column" title="Shadow Glow Example">
 
-		<!-- TABLO-1 (A1): Aylık satışlar (Column/Bar/Line/Pie/Doughnut/Area için) -->
-		<table startCell="A1">
-			<row>
-				<cell>Ay</cell>
-				<cell>Ürün A</cell>
-				<cell>Ürün B</cell>
-			</row>
-			<row>
-				<cell>Ocak</cell>
-				<cell>12</cell>
-				<cell>8</cell>
-			</row>
-			<row>
-				<cell>Şubat</cell>
-				<cell>15</cell>
-				<cell>11</cell>
-			</row>
-			<row>
-				<cell>Mart</cell>
-				<cell>9</cell>
-				<cell>14</cell>
-			</row>
-			<row>
-				<cell>Nisan</cell>
-				<cell>20</cell>
-				<cell>16</cell>
-			</row>
-			<row>
-				<cell>Mayıs</cell>
-				<cell>17</cell>
-				<cell>18</cell>
-			</row>
-		</table>
+			<category-axis>
+				<format>
+					<line visible="true" width="3pt" dash="solid" compound="single" cap="round" join="miter"
+						  begin-arrow-type="triangle" end-arrow-type="arrow" join-miter-limit="10">
+						<solid color="#0000FF" transparency="0"/>
+					</line>
 
-		<!-- TABLO-2 (A8): Radar için kategoriler/seriler -->
-		<table startCell="A8">
-			<row>
-				<cell>Kategori</cell>
-				<cell>Seri A</cell>
-				<cell>Seri B</cell>
-			</row>
-			<row>
-				<cell>Hız</cell>
-				<cell>70</cell>
-				<cell>55</cell>
-			</row>
-			<row>
-				<cell>Kalite</cell>
-				<cell>80</cell>
-				<cell>65</cell>
-			</row>
-			<row>
-				<cell>Dayanıklılık</cell>
-				<cell>60</cell>
-				<cell>75</cell>
-			</row>
-			<row>
-				<cell>Konfor</cell>
-				<cell>75</cell>
-				<cell>70</cell>
-			</row>
-			<row>
-				<cell>Tasarım</cell>
-				<cell>85</cell>
-				<cell>60</cell>
-			</row>
-		</table>
+					<effects>
+						<shadow type="outer" color="#FF0000" transparency="20" blur-radius="5pt" angle="45" distance="4pt"/>
+						<glow color="#00FF00" transparency="30" size="10pt"/>
+					</effects>
 
-		<!-- TABLO-3 (A16): Scatter/Bubble için ortak X ve iki seri Y (+ bubble size) -->
-		<table startCell="A16">
-			<row>
-				<cell>X</cell>
-				<cell>Y_A</cell>
-				<cell>Size_A</cell>
-				<cell>Y_B</cell>
-				<cell>Size_B</cell>
-			</row>
-			<row>
-				<cell>1</cell>
-				<cell>10</cell>
-				<cell>15</cell>
-				<cell>12</cell>
-				<cell>10</cell>
-			</row>
-			<row>
-				<cell>2</cell>
-				<cell>14</cell>
-				<cell>18</cell>
-				<cell>11</cell>
-				<cell>12</cell>
-			</row>
-			<row>
-				<cell>3</cell>
-				<cell>9</cell>
-				<cell>12</cell>
-				<cell>16</cell>
-				<cell>14</cell>
-			</row>
-			<row>
-				<cell>4</cell>
-				<cell>20</cell>
-				<cell>20</cell>
-				<cell>18</cell>
-				<cell>16</cell>
-			</row>
-			<row>
-				<cell>5</cell>
-				<cell>17</cell>
-				<cell>22</cell>
-				<cell>21</cell>
-				<cell>18</cell>
-			</row>
-		</table>
+				</format>
+			</category-axis>
 
-		<!-- 1) COLUMN: Tablodan referans -->
-		<chart
-		  type="column"
-		  title="Sütun (Column)"
-		  categories="&apos;Charts&apos;!$A$2:$A$6"
-		  values="&apos;Charts&apos;!$B$2:$B$6; &apos;Charts&apos;!$C$2:$C$6"
-		  series="Ürün A;Ürün B"
-		  from="E2"
-		  to="N17" />
-
-		<!-- 2) BAR: Tablodan referans -->
-		<chart
-		  type="bar"
-		  title="Çubuk (Bar)"
-		  categories="&apos;Charts&apos;!$A$2:$A$6"
-		  values="&apos;Charts&apos;!$B$2:$B$6; &apos;Charts&apos;!$C$2:$C$6"
-		  series="Ürün A;Ürün B"
-		  from="E19"
-		  to="N34" />
-
-		<!-- 3) LINE: Tablodan referans -->
-		<chart
-		  type="line"
-		  title="Çizgi (Line)"
-		  categories="&apos;Charts&apos;!$A$2:$A$6"
-		  values="&apos;Charts&apos;!$B$2:$B$6; &apos;Charts&apos;!$C$2:$C$6"
-		  series="Ürün A;Ürün B"
-		  from="O2"
-		  to="V17" />
-
-		<!-- 4) AREA: INLINE veri (kendi içinde points) -->
-		<chart type="area" title="Alan (Area) - Inline" from="O19" to="V34">
-			<series name="2023">
-				<point category="Ocak"  value="12"/>
-				<point category="Şubat" value="15"/>
-				<point category="Mart"  value="9"/>
-				<point category="Nisan" value="20"/>
-				<point category="Mayıs" value="17"/>
+			<series name="Series 1">
+				<point category="A" value="10"/>
+				<point category="B" value="20"/>
+				<point category="C" value="30"/>
 			</series>
-			<series name="2024">
-				<point category="Ocak"  value="14"/>
-				<point category="Şubat" value="16"/>
-				<point category="Mart"  value="10"/>
-				<point category="Nisan" value="19"/>
-				<point category="Mayıs" value="21"/>
-			</series>
+
 		</chart>
-
-		<!-- 5) PIE: Tablodan referans (tek seri) -->
-		<chart
-		  type="pie"
-		  title="Pasta (Pie)"
-		  categories="&apos;Charts&apos;!$A$2:$A$6"
-		  values="&apos;Charts&apos;!$B$2:$B$6"
-		  series="Ürün A"
-		  from="W2"
-		  to="AD17" />
-
-		<!-- 6) DOUGHNUT: INLINE veri (tek seri) -->
-		<chart type="doughnut" title="Halka (Doughnut)" from="W19" to="AD34">
-			<series name="Ürün B">
-				<point category="Ocak"  value="8"/>
-				<point category="Şubat" value="11"/>
-				<point category="Mart"  value="14"/>
-				<point category="Nisan" value="16"/>
-				<point category="Mayıs" value="18"/>
-			</series>
-		</chart>
-
-		<!-- 7) SCATTER: Tablodan referans (tek X - iki Y) -->
-		<chart
-		  type="scatter"
-		  title="Dağılım (Scatter)"
-		  categories="&apos;Charts&apos;!$A$17:$A$21"
-		  values="&apos;Charts&apos;!$B$17:$B$21; &apos;Charts&apos;!$D$17:$D$21"
-		  series="Seri A;Seri B"
-		  from="AE2"
-		  to="AL17" />
-
-		<!-- 8) BUBBLE: Tablodan referans (tek X - iki Y, (opsiyonel) size) -->
-		<chart
-		  type="bubble"
-		  title="Kabarcık (Bubble)"
-		  categories="&apos;Charts&apos;!$A$17:$A$21"
-		  values="&apos;Charts&apos;!$B$17:$B$21; &apos;Charts&apos;!$D$17:$D$21"
-		  series="Seri A;Seri B"
-		  sizes="&apos;Charts&apos;!$C$17:$C$21; &apos;Charts&apos;!$E$17:$E$21"
-		  from="AE19"
-		  to="AL34" />
-
-		<!-- 9) RADAR: Tablodan referans -->
-		<chart
-		  type="radar"
-		  title="Radar"
-		  categories="&apos;Charts&apos;!$A$9:$A$13"
-		  values="&apos;Charts&apos;!$B$9:$B$13; &apos;Charts&apos;!$C$9:$C$13"
-		  series="Seri A;Seri B"
-		  from="AM2"
-		  to="AT17" />
-
 	</sheet>
 </excel>
