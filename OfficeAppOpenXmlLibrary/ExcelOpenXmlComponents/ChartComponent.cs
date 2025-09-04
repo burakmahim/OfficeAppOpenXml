@@ -126,6 +126,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (displayBlanksAs.HasValue)
                 chartDefinition.BlanksDisplayedAs = displayBlanksAs.Value;
 
+            Nullable<MarkerType> markerType = XElementAttributeGetter.AsEnum<MarkerType>(chartNode, "marker-type");
+            if (markerType.HasValue)
+                chartDefinition.Marker.Type = markerType.Value;
+
             XElementAttributeGetter.AsBool(chartNode, "vary-colors", out bool varyColorsValue);
             chartDefinition.VaryColors = varyColorsValue;
 
@@ -150,20 +154,23 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             XElementAttributeGetter.AsBool(chartNode, "bubble-3d", out bool bubble3DValue, defaultValue: false);
             chartDefinition.Bubble3D = bubble3DValue;
 
+            XElementAttributeGetter.AsBool(chartNode, "create-new-paragraph", out bool createNewParagraphValue);
+            chartDefinition.CreateNewParagraph = createNewParagraphValue;
+
             if (XElementAttributeGetter.AsInt32(chartNode, "overlap", out int overlapValue))
-                chartDefinition.Overlap = overlapValue;
+                chartDefinition.Overlap = clamp(overlapValue, -100, 100);
 
             if (XElementAttributeGetter.AsInt32(chartNode, "gap-width", out int gapWidthValue))
-                chartDefinition.GapWidth = gapWidthValue;
+                chartDefinition.GapWidth = clamp(gapWidthValue, 0, 500);
 
             if (XElementAttributeGetter.AsInt32(chartNode, "first-slice-angle", out int firstSliceAngleValue))
-                chartDefinition.FirstSliceAngle = firstSliceAngleValue;
+                chartDefinition.FirstSliceAngle = clamp(firstSliceAngleValue, 0, 360);
 
             if (XElementAttributeGetter.AsInt32(chartNode, "doughnut-hole-size", out int doughnutHoleSizeValue))
-                chartDefinition.DoughnutHoleSize = doughnutHoleSizeValue;
+                chartDefinition.DoughnutHoleSize = clamp(doughnutHoleSizeValue, 10, 90);
 
             if (XElementAttributeGetter.AsInt32(chartNode, "bubble-scale", out int bubbleScaleValue))
-                chartDefinition.BubbleScale = bubbleScaleValue;
+                chartDefinition.BubbleScale = clamp(bubbleScaleValue, 0, 300);
 
             //category-axis 
 
@@ -225,19 +232,17 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             GradientDefinition gradientDef = new GradientDefinition();
 
                             if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
-                                gradientDef.Angle = angleValue;
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
 
                             XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
                             gradientDef.Scaled = scaledValue;
 
                             foreach (XElement stopNode in gradientNode.Elements("stop"))
                             {
-                                var gradientStop = new GradientStopDefinition();
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
 
-                                if (XElementAttributeGetter.AsDouble(stopNode, "position", out double positionValue))
-                                    gradientStop.Position = (int)Math.Round(positionValue * 1000);
-                                else
-                                    gradientStop.Position = 0; // default
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
 
                                 ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
                                 if (color != null)
@@ -306,6 +311,45 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             chartDefinition.CategoryAxis.AxisLineFormat.LineDefinition.JoinMiterLimit = clampedValue;
                         }
 
+                        XElement? solidNode = lineNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.CategoryAxis.AxisLineFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.CategoryAxis.AxisLineFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientNode = lineNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.CategoryAxis.AxisLineFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
+
                     }
 
                     XElement? effectsNode = formatNode.Element("effects");
@@ -335,7 +379,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
 
                             if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
 
                             ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
@@ -347,12 +391,397 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         {
                             chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
 
-                            ColorA shadowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                int clampedValue = clamp(startTransparencyValue, 0, 100);
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                int clampedValue = clamp(endTransparencyValue, 0, 100);
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                int clampedValue = clamp(startPositionValue, 0, 100);
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                int clampedValue = clamp(endPositionValue, 0, 100);
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clampedValue;
+                            }
+
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
+                        }
+                    }
+                }
+
+                XElement? textFormatNode = categoryAxisNode.Element("text-format");
+                if (textFormatNode != null)
+                {
+                    chartDefinition.CategoryAxis.TickLabelTextFormat = new TextFormatDefinition();
+
+                    Nullable<HorizontalAlign> horizontalAlign = XElementAttributeGetter.AsEnum<HorizontalAlign>(textFormatNode, "align-horizontal");
+                    if (horizontalAlign.HasValue)
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.AlignHorizontal = horizontalAlign.Value;
+
+                    Nullable<VerticalAlign> verticalAlign = XElementAttributeGetter.AsEnum<VerticalAlign>(textFormatNode, "align-vertical");
+                    if (verticalAlign.HasValue)
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.AlignVertical = verticalAlign.Value;
+
+                    Nullable<TextWrapPreset> wrapPreset = XElementAttributeGetter.AsEnum<TextWrapPreset>(textFormatNode, "wrap");
+                    if (wrapPreset.HasValue)
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.Wrap = wrapPreset.Value;
+
+                    string? marginLeft = textFormatNode.Attribute("margin-left")?.Value;
+                    if (!string.IsNullOrEmpty(marginLeft))
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.MarginLeft = Dimension.Parse(marginLeft);
+
+                    string? marginRight = textFormatNode.Attribute("margin-right")?.Value;
+                    if (!string.IsNullOrEmpty(marginRight))
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.MarginRight = Dimension.Parse(marginRight);
+
+                    string? marginTop = textFormatNode.Attribute("margin-top")?.Value;
+                    if (!string.IsNullOrEmpty(marginTop))
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.MarginTop = Dimension.Parse(marginTop);
+
+                    string? marginBottom = textFormatNode.Attribute("margin-bottom")?.Value;
+                    if (!string.IsNullOrEmpty(marginBottom))
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.MarginBottom = Dimension.Parse(marginBottom);
+
+                    if (XElementAttributeGetter.AsInt32(textFormatNode, "rotate", out int rotateValue))
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.Rotate = clamp(rotateValue, -90, 90);
+
+                    XElement? fillNode = textFormatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                var gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.TextFillDefinition.GradientFillDefinition = gradientDef;
+                        }
+
+                    }
+
+                    XElement? lineNode = textFormatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.TextOutlineDefinition = new LineDefinition();
+                        LineDefinition lineDef = chartDefinition.CategoryAxis.TickLabelTextFormat.TextOutlineDefinition;
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visibleValue);
+                        lineDef.Visible = visibleValue;
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            lineDef.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            lineDef.CompoundPreset = compoundLine.Value;
+
+                        Nullable<LineCapPreset> lineCap = XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap");
+                        if (lineCap.HasValue)
+                            lineDef.CapPreset = lineCap.Value;
+
+                        Nullable<LineJoinPreset> join = XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join");
+                        if (join.HasValue)
+                            lineDef.JoinPreset = join.Value;
+
+                        if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int joinMiterLimitValue))
+                            lineDef.JoinMiterLimit = clamp(joinMiterLimitValue, 1, 500);
+
+                        Nullable<LineEndPreset> beginArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "begin-arrow-type");
+                        if (beginArrowType.HasValue)
+                            lineDef.Begin_Arrow_Type = beginArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> beginArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "begin-arrow-width");
+                        if (beginArrowWidth.HasValue)
+                            lineDef.Begin_Arrow_Width = beginArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> beginArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "begin-arrow-length");
+                        if (beginArrowLength.HasValue)
+                            lineDef.Begin_Arrow_Length = beginArrowLength.Value;
+
+                        Nullable<LineEndPreset> endArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "end-arrow-type");
+                        if (endArrowType.HasValue)
+                            lineDef.End_Arrow_Type = endArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> endArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "end-arrow-width");
+                        if (endArrowWidth.HasValue)
+                            lineDef.End_Arrow_Width = endArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> endArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "end-arrow-length");
+                        if (endArrowLength.HasValue)
+                            lineDef.End_Arrow_Length = endArrowLength.Value;
+                    }
+
+                    XElement? effectsNode = textFormatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.EffectsDefinition = new EffectsDefinition();
+                        EffectsDefinition effectsDef = chartDefinition.CategoryAxis.TickLabelTextFormat.EffectsDefinition;
+
+                        XElement? shadowNode = effectsNode.Element("shadow");
+                        if (shadowNode != null)
+                        {
+                            effectsDef.ShadowDefinition = new ShadowDefinition();
+
+                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
+                            if (shadowType.HasValue)
+                                effectsDef.ShadowDefinition.Type = shadowType.Value;
+
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                effectsDef.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                effectsDef.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                effectsDef.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                effectsDef.ShadowDefinition.Angle = clamp(angle, 0, 360);
+
+                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
-                                chartDefinition.CategoryAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Color = shadowColor;
+                                effectsDef.ShadowDefinition.Color = shadowColor;
+                        }
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            effectsDef.GlowDefinition = new GlowDefinition();
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                effectsDef.GlowDefinition.Color = glowColor;
+
+                            string? size = glowNode.Attribute("size").Value;
+                            if (!string.IsNullOrEmpty(size))
+                                effectsDef.GlowDefinition.Size = Dimension.Parse(size);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            effectsDef.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                effectsDef.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                effectsDef.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                effectsDef.ReflectionDefinition.StartTransparency = clamp(startTransparencyValue, 0, 100);
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                effectsDef.ReflectionDefinition.EndTransparency = clamp(endTransparencyValue, 0, 100);
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                effectsDef.ReflectionDefinition.StartPosition = clamp(startPositionValue, 0, 100);
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                effectsDef.ReflectionDefinition.EndPosition = clamp(endPositionValue, 0, 100);
+                            }
 
                         }
                     }
+
+                    XElement? fontNode = textFormatNode.Element("font");
+                    if (fontNode != null)
+                    {
+                        chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition = new FontDefinition();
+
+                        string? family = XElementAttributeGetter.AsString(fontNode, "family");
+                        if (family != null)
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Family = family;
+
+                        string? sizeStr = XElementAttributeGetter.AsString(fontNode, "size");
+                        if (!string.IsNullOrEmpty(sizeStr))
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Size = Dimension.Parse(sizeStr);
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool bold))
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Bold = bold;
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool italic))
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Italic = italic;
+
+                        Nullable<TextUnderlineStyle> underlinePreset = XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline");
+                        if (underlinePreset.HasValue)
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Underline = underlinePreset.Value;
+
+                        Nullable<TextStrikeStyle> strikePreset = XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike");
+                        if (strikePreset.HasValue)
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Strike = strikePreset.Value;
+
+                        Nullable<TextCapsStyle> capsPreset = XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps");
+                        if (capsPreset.HasValue)
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Caps = capsPreset.Value;
+
+                        string? kerningStr = fontNode.Attribute("kerning")?.Value;
+                        if (!string.IsNullOrEmpty(kerningStr))
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Kerning = Dimension.Parse(kerningStr);
+
+                        string? spacingStr = fontNode.Attribute("spacing")?.Value;
+                        if (!string.IsNullOrEmpty(spacingStr))
+                            chartDefinition.CategoryAxis.TickLabelTextFormat.FontDefinition.Spacing = Dimension.Parse(spacingStr);
+                    }
+
                 }
 
                 XElement? textFormatNode = categoryAxisNode.Element("text-format");
@@ -659,7 +1088,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             GradientDefinition gradientDef = new GradientDefinition();
 
                             if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
-                                gradientDef.Angle = angleValue;
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
 
                             XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
                             gradientDef.Scaled = scaledValue;
@@ -668,10 +1097,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             {
                                 var gradientStop = new GradientStopDefinition();
 
-                                if (XElementAttributeGetter.AsDouble(stopNode, "position", out double positionValue))
-                                    gradientStop.Position = (int)Math.Round(positionValue * 1000);
-                                else
-                                    gradientStop.Position = 0; // default
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
 
                                 ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
                                 if (color != null)
@@ -740,6 +1167,49 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             chartDefinition.ValueAxis.AxisLineFormat.LineDefinition.JoinMiterLimit = clampedValue;
                         }
 
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.ValueAxis.AxisLineFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                        XElement? solidNode = lineNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.ValueAxis.AxisLineFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.ValueAxis.AxisLineFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientNode = lineNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.ValueAxis.AxisLineFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
+
                     }
 
                     XElement? effectsNode = formatNode.Element("effects");
@@ -769,7 +1239,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
 
                             if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
 
                             ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
@@ -781,10 +1251,104 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         {
                             chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
 
-                            ColorA shadowColor = ColorA.Parse(glowNode, "color", "transparency");
-                            if (shadowColor != null)
-                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Color = shadowColor;
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
 
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clamp(startTransparencyValue, 0, 100);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clamp(endTransparencyValue, 0, 100);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clamp(startPositionValue, 0, 100);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clamp(endPositionValue, 0, 100);
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.ValueAxis.AxisLineFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
                         }
                     }
                 }
@@ -821,6 +1385,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     string? marginBottom = textFormatNode.Attribute("margin-bottom")?.Value;
                     if (!string.IsNullOrEmpty(marginBottom))
                         chartDefinition.ValueAxis.TickLabelTextFormat.MarginBottom = Dimension.Parse(marginBottom);
+
+                    if (XElementAttributeGetter.AsInt32(textFormatNode, "rotate", out int rotateValue))
+                        chartDefinition.ValueAxis.TickLabelTextFormat.Rotate = clamp(rotateValue, -90, 90);
 
                     XElement? fillNode = textFormatNode.Element("fill");
                     if (fillNode != null)
@@ -861,7 +1428,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             GradientDefinition gradientDef = new GradientDefinition();
 
                             if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
-                                gradientDef.Angle = angleValue;
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
 
                             XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
                             gradientDef.Scaled = scaledValue;
@@ -870,8 +1437,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             {
                                 var gradientStop = new GradientStopDefinition();
 
-                                if (XElementAttributeGetter.AsDouble(stopNode, "position", out double positionValue))
-                                    gradientStop.Position = (int)Math.Round(positionValue * 1000);
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
                                 else
                                     gradientStop.Position = 0; // default
 
@@ -968,7 +1535,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 effectsDef.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
 
                             if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                effectsDef.ShadowDefinition.Angle = angle;
+                                effectsDef.ShadowDefinition.Angle = clamp(angle, 0, 360);
 
                             ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
@@ -1024,6 +1591,46 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 effectsDef.ReflectionDefinition.EndPosition = clamp(endPosition, 0, 100);
                             }
                         }
+                    }
+
+                    XElement? fontNode = textFormatNode.Element("font");
+                    if (fontNode != null)
+                    {
+                        chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition = new FontDefinition();
+
+                        string? family = XElementAttributeGetter.AsString(fontNode, "family");
+                        if (family != null)
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Family = family;
+
+                        string? sizeStr = XElementAttributeGetter.AsString(fontNode, "size");
+                        if (!string.IsNullOrEmpty(sizeStr))
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Size = Dimension.Parse(sizeStr);
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool bold))
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Bold = bold;
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool italic))
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Italic = italic;
+
+                        Nullable<TextUnderlineStyle> underlinePreset = XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline");
+                        if (underlinePreset.HasValue)
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Underline = underlinePreset.Value;
+
+                        Nullable<TextStrikeStyle> strikePreset = XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike");
+                        if (strikePreset.HasValue)
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Strike = strikePreset.Value;
+
+                        Nullable<TextCapsStyle> capsPreset = XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps");
+                        if (capsPreset.HasValue)
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Caps = capsPreset.Value;
+
+                        string? kerningStr = fontNode.Attribute("kerning")?.Value;
+                        if (!string.IsNullOrEmpty(kerningStr))
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Kerning = Dimension.Parse(kerningStr);
+
+                        string? spacingStr = fontNode.Attribute("spacing")?.Value;
+                        if (!string.IsNullOrEmpty(spacingStr))
+                            chartDefinition.ValueAxis.TickLabelTextFormat.FontDefinition.Spacing = Dimension.Parse(spacingStr);
                     }
                 }
 
@@ -1081,6 +1688,35 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             if (backgroundColor != null)
                                 chartDefinition.Legend.BoxFormat.FillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
                         }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.Legend.BoxFormat.FillDefinition.GradientFillDefinition = gradientDef;
+                        }
                     }
 
                     XElement? lineNode = formatNode.Element("line");
@@ -1091,6 +1727,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         XElementAttributeGetter.AsBool(lineNode, "visible", out bool visibleValue);
                         chartDefinition.Legend.BoxFormat.LineDefinition.Visible = visibleValue;
 
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.Legend.BoxFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
                         Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
                         if (dashPreset.HasValue)
                             chartDefinition.Legend.BoxFormat.LineDefinition.DashPreset = dashPreset.Value;
@@ -1098,6 +1738,83 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
                         if (compoundLine.HasValue)
                             chartDefinition.Legend.BoxFormat.LineDefinition.CompoundPreset = compoundLine.Value;
+
+                        Nullable<LineCapPreset> lineCap = XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap");
+                        if (lineCap.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.CapPreset = lineCap.Value;
+
+                        Nullable<LineJoinPreset> join = XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join");
+                        if (join.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.JoinPreset = join.Value;
+
+                        if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int joinMiterLimitValue))
+                        {
+                            int clampedValue = clamp(joinMiterLimitValue, 1, 500);
+                            chartDefinition.Legend.BoxFormat.LineDefinition.JoinMiterLimit = clampedValue;
+                        }
+
+                        Nullable<LineEndPreset> beginArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "begin-arrow-type");
+                        if (beginArrowType.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.Begin_Arrow_Type = beginArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> beginArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "begin-arrow-width");
+                        if (beginArrowWidth.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.Begin_Arrow_Width = beginArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> beginArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "begin-arrow-length");
+                        if (beginArrowLength.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.Begin_Arrow_Length = beginArrowLength.Value;
+
+                        Nullable<LineEndPreset> endArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "end-arrow-type");
+                        if (endArrowType.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.End_Arrow_Type = endArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> endArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "end-arrow-width");
+                        if (endArrowWidth.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.End_Arrow_Width = endArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> endArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "end-arrow-length");
+                        if (endArrowLength.HasValue)
+                            chartDefinition.Legend.BoxFormat.LineDefinition.End_Arrow_Length = endArrowLength.Value;
+
+                        XElement? solidNode = lineNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.Legend.BoxFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.Legend.BoxFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientNode = lineNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.Legend.BoxFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
                     }
 
                     XElement? effectsNode = formatNode.Element("effects");
@@ -1114,6 +1831,21 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             if (shadowType.HasValue)
                                 chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.Type = shadowType.Value;
 
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
+
                             ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
                                 chartDefinition.Legend.BoxFormat.EffectsDefinition.ShadowDefinition.Color = shadowColor;
@@ -1124,10 +1856,398 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         {
                             chartDefinition.Legend.BoxFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
 
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+
                             ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
                             if (glowColor != null)
                                 chartDefinition.Legend.BoxFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
                         }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.Legend.BoxFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                int clampedValue = clamp(startTransparencyValue, 0, 100);
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                int clampedValue = clamp(endTransparencyValue, 0, 100);
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                int clampedValue = clamp(startPositionValue, 0, 100);
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                int clampedValue = clamp(endPositionValue, 0, 100);
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clampedValue;
+                            }
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.Legend.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
+                        }
+                    }
+                }
+
+                XElement? textFormatNode = legendNode.Element("text-format");
+                if (textFormatNode != null)
+                {
+                    chartDefinition.Legend.LegendEntryTextFormat = new TextFormatDefinition();
+
+                    Nullable<HorizontalAlign> horizontalAlign = XElementAttributeGetter.AsEnum<HorizontalAlign>(textFormatNode, "align-horizontal");
+                    if (horizontalAlign.HasValue)
+                        chartDefinition.Legend.LegendEntryTextFormat.AlignHorizontal = horizontalAlign.Value;
+
+                    Nullable<VerticalAlign> verticalAlign = XElementAttributeGetter.AsEnum<VerticalAlign>(textFormatNode, "align-vertical");
+                    if (verticalAlign.HasValue)
+                        chartDefinition.Legend.LegendEntryTextFormat.AlignVertical = verticalAlign.Value;
+
+                    Nullable<TextWrapPreset> wrapPreset = XElementAttributeGetter.AsEnum<TextWrapPreset>(textFormatNode, "wrap");
+                    if (wrapPreset.HasValue)
+                        chartDefinition.Legend.LegendEntryTextFormat.Wrap = wrapPreset.Value;
+
+                    string? marginLeft = textFormatNode.Attribute("margin-left")?.Value;
+                    if (!string.IsNullOrEmpty(marginLeft))
+                        chartDefinition.Legend.LegendEntryTextFormat.MarginLeft = Dimension.Parse(marginLeft);
+
+                    string? marginRight = textFormatNode.Attribute("margin-right")?.Value;
+                    if (!string.IsNullOrEmpty(marginRight))
+                        chartDefinition.Legend.LegendEntryTextFormat.MarginRight = Dimension.Parse(marginRight);
+
+                    string? marginTop = textFormatNode.Attribute("margin-top")?.Value;
+                    if (!string.IsNullOrEmpty(marginTop))
+                        chartDefinition.Legend.LegendEntryTextFormat.MarginTop = Dimension.Parse(marginTop);
+
+                    string? marginBottom = textFormatNode.Attribute("margin-bottom")?.Value;
+                    if (!string.IsNullOrEmpty(marginBottom))
+                        chartDefinition.Legend.LegendEntryTextFormat.MarginBottom = Dimension.Parse(marginBottom);
+
+                    if (XElementAttributeGetter.AsInt32(textFormatNode, "rotate", out int rotateValue))
+                        chartDefinition.Legend.LegendEntryTextFormat.Rotate = clamp(rotateValue, -90, 90);
+
+                    XElement? fillNode = textFormatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                var gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+                                else
+                                    gradientStop.Position = 0; // default
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.Legend.LegendEntryTextFormat.TextFillDefinition.GradientFillDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? lineNode = textFormatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.Legend.LegendEntryTextFormat.TextOutlineDefinition = new LineDefinition();
+                        LineDefinition lineDef = chartDefinition.Legend.LegendEntryTextFormat.TextOutlineDefinition;
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visibleValue);
+                        lineDef.Visible = visibleValue;
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            lineDef.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            lineDef.CompoundPreset = compoundLine.Value;
+
+                        Nullable<LineCapPreset> lineCap = XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap");
+                        if (lineCap.HasValue)
+                            lineDef.CapPreset = lineCap.Value;
+
+                        Nullable<LineJoinPreset> join = XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join");
+                        if (join.HasValue)
+                            lineDef.JoinPreset = join.Value;
+
+                        if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int joinMiterLimitValue))
+                            lineDef.JoinMiterLimit = clamp(joinMiterLimitValue, 1, 500);
+
+                        Nullable<LineEndPreset> beginArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "begin-arrow-type");
+                        if (beginArrowType.HasValue)
+                            lineDef.Begin_Arrow_Type = beginArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> beginArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "begin-arrow-width");
+                        if (beginArrowWidth.HasValue)
+                            lineDef.Begin_Arrow_Width = beginArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> beginArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "begin-arrow-length");
+                        if (beginArrowLength.HasValue)
+                            lineDef.Begin_Arrow_Length = beginArrowLength.Value;
+
+                        Nullable<LineEndPreset> endArrowType = XElementAttributeGetter.AsEnum<LineEndPreset>(lineNode, "end-arrow-type");
+                        if (endArrowType.HasValue)
+                            lineDef.End_Arrow_Type = endArrowType.Value;
+
+                        Nullable<LineEndWidthPreset> endArrowWidth = XElementAttributeGetter.AsEnum<LineEndWidthPreset>(lineNode, "end-arrow-width");
+                        if (endArrowWidth.HasValue)
+                            lineDef.End_Arrow_Width = endArrowWidth.Value;
+
+                        Nullable<LineEndLengthPreset> endArrowLength = XElementAttributeGetter.AsEnum<LineEndLengthPreset>(lineNode, "end-arrow-length");
+                        if (endArrowLength.HasValue)
+                            lineDef.End_Arrow_Length = endArrowLength.Value;
+                    }
+
+                    XElement? effectsNode = textFormatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.Legend.LegendEntryTextFormat.EffectsDefinition = new EffectsDefinition();
+                        EffectsDefinition effectsDef = chartDefinition.Legend.LegendEntryTextFormat.EffectsDefinition;
+
+                        XElement? shadowNode = effectsNode.Element("shadow");
+                        if (shadowNode != null)
+                        {
+                            effectsDef.ShadowDefinition = new ShadowDefinition();
+
+                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
+                            if (shadowType.HasValue)
+                                effectsDef.ShadowDefinition.Type = shadowType.Value;
+
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                effectsDef.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                effectsDef.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                effectsDef.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                effectsDef.ShadowDefinition.Angle = clamp(angle, 0, 360);
+
+                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
+                            if (shadowColor != null)
+                                effectsDef.ShadowDefinition.Color = shadowColor;
+                        }
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            effectsDef.GlowDefinition = new GlowDefinition();
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                effectsDef.GlowDefinition.Color = glowColor;
+
+                            string? size = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(size))
+                                effectsDef.GlowDefinition.Size = Dimension.Parse(size);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            effectsDef.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                effectsDef.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                effectsDef.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (reflectionNode.Attribute("start-transparency") != null)
+                            {
+                                int startTransparency = int.Parse(reflectionNode.Attribute("start-transparency")!.Value);
+                                effectsDef.ReflectionDefinition.StartTransparency = clamp(startTransparency, 0, 100);
+                            }
+
+                            if (reflectionNode.Attribute("end-transparency") != null)
+                            {
+                                int endTransparency = int.Parse(reflectionNode.Attribute("end-transparency")!.Value);
+                                effectsDef.ReflectionDefinition.EndTransparency = clamp(endTransparency, 0, 100);
+                            }
+
+                            if (reflectionNode.Attribute("start-position") != null)
+                            {
+                                int startPosition = int.Parse(reflectionNode.Attribute("start-position")!.Value);
+                                effectsDef.ReflectionDefinition.StartPosition = clamp(startPosition, 0, 100);
+                            }
+
+                            if (reflectionNode.Attribute("end-position") != null)
+                            {
+                                int endPosition = int.Parse(reflectionNode.Attribute("end-position")!.Value);
+                                effectsDef.ReflectionDefinition.EndPosition = clamp(endPosition, 0, 100);
+                            }
+                        }
+                    }
+
+                    XElement? fontNode = textFormatNode.Element("font");
+                    if (fontNode != null)
+                    {
+                        chartDefinition.Legend.LegendEntryTextFormat.FontDefinition = new FontDefinition();
+
+                        string? family = XElementAttributeGetter.AsString(fontNode, "family");
+                        if (family != null)
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Family = family;
+
+                        string? sizeStr = XElementAttributeGetter.AsString(fontNode, "size");
+                        if (!string.IsNullOrEmpty(sizeStr))
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Size = Dimension.Parse(sizeStr);
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool bold))
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Bold = bold;
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool italic))
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Italic = italic;
+
+                        Nullable<TextUnderlineStyle> underline = XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline");
+                        if (underline.HasValue)
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Underline = underline.Value;
+
+                        Nullable<TextStrikeStyle> strike = XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike");
+                        if (strike.HasValue)
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Strike = strike.Value;
+
+                        Nullable<TextCapsStyle> caps = XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps");
+                        if (caps.HasValue)
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Caps = caps.Value;
+
+                        string? kerningStr = XElementAttributeGetter.AsString(fontNode, "kerning");
+                        if (!string.IsNullOrEmpty(kerningStr))
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Kerning = Dimension.Parse(kerningStr);
+
+                        string? spacingStr = XElementAttributeGetter.AsString(fontNode, "spacing");
+                        if (!string.IsNullOrEmpty(spacingStr))
+                            chartDefinition.Legend.LegendEntryTextFormat.FontDefinition.Spacing = Dimension.Parse(spacingStr);
                     }
                 }
 
@@ -1430,7 +2550,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
 
                             if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
+                                chartDefinition.Grid.HorizontalFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
 
                             string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
                             if (!string.IsNullOrEmpty(blurStr))
@@ -1481,7 +2601,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                         string? widthStr = lineNode.Attribute("width")?.Value;
                         if (!string.IsNullOrEmpty(widthStr))
-                            chartDefinition.Grid.HorizontalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+                            chartDefinition.Grid.VerticalFormat.LineDefinition.Width = Dimension.Parse(widthStr);
 
                     }
 
@@ -1531,6 +2651,146 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 if (XElementAttributeGetter.AsBool(valueLabelsNode, "show-bubble-size", out bool showBubbleSize))
                     chartDefinition.ValueLabels.ShowBubbleSize = showBubbleSize;
+
+                XElement? textFormatNode = valueLabelsNode.Element("text-format");
+                if (textFormatNode != null)
+                {
+                    chartDefinition.ValueLabels.TextFormat = new TextFormatDefinition();
+
+                    Nullable<HorizontalAlign> horizontalAlign = XElementAttributeGetter.AsEnum<HorizontalAlign>(textFormatNode, "align-horizontal");
+                    if (horizontalAlign.HasValue)
+                        chartDefinition.ValueLabels.TextFormat.AlignHorizontal = horizontalAlign.Value;
+
+                    Nullable<VerticalAlign> verticalAlign = XElementAttributeGetter.AsEnum<VerticalAlign>(textFormatNode, "align-vertical");
+                    if (verticalAlign.HasValue)
+                        chartDefinition.ValueLabels.TextFormat.AlignVertical = verticalAlign.Value;
+
+                    Nullable<TextWrapPreset> wrapPreset = XElementAttributeGetter.AsEnum<TextWrapPreset>(textFormatNode, "wrap");
+                    if (wrapPreset.HasValue)
+                        chartDefinition.ValueLabels.TextFormat.Wrap = wrapPreset.Value;
+
+                    string? marginLeft = textFormatNode.Attribute("margin-left")?.Value;
+                    if (!string.IsNullOrEmpty(marginLeft))
+                        chartDefinition.ValueLabels.TextFormat.MarginLeft = Dimension.Parse(marginLeft);
+
+                    string? marginRight = textFormatNode.Attribute("margin-right")?.Value;
+                    if (!string.IsNullOrEmpty(marginRight))
+                        chartDefinition.ValueLabels.TextFormat.MarginRight = Dimension.Parse(marginRight);
+
+                    string? marginTop = textFormatNode.Attribute("margin-top")?.Value;
+                    if (!string.IsNullOrEmpty(marginTop))
+                        chartDefinition.ValueLabels.TextFormat.MarginTop = Dimension.Parse(marginTop);
+
+                    string? marginBottom = textFormatNode.Attribute("margin-bottom")?.Value;
+                    if (!string.IsNullOrEmpty(marginBottom))
+                        chartDefinition.ValueLabels.TextFormat.MarginBottom = Dimension.Parse(marginBottom);
+
+                    if (XElementAttributeGetter.AsInt32(textFormatNode, "rotate", out int rotateValue))
+                        chartDefinition.ValueLabels.TextFormat.Rotate = clamp(rotateValue, -90, 90);
+
+                    XElement? fillNode = textFormatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.ValueLabels.TextFormat.TextFillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.ValueLabels.TextFormat.TextFillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.ValueLabels.TextFormat.TextFillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.ValueLabels.TextFormat.TextFillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.ValueLabels.TextFormat.TextFillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.ValueLabels.TextFormat.TextFillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.ValueLabels.TextFormat.TextFillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                var gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.ValueLabels.TextFormat.TextFillDefinition.GradientFillDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? fontNode = textFormatNode.Element("font");
+                    if (fontNode != null)
+                    {
+                        chartDefinition.ValueLabels.TextFormat.FontDefinition = new FontDefinition();
+
+                        string? family = XElementAttributeGetter.AsString(fontNode, "family");
+                        if (family != null)
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Family = family;
+
+                        string? sizeStr = XElementAttributeGetter.AsString(fontNode, "size");
+                        if (!string.IsNullOrEmpty(sizeStr))
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Size = Dimension.Parse(sizeStr);
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool bold))
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Bold = bold;
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool italic))
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Italic = italic;
+
+                        Nullable<TextUnderlineStyle> underline = XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline");
+                        if (underline.HasValue)
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Underline = underline.Value;
+
+                        Nullable<TextStrikeStyle> strike = XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike");
+                        if (strike.HasValue)
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Strike = strike.Value;
+
+                        Nullable<TextCapsStyle> caps = XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps");
+                        if (caps.HasValue)
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Caps = caps.Value;
+
+                        string? kerningStr = XElementAttributeGetter.AsString(fontNode, "kerning");
+                        if (!string.IsNullOrEmpty(kerningStr))
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Kerning = Dimension.Parse(kerningStr);
+
+                        string? spacingStr = XElementAttributeGetter.AsString(fontNode, "spacing");
+                        if (!string.IsNullOrEmpty(spacingStr))
+                            chartDefinition.ValueLabels.TextFormat.FontDefinition.Spacing = Dimension.Parse(spacingStr);
+                    }
+                }
 
             }
 
@@ -1631,7 +2891,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             GradientDefinition gradientDef = new GradientDefinition();
 
                             if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
-                                gradientDef.Angle = angleValue;
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
 
                             XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
                             gradientDef.Scaled = scaledValue;
@@ -1711,6 +2971,49 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             int clampedValue = clamp(joinMiterLimitValue, 1, 500);
                             chartDefinition.PlotAreaFormat.LineDefinition.JoinMiterLimit = clampedValue;
                         }
+
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.PlotAreaFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                        XElement? solidLineNode = lineNode.Element("solid");
+                        if (solidLineNode != null)
+                        {
+                            chartDefinition.PlotAreaFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidLineNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.PlotAreaFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientLineNode = lineNode.Element("gradient");
+                        if (gradientLineNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientLineNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientLineNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientLineNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.PlotAreaFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
                     }
 
                     // -------- Effects --------
@@ -1741,7 +3044,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 chartDefinition.PlotAreaFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
 
                             if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
-                                chartDefinition.PlotAreaFormat.EffectsDefinition.ShadowDefinition.Angle = angle;
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
 
                             ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
                             if (shadowColor != null)
@@ -1753,14 +3056,920 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         {
                             chartDefinition.PlotAreaFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
 
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+
                             ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
                             if (glowColor != null)
                                 chartDefinition.PlotAreaFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+                        }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.PlotAreaFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                int clampedValue = clamp(startTransparencyValue, 0, 100);
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                int clampedValue = clamp(endTransparencyValue, 0, 100);
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                int clampedValue = clamp(startPositionValue, 0, 100);
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                int clampedValue = clamp(endPositionValue, 0, 100);
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clampedValue;
+                            }
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.PlotAreaFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
                         }
                     }
                 }
             }
 
+            //data-table
+
+            XElement? dataTableNode = chartNode.Element("data-table");
+            if (dataTableNode != null)
+            {
+                chartDefinition.DataTable = new DataTableDefinition();
+
+                if (XElementAttributeGetter.AsBool(dataTableNode, "show", out bool show))
+                    chartDefinition.DataTable.Show = show;
+
+                if (XElementAttributeGetter.AsBool(dataTableNode, "show-horizontal-border", out bool showHorizontalBorder))
+                    chartDefinition.DataTable.ShowHorizontalBorder = showHorizontalBorder;
+
+                if (XElementAttributeGetter.AsBool(dataTableNode, "show-vertical-border", out bool showVerticalBorder))
+                    chartDefinition.DataTable.ShowVerticalBorder = showVerticalBorder;
+
+                if (XElementAttributeGetter.AsBool(dataTableNode, "show-outline-border", out bool showOutlineBorder))
+                    chartDefinition.DataTable.ShowOutlineBorder = showOutlineBorder;
+
+                if (XElementAttributeGetter.AsBool(dataTableNode, "show-legend-key", out bool showLegendKey))
+                    chartDefinition.DataTable.ShowLegendKey = showLegendKey;
+
+                XElement? formatNode = dataTableNode.Element("format");
+                if (formatNode != null)
+                {
+                    chartDefinition.DataTable.BoxFormat = new FormatDefinition();
+
+                    XElement? fillNode = formatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.DataTable.BoxFormat.FillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.FillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.DataTable.BoxFormat.FillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.FillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.DataTable.BoxFormat.FillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.DataTable.BoxFormat.FillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.DataTable.BoxFormat.FillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.DataTable.BoxFormat.FillDefinition.GradientFillDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? lineNode = formatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.DataTable.BoxFormat.LineDefinition = new LineDefinition();
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
+                        chartDefinition.DataTable.BoxFormat.LineDefinition.Visible = visible;
+
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.CompoundPreset = compoundLine.Value;
+
+                        Nullable<LineCapPreset> lineCap = XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap");
+                        if (lineCap.HasValue)
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.CapPreset = lineCap.Value;
+
+                        Nullable<LineJoinPreset> join = XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join");
+                        if (join.HasValue)
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.JoinPreset = join.Value;
+
+                        if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int joinMiterLimitValue))
+                        {
+                            int clampedValue = clamp(joinMiterLimitValue, 1, 500);
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.JoinMiterLimit = clampedValue;
+                        }
+
+                        XElement? solidLineNode = lineNode.Element("solid");
+                        if (solidLineNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidLineNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.DataTable.BoxFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientLineNode = lineNode.Element("gradient");
+                        if (gradientLineNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientLineNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientLineNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientLineNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.DataTable.BoxFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? effectsNode = formatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.DataTable.BoxFormat.EffectsDefinition = new EffectsDefinition();
+
+                        XElement? shadowNode = effectsNode.Element("shadow");
+                        if (shadowNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition = new ShadowDefinition();
+
+                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
+                            if (shadowType.HasValue)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.Type = shadowType.Value;
+
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
+
+                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
+                            if (shadowColor != null)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ShadowDefinition.Color = shadowColor;
+                        }
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
+
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+                        }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                int clampedValue = clamp(startTransparencyValue, 0, 100);
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                int clampedValue = clamp(endTransparencyValue, 0, 100);
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                int clampedValue = clamp(startPositionValue, 0, 100);
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                int clampedValue = clamp(endPositionValue, 0, 100);
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clampedValue;
+                            }
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.DataTable.BoxFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
+                        }
+                    }
+                }
+
+                XElement? textFormatNode = dataTableNode.Element("text-format");
+                if (textFormatNode != null)
+                {
+                    chartDefinition.DataTable.TextFormat = new TextFormatDefinition();
+
+                    Nullable<HorizontalAlign> horizontalAlign = XElementAttributeGetter.AsEnum<HorizontalAlign>(textFormatNode, "align-horizontal");
+                    if (horizontalAlign.HasValue)
+                        chartDefinition.DataTable.TextFormat.AlignHorizontal = horizontalAlign.Value;
+
+                    Nullable<VerticalAlign> verticalAlign = XElementAttributeGetter.AsEnum<VerticalAlign>(textFormatNode, "align-vertical");
+                    if (verticalAlign.HasValue)
+                        chartDefinition.DataTable.TextFormat.AlignVertical = verticalAlign.Value;
+
+                    Nullable<TextWrapPreset> wrapPreset = XElementAttributeGetter.AsEnum<TextWrapPreset>(textFormatNode, "wrap");
+                    if (wrapPreset.HasValue)
+                        chartDefinition.DataTable.TextFormat.Wrap = wrapPreset.Value;
+
+                    string? marginLeft = textFormatNode.Attribute("margin-left")?.Value;
+                    if (!string.IsNullOrEmpty(marginLeft))
+                        chartDefinition.DataTable.TextFormat.MarginLeft = Dimension.Parse(marginLeft);
+
+                    string? marginRight = textFormatNode.Attribute("margin-right")?.Value;
+                    if (!string.IsNullOrEmpty(marginRight))
+                        chartDefinition.DataTable.TextFormat.MarginRight = Dimension.Parse(marginRight);
+
+                    string? marginTop = textFormatNode.Attribute("margin-top")?.Value;
+                    if (!string.IsNullOrEmpty(marginTop))
+                        chartDefinition.DataTable.TextFormat.MarginTop = Dimension.Parse(marginTop);
+
+                    string? marginBottom = textFormatNode.Attribute("margin-bottom")?.Value;
+                    if (!string.IsNullOrEmpty(marginBottom))
+                        chartDefinition.DataTable.TextFormat.MarginBottom = Dimension.Parse(marginBottom);
+
+                    if (XElementAttributeGetter.AsInt32(textFormatNode, "rotate", out int rotateValue))
+                        chartDefinition.DataTable.TextFormat.Rotate = clamp(rotateValue, -90, 90);
+
+                    XElement? fillNode = textFormatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.DataTable.TextFormat.TextFillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.DataTable.TextFormat.TextFillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.DataTable.TextFormat.TextFillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.DataTable.TextFormat.TextFillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.DataTable.TextFormat.TextFillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.DataTable.TextFormat.TextFillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.DataTable.TextFormat.TextFillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                var gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.DataTable.TextFormat.TextFillDefinition.GradientFillDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? fontNode = textFormatNode.Element("font");
+                    if (fontNode != null)
+                    {
+                        chartDefinition.DataTable.TextFormat.FontDefinition = new FontDefinition();
+
+                        string? family = XElementAttributeGetter.AsString(fontNode, "family");
+                        if (family != null)
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Family = family;
+
+                        string? sizeStr = XElementAttributeGetter.AsString(fontNode, "size");
+                        if (!string.IsNullOrEmpty(sizeStr))
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Size = Dimension.Parse(sizeStr);
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "bold", out bool bold))
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Bold = bold;
+
+                        if (XElementAttributeGetter.AsBool(fontNode, "italic", out bool italic))
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Italic = italic;
+
+                        Nullable<TextUnderlineStyle> underline = XElementAttributeGetter.AsEnum<TextUnderlineStyle>(fontNode, "underline");
+                        if (underline.HasValue)
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Underline = underline.Value;
+
+                        Nullable<TextStrikeStyle> strike = XElementAttributeGetter.AsEnum<TextStrikeStyle>(fontNode, "strike");
+                        if (strike.HasValue)
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Strike = strike.Value;
+
+                        Nullable<TextCapsStyle> caps = XElementAttributeGetter.AsEnum<TextCapsStyle>(fontNode, "caps");
+                        if (caps.HasValue)
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Caps = caps.Value;
+
+                        string? kerningStr = XElementAttributeGetter.AsString(fontNode, "kerning");
+                        if (!string.IsNullOrEmpty(kerningStr))
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Kerning = Dimension.Parse(kerningStr);
+
+                        string? spacingStr = XElementAttributeGetter.AsString(fontNode, "spacing");
+                        if (!string.IsNullOrEmpty(spacingStr))
+                            chartDefinition.DataTable.TextFormat.FontDefinition.Spacing = Dimension.Parse(spacingStr);
+                    }
+                }
+            }
+
+            //view-3d
+
+            XElement? view3dNode = chartNode.Element("view-3d");
+            if (view3dNode != null)
+            {
+                chartDefinition.ThreeDView = new ThreeDViewDefinition();
+
+                Nullable<ThreeDShape> shape = XElementAttributeGetter.AsEnum<ThreeDShape>(view3dNode, "shape");
+                if (shape.HasValue)
+                    chartDefinition.ThreeDView.Shape = shape.Value;
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "rotation-x", out int rotationX))
+                    chartDefinition.ThreeDView.RotationX = clamp(rotationX, -90, 90);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "rotation-y", out int rotationY))
+                    chartDefinition.ThreeDView.RotationY = clamp(rotationY, 0, 360);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "perspective", out int perspective))
+                    chartDefinition.ThreeDView.Perspective = clamp(perspective, 0, 240);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "depth-percent", out int depthPercent))
+                    chartDefinition.ThreeDView.DepthPercent = clamp(depthPercent, 20, 2000);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "height-percent", out int heightPercent))
+                    chartDefinition.ThreeDView.HeightPercent = clamp(heightPercent, 5, 500);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "gap-width", out int gapWidth))
+                    chartDefinition.ThreeDView.GapWidth = clamp(gapWidth, 0, 500);
+
+                if (XElementAttributeGetter.AsInt32(view3dNode, "gap-depth", out int gapDepth))
+                    chartDefinition.ThreeDView.GapDepth = clamp(gapDepth, 0, 500);
+
+                if (XElementAttributeGetter.AsBool(view3dNode, "right-angle-axes", out bool rightAngleAxes))
+                    chartDefinition.ThreeDView.RightAngleAxes = rightAngleAxes;
+
+                if (XElementAttributeGetter.AsBool(view3dNode, "show-floor", out bool showFloor))
+                    chartDefinition.ThreeDView.ShowFloor = showFloor;
+
+                if (XElementAttributeGetter.AsBool(view3dNode, "show-back-wall", out bool showBackWall))
+                    chartDefinition.ThreeDView.ShowBackWall = showBackWall;
+
+                if (XElementAttributeGetter.AsBool(view3dNode, "show-side-wall", out bool showSideWall))
+                    chartDefinition.ThreeDView.ShowSideWall = showSideWall;
+
+                // Default format
+                XElement? formatNode = view3dNode.Element("format");
+                if (formatNode != null)
+                {
+                    chartDefinition.ThreeDView.DefaultFormat = new FormatDefinition();
+
+                    XElement? fillNode = formatNode.Element("fill");
+                    if (fillNode != null)
+                    {
+                        chartDefinition.ThreeDView.DefaultFormat.FillDefinition = new FillDefinition();
+
+                        XElement? solidNode = fillNode.Element("solid");
+                        if (solidNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.FillDefinition.SolidFillDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.ThreeDView.DefaultFormat.FillDefinition.SolidFillDefinition.Color = color;
+                        }
+
+                        XElement? patternNode = fillNode.Element("pattern");
+                        if (patternNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.FillDefinition.PatternFillDefinition = new PatternDefinition();
+
+                            Nullable<PatternFillPreset> patternType = XElementAttributeGetter.AsEnum<PatternFillPreset>(patternNode, "preset");
+                            if (patternType.HasValue)
+                                chartDefinition.ThreeDView.DefaultFormat.FillDefinition.PatternFillDefinition.Preset = patternType.Value;
+
+                            ColorA foregroundColor = ColorA.Parse(patternNode, "foreground-color", "foreground-transparency");
+                            if (foregroundColor != null)
+                                chartDefinition.ThreeDView.DefaultFormat.FillDefinition.PatternFillDefinition.ForegroundColor = foregroundColor;
+
+                            ColorA backgroundColor = ColorA.Parse(patternNode, "background-color", "background-transparency");
+                            if (backgroundColor != null)
+                                chartDefinition.ThreeDView.DefaultFormat.FillDefinition.PatternFillDefinition.BackgroundColor = backgroundColor;
+                        }
+
+                        XElement? gradientNode = fillNode.Element("gradient");
+                        if (gradientNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.ThreeDView.DefaultFormat.FillDefinition.GradientFillDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? lineNode = formatNode.Element("line");
+                    if (lineNode != null)
+                    {
+                        chartDefinition.ThreeDView.DefaultFormat.LineDefinition = new LineDefinition();
+
+                        XElementAttributeGetter.AsBool(lineNode, "visible", out bool visible);
+                        chartDefinition.ThreeDView.DefaultFormat.LineDefinition.Visible = visible;
+
+                        string? widthStr = lineNode.Attribute("width")?.Value;
+                        if (!string.IsNullOrEmpty(widthStr))
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.Width = Dimension.Parse(widthStr);
+
+                        Nullable<DashPreset> dashPreset = XElementAttributeGetter.AsEnum<DashPreset>(lineNode, "dash");
+                        if (dashPreset.HasValue)
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.DashPreset = dashPreset.Value;
+
+                        Nullable<CompoundLinePreset> compoundLine = XElementAttributeGetter.AsEnum<CompoundLinePreset>(lineNode, "compound");
+                        if (compoundLine.HasValue)
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.CompoundPreset = compoundLine.Value;
+
+                        Nullable<LineCapPreset> lineCap = XElementAttributeGetter.AsEnum<LineCapPreset>(lineNode, "cap");
+                        if (lineCap.HasValue)
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.CapPreset = lineCap.Value;
+
+                        Nullable<LineJoinPreset> join = XElementAttributeGetter.AsEnum<LineJoinPreset>(lineNode, "join");
+                        if (join.HasValue)
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.JoinPreset = join.Value;
+
+                        if (XElementAttributeGetter.AsInt32(lineNode, "join-miter-limit", out int joinMiterLimitValue))
+                        {
+                            int clampedValue = clamp(joinMiterLimitValue, 1, 500);
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.JoinMiterLimit = clampedValue;
+                        }
+
+                        XElement? solidLineNode = lineNode.Element("solid");
+                        if (solidLineNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.SolidLineDefinition = new SolidDefinition();
+
+                            ColorA color = ColorA.Parse(solidLineNode, "color", "transparency");
+                            if (color != null)
+                                chartDefinition.ThreeDView.DefaultFormat.LineDefinition.SolidLineDefinition.Color = color;
+                        }
+
+                        XElement? gradientLineNode = lineNode.Element("gradient");
+                        if (gradientLineNode != null)
+                        {
+                            GradientDefinition gradientDef = new GradientDefinition();
+
+                            if (XElementAttributeGetter.AsInt32(gradientLineNode, "angle", out int angleValue))
+                                gradientDef.Angle = clamp(angleValue, 0, 360);
+
+                            XElementAttributeGetter.AsBool(gradientLineNode, "scaled", out bool scaledValue);
+                            gradientDef.Scaled = scaledValue;
+
+                            foreach (XElement stopNode in gradientLineNode.Elements("stop"))
+                            {
+                                GradientStopDefinition gradientStop = new GradientStopDefinition();
+
+                                if (XElementAttributeGetter.AsInt32(stopNode, "position", out int positionValue))
+                                    gradientStop.Position = clamp(positionValue, 0, 100) * 1000;
+
+                                ColorA? color = ColorA.Parse(stopNode, "color", "transparency");
+                                if (color != null)
+                                    gradientStop.Color = color;
+
+                                if (gradientStop.Color != null)
+                                    gradientDef.Stops.Add(gradientStop);
+                            }
+
+                            chartDefinition.ThreeDView.DefaultFormat.LineDefinition.GradientLineDefinition = gradientDef;
+                        }
+                    }
+
+                    XElement? effectsNode = formatNode.Element("effects");
+                    if (effectsNode != null)
+                    {
+                        chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition = new EffectsDefinition();
+
+                        XElement? shadowNode = effectsNode.Element("shadow");
+                        if (shadowNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition = new ShadowDefinition();
+
+                            Nullable<ShadowType> shadowType = XElementAttributeGetter.AsEnum<ShadowType>(shadowNode, "type");
+                            if (shadowType.HasValue)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.Type = shadowType.Value;
+
+                            Nullable<ShadowPreset> shadowPreset = XElementAttributeGetter.AsEnum<ShadowPreset>(shadowNode, "preset");
+                            if (shadowPreset.HasValue)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.Preset = shadowPreset.Value;
+
+                            string? blurStr = shadowNode.Attribute("blur-radius")?.Value;
+                            if (!string.IsNullOrEmpty(blurStr))
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.BlurRadius = Dimension.Parse(blurStr);
+
+                            string? distanceStr = shadowNode.Attribute("distance")?.Value;
+                            if (!string.IsNullOrEmpty(distanceStr))
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.Distance = Dimension.Parse(distanceStr);
+
+                            if (XElementAttributeGetter.AsInt32(shadowNode, "angle", out int angle))
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.Angle = clamp(angle, 0, 360);
+
+                            ColorA shadowColor = ColorA.Parse(shadowNode, "color", "transparency");
+                            if (shadowColor != null)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ShadowDefinition.Color = shadowColor;
+                        }
+
+                        XElement? glowNode = effectsNode.Element("glow");
+                        if (glowNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.GlowDefinition = new GlowDefinition();
+
+                            string? sizeStr = glowNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.GlowDefinition.Size = Dimension.Parse(sizeStr);
+
+                            ColorA glowColor = ColorA.Parse(glowNode, "color", "transparency");
+                            if (glowColor != null)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.GlowDefinition.Color = glowColor;
+                        }
+
+                        XElement? softEdgesNode = effectsNode.Element("soft-edges");
+                        if (softEdgesNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.SoftEdgesDefinition = new SoftEdgesDefinition();
+
+                            string? sizeStr = softEdgesNode.Attribute("size")?.Value;
+                            if (!string.IsNullOrEmpty(sizeStr))
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.SoftEdgesDefinition.Size = Dimension.Parse(sizeStr);
+                        }
+
+                        XElement? reflectionNode = effectsNode.Element("reflection");
+                        if (reflectionNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition = new ReflectionDefinition();
+
+                            if (reflectionNode.Attribute("blur-radius") != null)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.Blur = Dimension.Parse(reflectionNode.Attribute("blur-radius")!.Value);
+
+                            if (reflectionNode.Attribute("distance") != null)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.Distance = Dimension.Parse(reflectionNode.Attribute("distance")!.Value);
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-transparency", out int startTransparencyValue))
+                            {
+                                int clampedValue = clamp(startTransparencyValue, 0, 100);
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.StartTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-transparency", out int endTransparencyValue))
+                            {
+                                int clampedValue = clamp(endTransparencyValue, 0, 100);
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.EndTransparency = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "start-position", out int startPositionValue))
+                            {
+                                int clampedValue = clamp(startPositionValue, 0, 100);
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.StartPosition = clampedValue;
+                            }
+
+                            if (XElementAttributeGetter.AsInt32(reflectionNode, "end-position", out int endPositionValue))
+                            {
+                                int clampedValue = clamp(endPositionValue, 0, 100);
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.ReflectionDefinition.EndPosition = clampedValue;
+                            }
+                        }
+
+                        XElement? format3dNode = effectsNode.Element("format-3d");
+                        if (format3dNode != null)
+                        {
+                            chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition = new Format3DDefinition();
+
+                            Nullable<MaterialPreset> material = XElementAttributeGetter.AsEnum<MaterialPreset>(format3dNode, "material");
+                            if (material.HasValue)
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.Material = material.Value;
+
+                            XElement? bevelNode = format3dNode.Element("bevel");
+                            if (bevelNode != null)
+                            {
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition = new BevelDefinition();
+
+                                string? topWidthStr = bevelNode.Attribute("top-width")?.Value;
+                                if (!string.IsNullOrEmpty(topWidthStr))
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopWidth = Dimension.Parse(topWidthStr);
+
+                                string? topHeightStr = bevelNode.Attribute("top-height")?.Value;
+                                if (!string.IsNullOrEmpty(topHeightStr))
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopHeight = Dimension.Parse(topHeightStr);
+
+                                string? bottomWidthStr = bevelNode.Attribute("bottom-width")?.Value;
+                                if (!string.IsNullOrEmpty(bottomWidthStr))
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomWidth = Dimension.Parse(bottomWidthStr);
+
+                                string? bottomHeightStr = bevelNode.Attribute("bottom-height")?.Value;
+                                if (!string.IsNullOrEmpty(bottomHeightStr))
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomHeight = Dimension.Parse(bottomHeightStr);
+
+                                Nullable<BevelPreset> topPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "top-preset");
+                                if (topPreset.HasValue)
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.TopPreset = topPreset.Value;
+
+                                Nullable<BevelPreset> bottomPreset = XElementAttributeGetter.AsEnum<BevelPreset>(bevelNode, "bottom-preset");
+                                if (bottomPreset.HasValue)
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.BevelDefinition.BottomPreset = bottomPreset.Value;
+                            }
+
+                            XElement? lightingNode = format3dNode.Element("lighting");
+                            if (lightingNode != null)
+                            {
+                                chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.LightingDefinition = new LightingDefinition();
+
+                                Nullable<LightingPreset> lightingPreset = XElementAttributeGetter.AsEnum<LightingPreset>(lightingNode, "preset");
+                                if (lightingPreset.HasValue)
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Preset = lightingPreset.Value;
+
+                                if (XElementAttributeGetter.AsInt32(lightingNode, "angle", out int lightingAngle))
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Angle = clamp(lightingAngle, 0, 360);
+
+                                Nullable<LightingDirection> lightingDirection = XElementAttributeGetter.AsEnum<LightingDirection>(lightingNode, "direction");
+                                if (lightingDirection.HasValue)
+                                    chartDefinition.ThreeDView.DefaultFormat.EffectsDefinition.Format3dDefinition.LightingDefinition.Direction = lightingDirection.Value;
+                            }
+                        }
+                    }
+                }
+
+            }
 
             return chartDefinition;
         }
