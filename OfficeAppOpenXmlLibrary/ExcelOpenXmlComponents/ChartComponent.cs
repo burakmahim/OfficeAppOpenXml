@@ -3193,7 +3193,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 if (XElementAttributeGetter.AsBool(view3dNode, "show-side-wall", out bool showSideWall))
                     chartDefinition.ThreeDView.ShowSideWall = showSideWall;
 
-                // Default format
+
                 XElement? formatNode = view3dNode.Element("format");
                 if (formatNode != null)
                 {
@@ -3487,6 +3487,24 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             }
                         }
                     }
+                }
+
+                XElement? floorFormatNode = view3dNode.Element("floor-format");
+                if (floorFormatNode != null)
+                {
+
+                }
+
+                XElement? backWallFormatNode = view3dNode.Element("back-wall-format");
+                if (backWallFormatNode != null)
+                {
+
+                }
+
+                XElement? sideWallFormatNode = view3dNode.Element("side-wall-format");
+                if (sideWallFormatNode != null)
+                {
+
                 }
 
             }
@@ -4113,7 +4131,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 series.Append(values);
 
                 //(chartDefinition, seriesDefinition, series);
-                //addDataLabels(series, seriesDefinition);
+                addDataLabels(series, chartDefinition);
 
                 barChart.Append(series);
 
@@ -4798,6 +4816,59 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             plotArea.InsertAt(layout, 0);
             //plotArea.Append(layout);
         }
+        private static void applyFormat3D(C.ChartShapeProperties shapeProperties, Format3DDefinition format3d)
+        {
+            if (shapeProperties is null || format3d is null)
+                return;
+
+            LightingDefinition light = format3d.LightingDefinition;
+
+            //Önce Scene3DType, Sonra Shape3DType !!!
+
+            // a:scene3d (camera + lightRig)
+            shapeProperties.RemoveAllChildren<A.Scene3DType>();
+            A.Scene3DType scene = shapeProperties.AppendChild(new A.Scene3DType());
+
+            // Camera (basit preset)
+            scene.Camera = new A.Camera { Preset = A.PresetCameraValues.OrthographicFront };
+
+            // LightRig
+            A.LightRig lr = new()
+            {
+                Rig = light?.Preset is null ? A.LightRigValues.ThreePoints : mapLightPreset(light.Preset.Value),
+                Direction = light?.Direction is null ? A.LightRigDirectionValues.Top : mapLightDir(light.Direction.Value)
+            };
+
+            if (light?.Angle is not null)
+                lr.Append(new A.Rotation { Latitude = 0, Longitude = 0, Revolution = light.Angle.Value * 60000 });
+
+            scene.LightRig = lr;
+
+            // a:sp3d (malzeme + bevel)
+            shapeProperties.RemoveAllChildren<A.Shape3DType>();
+            A.Shape3DType sp3d = shapeProperties.AppendChild(new A.Shape3DType());
+
+            if (format3d.Material is not null)
+                sp3d.PresetMaterial = mapMaterial(format3d.Material.Value); // A.PresetMaterialTypeValues
+
+            if (format3d.BevelDefinition is BevelDefinition bevelDefinition && bevelDefinition.HasData)
+            {
+                if (bevelDefinition.TopWidth is not null || bevelDefinition.TopHeight is not null || bevelDefinition.TopPreset is not null)
+                    sp3d.BevelTop = new A.BevelTop
+                    {
+                        Width = bevelDefinition.TopWidth?.ToEmu(),
+                        Height = bevelDefinition.TopHeight?.ToEmu(),
+                        Preset = bevelDefinition.TopPreset is null ? null : mapBevel(bevelDefinition.TopPreset.Value)
+                    };
+                if (bevelDefinition.BottomWidth is not null || bevelDefinition.BottomHeight is not null || bevelDefinition.BottomPreset is not null)
+                    sp3d.BevelBottom = new A.BevelBottom
+                    {
+                        Width = bevelDefinition.BottomWidth?.ToEmu(),
+                        Height = bevelDefinition.BottomHeight?.ToEmu(),
+                        Preset = bevelDefinition.BottomPreset is null ? null : mapBevel(bevelDefinition.BottomPreset.Value)
+                    };
+            }
+        }
         private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
         {
             if (axisDefinition is null || axisNode is null)
@@ -5113,10 +5184,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (effectsDefinition.ReflectionDefinition is ReflectionDefinition reflectionDefinition)
                 applyReflection(effectList, reflectionDefinition);
 
-            //if (effectsDefinition.Format3dDefinition is not null)
-            //{
-            //    applyFormat3D(chartShapeProperties, effectsDefinition.Format3dDefinition);
-            //}
+            if (effectsDefinition.Format3dDefinition is not null)
+            {
+                applyFormat3D(chartShapeProperties, effectsDefinition.Format3dDefinition);
+            }
 
             if (effectList.HasChildren)
             {
