@@ -1,28 +1,74 @@
 ﻿<excel>
-	<sheet name="SampleChart">
-		<chart type="column" title="Shadow Glow Example">
-
-			<category-axis>
+	<sheet name="ColumnChart">
+		<chart type="Column" title="Column Chart with Gradient Fill">
+			<plot-area>
 				<format>
-					<line visible="true" width="3pt" dash="solid" compound="single" cap="round" join="miter"
-						  begin-arrow-type="triangle" end-arrow-type="arrow" join-miter-limit="10">
-						<solid color="#0000FF" transparency="0"/>
-					</line>
-
-					<effects>
-						<shadow type="outer" color="#FF0000" transparency="20" blur-radius="5pt" angle="45" distance="4pt"/>
-						<glow color="#00FF00" transparency="30" size="10pt"/>
-					</effects>
-
+					<fill>
+						<gradient angle="45" scaled="true">
+							<stop position="0"   color="#1e90ff" transparency="0"/>
+							<stop position="0.1" color="#87cefa" transparency="0"/>
+						</gradient>
+					</fill>
 				</format>
-			</category-axis>
-
-			<series name="Series 1">
-				<point category="A" value="10"/>
-				<point category="B" value="20"/>
-				<point category="C" value="30"/>
+			</plot-area>
+			<series>
+				<point category="Jan" value="10"/>
+				<point category="Feb" value="15"/>
+				<point category="Mar" value="8"/>
 			</series>
-
 		</chart>
 	</sheet>
+
+	<sheet name="BarChart">
+		<chart type="Bar" title="Bar Chart with Gradient Fill">
+			<plot-area>
+				<format>
+					<fill>
+						<gradient angle="90" scaled="false">
+							<stop position="0"   color="#ff8c00" transparency="0"/>
+							<stop position="0.1" color="#32cd32" transparency="0"/>
+						</gradient>
+					</fill>
+				</format>
+			</plot-area>
+			<series>
+				<point category="Q1" value="20"/>
+				<point category="Q2" value="25"/>
+				<point category="Q3" value="18"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="LineChart">
+		<chart type="LineMarkers" title="Line Chart with Gradient Fill">
+			<plot-area>
+				<format>
+					<fill>
+						<gradient angle="0" scaled="true">
+							<stop position="0"   color="#6a5acd" transparency="0"/>
+							<stop position="0.1" color="#b19cd9" transparency="0"/>
+						</gradient>
+					</fill>
+				</format>
+			</plot-area>
+
+			<category-axis/>
+			<value-axis/>
+
+			<series name="Yıllık">
+				<format>
+					<line visible="true" dash="Solid" compound="Single" width="2" color="#000000"/>
+					<marker show="true" size="6"/>
+				</format>
+
+				<point category="2019" value="5"/>
+				<point category="2020" value="7"/>
+				<point category="2021" value="6"/>
+			</series>
+		</chart>
+	</sheet>
+
+
+
+
 </excel>
