@@ -4071,6 +4071,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             // shape: box / cone / coneToMax / cylinder / pyramid / pyramidToMaximum
             bar3DChart.Append(new C.Shape() { Val = mapShapeValues(viewDefinition.Shape) });
         }
+
+
+
+
         private static void addBarSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement barChart)
         {
             uint seriesIndex = 0;
