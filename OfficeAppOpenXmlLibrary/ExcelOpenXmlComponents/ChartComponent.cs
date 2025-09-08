@@ -122,7 +122,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (scatterStyle.HasValue)
                 chartDefinition.ScatterStyle = scatterStyle.Value;
 
-            Nullable<BlanksDisplayedAs> displayBlanksAs = XElementAttributeGetter.AsEnum<BlanksDisplayedAs>(chartNode, "display-blank-as");
+            Nullable<BlanksDisplayedAs> displayBlanksAs = XElementAttributeGetter.AsEnum<BlanksDisplayedAs>(chartNode, "display-blanks-as");
             if (displayBlanksAs.HasValue)
                 chartDefinition.BlanksDisplayedAs = displayBlanksAs.Value;
 
@@ -146,14 +146,14 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             XElementAttributeGetter.AsBool(chartNode, "show-value-axis", out bool showValueAxisValue, defaultValue: true);
             chartDefinition.ShowValueAxis = showValueAxisValue;
 
-            // Width ve Height okuması
-            string widthStr = chartNode.Attribute("width")?.Value;
-            if (!string.IsNullOrEmpty(widthStr))
-                chartDefinition.Width = Dimension.Parse(widthStr);
+            //// Width ve Height okuması
+            //string widthStr = chartNode.Attribute("width")?.Value;
+            //if (!string.IsNullOrEmpty(widthStr))
+            //    chartDefinition.Width = Dimension.Parse(widthStr);
 
-            string heightStr = chartNode.Attribute("height")?.Value;
-            if (!string.IsNullOrEmpty(heightStr))
-                chartDefinition.Height = Dimension.Parse(heightStr);
+            //string heightStr = chartNode.Attribute("height")?.Value;
+            //if (!string.IsNullOrEmpty(heightStr))
+            //    chartDefinition.Height = Dimension.Parse(heightStr);
 
             XElementAttributeGetter.AsBool(chartNode, "plot-visible-only", out bool plotVisibleOnlyValue, defaultValue: false);
             chartDefinition.PlotVisibleOnly = plotVisibleOnlyValue;
