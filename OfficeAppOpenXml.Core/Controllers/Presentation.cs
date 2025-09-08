@@ -67,7 +67,7 @@ namespace OfficeAppOpenXml.Core.Controllers
             try
             {
                 byte[] excelBytes = ExcelLibrary.CreateExcel(xmlContent);
-                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "veriler.xlsx");
+                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Rapor.xlsx");
             }
             catch (Exception ex)
             {

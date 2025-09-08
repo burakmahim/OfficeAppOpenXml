@@ -223,6 +223,15 @@ namespace OfficeAppOpenXmlLibrary
                             }
                         }
 
+                        IEnumerable<XElement> chartElements = slideNode.Elements("chart");
+                        if (chartElements != null)
+                        {
+                            foreach (XElement chart in chartElements)
+                            {
+                                PowerPointOpenXmlComponents.ChartComponent.AddChart(slidePart, chart, ref shapeId);
+                            }
+                        }
+
                     }
 
                     presentationPart.Presentation.Append(slideIdList);
