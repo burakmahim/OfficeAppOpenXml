@@ -1227,16 +1227,17 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 new NonVisualDrawingProperties() { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
                 new NonVisualGraphicFrameDrawingProperties()
             ));
-            
+
             graphicFrame.Append(new Transform(
                 new A.Offset() { X = 0, Y = 0 },
                 new A.Extents() { Cx = 0, Cy = 0 }
             ));
-            
+
             graphicFrame.Append(new A.Graphic(
                 new A.GraphicData(
                     new C.ChartReference() { Id = relId }
-                ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
+                )
+                { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
             ));
 
             graphicFrame.Append(new ClientData());
