@@ -485,7 +485,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (plotAreaNode != null)
             {
                 XElement? format = plotAreaNode.Element("format");
-                if (format != null)
+                if(format != null)
                 {
                     chartDefinition.PlotAreaFormat = XElementAttributeGetter.ParseFormatNode(format);
                 }
@@ -514,7 +514,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     chartDefinition.DataTable.ShowLegendKey = showLegendKey;
 
                 XElement? formatNode = dataTableNode.Element("format");
-                if (formatNode != null)
+                if(formatNode != null)
                 {
                     chartDefinition.DataTable.BoxFormat = XElementAttributeGetter.ParseFormatNode(formatNode);
                 }
@@ -632,7 +632,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 {
                     seriesDefinition.ValueLabels = new ValueLabelDefinition();
 
-                    Nullable<DataLabelPosition> dataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition>(valueLabelNode, "position");
+                    Nullable<DataLabelPosition> dataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition> (valueLabelNode, "position");
                     if (dataLabelPosition.HasValue)
                         seriesDefinition.ValueLabels.Position = dataLabelPosition.Value;
 
@@ -666,7 +666,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         foreach (XElement pointNode in point)
                         {
                             PointDefinition pointDefinition = new PointDefinition();
-
+                            
                             string? category = XElementAttributeGetter.AsString(pointNode, "category");
                             if (!string.IsNullOrEmpty(category))
                                 pointDefinition.Category = category;
@@ -678,8 +678,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 pointDefinition.X = x;
 
                             if (XElementAttributeGetter.AsDouble(pointNode, "y", out double y))
-                                pointDefinition.Y = y;
-
+                                pointDefinition.Y = y;                            
+                            
                             if (XElementAttributeGetter.AsDouble(pointNode, "size", out double size))
                                 pointDefinition.Size = size;
 
@@ -1276,7 +1276,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 applyBar3DOptions(bar3DChart, chartDefinition.ThreeDView);
 
-                addBarSeries(chartDefinition, chartNode, bar3DChart);
+                addBarSeries(chartDefinition,  chartNode, bar3DChart);
 
                 addDataLabels(bar3DChart, chartDefinition);
 
