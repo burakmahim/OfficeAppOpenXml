@@ -1198,7 +1198,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new GraphicFrame());
             graphicFrame.NonVisualGraphicFrameProperties = new NonVisualGraphicFrameProperties(
-                new NonVisualDrawingProperties() { Id = shapeId++, Name = "Chart " + shapeId },
+                new NonVisualDrawingProperties() { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
                 new NonVisualGraphicFrameDrawingProperties(),
                 new ApplicationNonVisualDrawingProperties()
             );

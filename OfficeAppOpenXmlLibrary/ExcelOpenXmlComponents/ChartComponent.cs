@@ -1155,6 +1155,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
+            if (chartDefinition is null || chartDefinition.Series.Count == 0)
+                return;
+
             DrawingsPart drawingsPart = worksheetPart.DrawingsPart ?? worksheetPart.AddNewPart<DrawingsPart>();
             if (drawingsPart.WorksheetDrawing == null)
                 drawingsPart.WorksheetDrawing = new WorksheetDrawing();
@@ -1690,21 +1693,472 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             // shape: box / cone / coneToMax / cylinder / pyramid / pyramidToMaximum
             bar3DChart.Append(new C.Shape() { Val = mapShapeValues(viewDefinition.Shape) });
         }
-        private static void addBarSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement barChart)
+        //private static void addBarSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement barChart)
+        //{
+        //    uint seriesIndex = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+
+        //        BarChartSeries series = new BarChartSeries(
+        //            new C.Index() { Val = seriesIndex },
+        //            new C.Order() { Val = seriesIndex },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        CategoryAxisData catAxisData = new CategoryAxisData();
+        //        C.Values values = new C.Values();
+
+        //        StringLiteral stringLiteral = new StringLiteral();
+        //        NumberLiteral numberLiteral = new NumberLiteral();
+
+        //        stringLiteral.Append(new PointCount() { Val = pointCount });
+        //        numberLiteral.Append(new PointCount() { Val = pointCount });
+
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+        //            string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+        //            stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(categoryName) });
+        //            numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(valueStr) });
+        //        }
+
+        //        catAxisData.Append(stringLiteral);
+        //        values.Append(numberLiteral);
+
+        //        //applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+
+        //        series.Append(catAxisData);
+        //        series.Append(values);
+
+        //        //(chartDefinition, seriesDefinition, series);
+        //        addDataLabels(series, chartDefinition);
+
+        //        barChart.Append(series);
+
+        //        seriesIndex++;
+        //    }
+        //}
+        //private static void addLineSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement lineChart)
+        //{
+        //    uint idx = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        C.LineChartSeries series = new(
+        //            new C.Index() { Val = idx },
+        //            new C.Order() { Val = idx },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        //C.ChartShapeProperties chartShapeProperties = new C.ChartShapeProperties();
+        //        //A.Outline outline = new A.Outline();
+
+        //        //outline.Append(new A.SolidFill(new A.RgbColorModelHex() { Val = "000000" }));
+
+        //        //chartShapeProperties.Append(outline);
+        //        //series.Append(chartShapeProperties);
+
+
+        //        CategoryAxisData catAxisData = new CategoryAxisData();
+        //        C.Values values = new C.Values();
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        StringLiteral stringLiteral = new StringLiteral();
+        //        NumberLiteral numberLiteral = new NumberLiteral();
+
+        //        stringLiteral.Append(new PointCount() { Val = pointCount });
+
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+        //            string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+        //            stringLiteral.Append(new StringPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(categoryName)
+        //            });
+
+        //            numberLiteral.Append(new NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(valueStr)
+        //            });
+
+        //        }
+
+        //        catAxisData.Append(stringLiteral);
+        //        values.Append(numberLiteral);
+
+        //        series.Append(catAxisData);
+        //        series.Append(values);
+
+        //        lineChart.Append(series);
+        //        idx++;
+        //    }
+        //}
+        //private static void addPieSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement pieChart)
+        //{
+        //    uint idx = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        C.PieChartSeries series = new(
+        //            new C.Index() { Val = idx },
+        //            new C.Order() { Val = idx },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        CategoryAxisData catAxisData = new CategoryAxisData();
+        //        C.Values values = new C.Values();
+
+        //        StringLiteral stringLiteral = new StringLiteral();
+        //        NumberLiteral numberLiteral = new NumberLiteral();
+
+        //        stringLiteral.Append(new PointCount() { Val = pointCount });
+        //        numberLiteral.Append(new PointCount() { Val = pointCount });
+
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+        //            string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+        //            stringLiteral.Append(new StringPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(categoryName)
+        //            });
+
+        //            numberLiteral.Append(new NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(valueStr)
+        //            });
+        //        }
+
+        //        catAxisData.Append(stringLiteral);
+        //        values.Append(numberLiteral);
+
+        //        series.Append(catAxisData);
+        //        series.Append(values);
+
+        //        pieChart.Append(series);
+        //        idx++;
+
+        //    }
+        //}
+        //private static void addScatterSeries(ChartDefinition chartDefinition, XElement chartNode, C.ScatterChart scatterChart, C.ScatterStyleValues scatterStyle)
+        //{
+        //    bool wantsLine = scatterStyle == C.ScatterStyleValues.Line
+        //                  || scatterStyle == C.ScatterStyleValues.LineMarker
+        //                  || scatterStyle == C.ScatterStyleValues.Smooth
+        //                  || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+
+        //    bool wantsMarker = scatterStyle == C.ScatterStyleValues.Marker
+        //                    || scatterStyle == C.ScatterStyleValues.LineMarker
+        //                    || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+
+        //    bool smooth = scatterStyle == C.ScatterStyleValues.Smooth
+        //               || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+
+        //    uint idx = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        C.ScatterChartSeries series = new(
+        //            new C.Index() { Val = idx },
+        //            new C.Order() { Val = idx },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        // X
+        //        C.NumberLiteral xNum = new();
+        //        xNum.Append(new C.PointCount() { Val = (uint)pointCount });
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string? x = points[i].Attribute("x")?.Value;
+        //            xNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(x) });
+        //        }
+
+        //        // Y
+        //        C.NumberLiteral yNum = new();
+        //        yNum.Append(new C.PointCount() { Val = (uint)pointCount });
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string? y = points[i].Attribute("y")?.Value;
+        //            yNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(y) });
+        //        }
+
+        //        series.Append(new C.Smooth() { Val = smooth });
+
+        //        if (!wantsLine)
+        //        {
+        //            ensureShapeLineHidden(series);
+        //        }
+        //        else
+        //        {
+        //            ensureShapeLineVisible(series);
+
+        //            //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
+        //        }
+
+        //        if (wantsMarker)
+        //        {
+        //            //ensureMarker(series, chartDefinition, seriesDefinition);
+        //            //applyPointLevelStyling(seriesDefinition, series, useMarker: true);
+        //        }
+        //        else
+        //        {
+        //            series.Append(new C.Marker(new C.Symbol() { Val = C.MarkerStyleValues.None }));
+        //        }
+
+        //        series.Append(new C.XValues(xNum));
+        //        series.Append(new C.YValues(yNum));
+
+        //        addDataLabels(series, chartDefinition);
+
+        //        scatterChart.Append(series);
+
+        //        idx++;
+        //    }
+        //}
+        //private static void addAreaSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement areaChart)
+        //{
+        //    uint idx = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        C.AreaChartSeries series = new(
+        //            new C.Index() { Val = idx },
+        //            new C.Order() { Val = idx },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        CategoryAxisData catAxisData = new CategoryAxisData();
+        //        C.Values values = new C.Values();
+
+        //        StringLiteral stringLiteral = new StringLiteral();
+        //        NumberLiteral numberLiteral = new NumberLiteral();
+
+        //        stringLiteral.Append(new PointCount() { Val = (uint)pointCount });
+
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+        //            string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+        //            stringLiteral.Append(new StringPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(categoryName)
+        //            });
+        //            numberLiteral.Append(new NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(valueStr)
+        //            });
+        //        }
+
+        //        catAxisData.Append(stringLiteral);
+        //        values.Append(numberLiteral);
+
+        //        series.Append(catAxisData);
+        //        series.Append(values);
+
+        //        //applySeriesFormat(chartDefinition, seriesDefinition, series);
+        //        addDataLabels(series, chartDefinition);
+
+        //        areaChart.Append(series);
+
+        //        idx++;
+        //    }
+        //}
+        //private static void addBubbleSeries(ChartDefinition chartDefinition, XElement chartNode, C.BubbleChart bubbleChart)
+        //{
+        //    uint seriesIndex = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        BubbleChartSeries series = new BubbleChartSeries(
+        //            new C.Index() { Val = seriesIndex },
+        //            new Order() { Val = seriesIndex },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        bool bubble3DEnabled = chartDefinition.Bubble3D ?? false;
+
+        //        if (bubble3DEnabled)
+        //            series.Append(new C.InvertIfNegative() { Val = true });
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        NumberLiteral numberLiteralX = new NumberLiteral();
+        //        numberLiteralX.Append(new C.PointCount() { Val = (uint)pointCount });
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string? x = points[i].Attribute("x")?.Value;
+
+        //            numberLiteralX.Append(new C.NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(x)
+        //            });
+        //        }
+
+        //        NumberLiteral numberLiteralY = new NumberLiteral();
+        //        numberLiteralY.Append(new C.PointCount() { Val = (uint)pointCount });
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string? y = points[i].Attribute("y")?.Value;
+
+        //            numberLiteralY.Append(new C.NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(y)
+        //            });
+        //        }
+
+        //        NumberLiteral numberLiteralSize = new NumberLiteral();
+        //        numberLiteralSize.Append(new C.PointCount() { Val = (uint)pointCount });
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string? size = points[i].Attribute("size")?.Value;
+
+        //            numberLiteralSize.Append(new C.NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(size)
+        //            });
+        //        }
+
+        //        //applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+
+        //        series.Append(new C.XValues(numberLiteralX));
+        //        series.Append(new C.YValues(numberLiteralY));
+        //        series.Append(new C.BubbleSize(numberLiteralSize));
+
+        //        if (bubble3DEnabled)
+        //            series.Append(new C.Bubble3D() { Val = true });
+
+        //        //applySeriesFormat(chartDefinition, seriesDefinition, series);
+        //        addDataLabels(series, chartDefinition);
+
+        //        bubbleChart.Append(series);
+
+        //        seriesIndex++;
+        //    }
+        //}
+        //private static void addRadarSeries(ChartDefinition chartDefinition, XElement chartNode, C.RadarChart radarChart)
+        //{
+        //    uint seriesIndex = 0;
+
+        //    foreach (XElement seriesNode in chartNode.Elements("series"))
+        //    {
+        //        RadarChartSeries series = new RadarChartSeries(
+        //            new C.Index() { Val = seriesIndex },
+        //            new Order() { Val = seriesIndex },
+        //            new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+        //        );
+
+        //        List<XElement> points = seriesNode.Elements("point").ToList();
+        //        uint pointCount = (uint)points.Count;
+
+        //        CategoryAxisData catAxisData = new CategoryAxisData();
+        //        C.Values values = new C.Values();
+
+        //        StringLiteral stringLiteral = new StringLiteral();
+        //        NumberLiteral numberLiteral = new NumberLiteral();
+
+        //        stringLiteral.Append(new PointCount() { Val = (uint)pointCount });
+
+        //        for (int i = 0; i < pointCount; i++)
+        //        {
+        //            string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+        //            string valueStr = points[i].Attribute("value")?.Value ?? "0";
+
+        //            stringLiteral.Append(new StringPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(categoryName)
+        //            });
+        //            numberLiteral.Append(new NumericPoint()
+        //            {
+        //                Index = (uint)i,
+        //                NumericValue = new C.NumericValue(valueStr)
+        //            });
+        //        }
+
+        //        catAxisData.Append(stringLiteral);
+        //        values.Append(numberLiteral);
+
+        //        switch (chartDefinition.RadarStyle)
+        //        {
+        //            case RadarStyle.Marker:
+        //                // çizgi + marker
+        //                ensureShapeLineVisible(series);
+        //                //ensureMarker(series, chartDefinition, seriesDefinition);
+        //                //applyPointLevelStyling(seriesDefinition, series, useMarker: true);
+        //                //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
+        //                break;
+        //            case RadarStyle.Filled:
+        //                // alan dolu, marker istemiyoruz, çizgi opsiyonel (outline)
+        //                ensureNoMarker(series);
+        //                ensureShapeLineVisible(series);
+
+        //                // Seri rengini hem doldurma hem outline için uygula
+        //                // (toOutline=false -> fill; true -> line)
+        //                //applySeriesFormat(chartDefinition, seriesDefinition, series); // fill
+        //                //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
+        //                break;
+        //            case RadarStyle.Standard:
+        //            default:
+        //                // sadece çizgi, marker yok
+        //                ensureNoMarker(series);
+        //                ensureShapeLineVisible(series);
+
+        //                // seri çizgi rengi
+        //                //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
+        //                break;
+        //        }
+
+        //        series.Append(catAxisData);
+        //        series.Append(values);
+
+        //        addDataLabels(series, chartDefinition);
+
+        //        radarChart.Append(series);
+
+        //        seriesIndex++;
+        //    }
+        //}
+        private static void addBarSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement barChart)
         {
             uint seriesIndex = 0;
 
-            foreach (XElement seriesNode in chartNode.Elements("series"))
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-
                 BarChartSeries series = new BarChartSeries(
                     new C.Index() { Val = seriesIndex },
-                    new C.Order() { Val = seriesIndex },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new Order() { Val = seriesIndex },
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
-
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
 
                 CategoryAxisData catAxisData = new CategoryAxisData();
                 C.Values values = new C.Values();
@@ -1712,192 +2166,193 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 StringLiteral stringLiteral = new StringLiteral();
                 NumberLiteral numberLiteral = new NumberLiteral();
 
-                stringLiteral.Append(new PointCount() { Val = pointCount });
-                numberLiteral.Append(new PointCount() { Val = pointCount });
+                stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
 
-                for (int i = 0; i < pointCount; i++)
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
                 {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
-
-                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(categoryName) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(valueStr) });
+                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
+                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
                 }
 
                 catAxisData.Append(stringLiteral);
                 values.Append(numberLiteral);
 
-                //applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+                applyPointLevelStyling(seriesDefinition, series, useMarker: false);
 
                 series.Append(catAxisData);
                 series.Append(values);
 
-                //(chartDefinition, seriesDefinition, series);
-                addDataLabels(series, chartDefinition);
+                applySeriesFormat(chartDefinition, seriesDefinition, series);
+                addDataLabels(series, seriesDefinition);
 
                 barChart.Append(series);
 
                 seriesIndex++;
             }
         }
-        private static void addLineSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement lineChart)
+        private static void addLineSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement lineChart)
         {
             uint idx = 0;
 
-            foreach (XElement seriesNode in chartNode.Elements("series"))
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.LineChartSeries series = new(
-                    new C.Index() { Val = idx },
-                    new C.Order() { Val = idx },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                LineChartSeries series = new(
+                    new Index() { Val = idx },
+                    new Order() { Val = idx },
+                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
                 );
 
-                //C.ChartShapeProperties chartShapeProperties = new C.ChartShapeProperties();
-                //A.Outline outline = new A.Outline();
+                buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out Values vals);
 
-                //outline.Append(new A.SolidFill(new A.RgbColorModelHex() { Val = "000000" }));
+                ensureMarker(series, chartDefinition, seriesDefinition);
+                applyPointLevelStyling(seriesDefinition, series, useMarker: true);
 
-                //chartShapeProperties.Append(outline);
-                //series.Append(chartShapeProperties);
+                series.Append(cat);
+                series.Append(vals);
 
-
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
-
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
-
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
-
-                stringLiteral.Append(new PointCount() { Val = pointCount });
-
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
-
-                    stringLiteral.Append(new StringPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(categoryName)
-                    });
-
-                    numberLiteral.Append(new NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(valueStr)
-                    });
-
-                }
-
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
-
-                series.Append(catAxisData);
-                series.Append(values);
+                applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
+                addDataLabels(series, seriesDefinition);
 
                 lineChart.Append(series);
+
                 idx++;
             }
         }
-        private static void addPieSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement pieChart)
+        private static void addAreaSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement areaChart)
         {
             uint idx = 0;
 
-            foreach (XElement seriesNode in chartNode.Elements("series"))
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.PieChartSeries series = new(
-                    new C.Index() { Val = idx },
-                    new C.Order() { Val = idx },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                AreaChartSeries series = new(
+                    new Index() { Val = idx },
+                    new Order() { Val = idx },
+                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
                 );
 
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
+                buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out Values vals);
 
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
+                series.Append(cat);
+                series.Append(vals);
 
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
+                applySeriesFormat(chartDefinition, seriesDefinition, series);
+                addDataLabels(series, seriesDefinition);
 
-                stringLiteral.Append(new PointCount() { Val = pointCount });
-                numberLiteral.Append(new PointCount() { Val = pointCount });
+                areaChart.Append(series);
 
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
-
-                    stringLiteral.Append(new StringPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(categoryName)
-                    });
-
-                    numberLiteral.Append(new NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(valueStr)
-                    });
-                }
-
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
-
-                series.Append(catAxisData);
-                series.Append(values);
-
-                pieChart.Append(series);
                 idx++;
-
             }
         }
-        private static void addScatterSeries(ChartDefinition chartDefinition, XElement chartNode, C.ScatterChart scatterChart, C.ScatterStyleValues scatterStyle)
+        private static void addPieSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement owner)
         {
-            bool wantsLine = scatterStyle == C.ScatterStyleValues.Line
-                          || scatterStyle == C.ScatterStyleValues.LineMarker
-                          || scatterStyle == C.ScatterStyleValues.Smooth
-                          || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+            uint idx = 0;
 
-            bool wantsMarker = scatterStyle == C.ScatterStyleValues.Marker
-                            || scatterStyle == C.ScatterStyleValues.LineMarker
-                            || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
+            {
+                C.PieChartSeries series = new(
+                    new Index() { Val = idx },
+                    new Order() { Val = idx },
+                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                );
 
-            bool smooth = scatterStyle == C.ScatterStyleValues.Smooth
-                       || scatterStyle == C.ScatterStyleValues.SmoothMarker;
+                buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out Values vals);
+                applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+
+                series.Append(cat);
+                series.Append(vals);
+
+                applySeriesFormat(chartDefinition, seriesDefinition, series);
+                addDataLabels(series, seriesDefinition);
+
+                owner.Append(series);
+
+                idx++;
+            }
+        }
+        private static void addBubbleSeries(ChartDefinition chartDefinition, C.BubbleChart bubbleChart)
+        {
+            uint idx = 0;
+
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
+            {
+                C.BubbleChartSeries series = new(
+                    new Index() { Val = idx },
+                    new Order() { Val = idx },
+                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                );
+
+                bool bubble3DEnabled = chartDefinition.Bubble3D ?? false;
+
+                if (bubble3DEnabled)
+                    series.Append(new C.InvertIfNegative() { Val = true });
+
+                NumberLiteral xNumLit = new();
+                xNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    xNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
+
+                NumberLiteral yNumLit = new();
+                yNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    yNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
+
+                NumberLiteral szNumLit = new();
+                szNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    szNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Size?.ToString(CultureInfo.InvariantCulture)) });
+
+                applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+
+                series.Append(new C.XValues(xNumLit));
+                series.Append(new C.YValues(yNumLit));
+                series.Append(new C.BubbleSize(szNumLit));
+
+                if (bubble3DEnabled)
+                    series.Append(new C.Bubble3D() { Val = true });
+
+                applySeriesFormat(chartDefinition, seriesDefinition, series);
+                addDataLabels(series, seriesDefinition);
+
+                bubbleChart.Append(series);
+
+                idx++;
+            }
+        }
+        private static void addScatterSeries(ChartDefinition chartDefinition, C.ScatterChart scatterChart, C.ScatterStyleValues scatterStyle)
+        {
+            bool wantsLine = scatterStyle is C.ScatterStyleValues.Line
+                                            or C.ScatterStyleValues.LineMarker
+                                            or C.ScatterStyleValues.Smooth
+                                            or C.ScatterStyleValues.SmoothMarker;
+
+            bool wantsMarker = scatterStyle is C.ScatterStyleValues.Marker
+                                            or C.ScatterStyleValues.LineMarker
+                                            or C.ScatterStyleValues.SmoothMarker;
+
+            bool smooth = scatterStyle is C.ScatterStyleValues.Smooth
+                                            or C.ScatterStyleValues.SmoothMarker;
 
             uint idx = 0;
 
-            foreach (XElement seriesNode in chartNode.Elements("series"))
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
                 C.ScatterChartSeries series = new(
                     new C.Index() { Val = idx },
                     new C.Order() { Val = idx },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                    new C.SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
-
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
 
                 // X
                 C.NumberLiteral xNum = new();
-                xNum.Append(new C.PointCount() { Val = (uint)pointCount });
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string? x = points[i].Attribute("x")?.Value;
-                    xNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(x) });
-                }
+                xNum.Append(new C.PointCount() { Val = (uint)seriesDefinition.Points.Count });
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    xNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
 
                 // Y
                 C.NumberLiteral yNum = new();
-                yNum.Append(new C.PointCount() { Val = (uint)pointCount });
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string? y = points[i].Attribute("y")?.Value;
-                    yNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(y) });
-                }
+                yNum.Append(new C.PointCount() { Val = (uint)seriesDefinition.Points.Count });
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    yNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
 
                 series.Append(new C.Smooth() { Val = smooth });
 
@@ -1909,13 +2364,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 {
                     ensureShapeLineVisible(series);
 
-                    //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
+                    applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
                 }
 
                 if (wantsMarker)
                 {
-                    //ensureMarker(series, chartDefinition, seriesDefinition);
-                    //applyPointLevelStyling(seriesDefinition, series, useMarker: true);
+                    ensureMarker(series, chartDefinition, seriesDefinition);
+                    applyPointLevelStyling(seriesDefinition, series, useMarker: true);
                 }
                 else
                 {
@@ -1925,224 +2380,65 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 series.Append(new C.XValues(xNum));
                 series.Append(new C.YValues(yNum));
 
-                addDataLabels(series, chartDefinition);
+                addDataLabels(series, seriesDefinition);
 
                 scatterChart.Append(series);
 
                 idx++;
             }
         }
-        private static void addAreaSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement areaChart)
+        private static void addRadarSeries(ChartDefinition chartDefinition, C.RadarChart radarChart)
         {
             uint idx = 0;
 
-            foreach (XElement seriesNode in chartNode.Elements("series"))
+            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.AreaChartSeries series = new(
-                    new C.Index() { Val = idx },
-                    new C.Order() { Val = idx },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
+                C.RadarChartSeries series = new(
+                    new C.Index { Val = idx },
+                    new C.Order { Val = idx },
+                    new C.SeriesText(new C.NumericValue { Text = seriesDefinition.Title })
                 );
 
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
-
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
-
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
-
-                stringLiteral.Append(new PointCount() { Val = (uint)pointCount });
-
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
-
-                    stringLiteral.Append(new StringPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(categoryName)
-                    });
-                    numberLiteral.Append(new NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(valueStr)
-                    });
-                }
-
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
-
-                series.Append(catAxisData);
-                series.Append(values);
-
-                //applySeriesFormat(chartDefinition, seriesDefinition, series);
-                addDataLabels(series, chartDefinition);
-
-                areaChart.Append(series);
-
-                idx++;
-            }
-        }
-        private static void addBubbleSeries(ChartDefinition chartDefinition, XElement chartNode, C.BubbleChart bubbleChart)
-        {
-            uint seriesIndex = 0;
-
-            foreach (XElement seriesNode in chartNode.Elements("series"))
-            {
-                BubbleChartSeries series = new BubbleChartSeries(
-                    new C.Index() { Val = seriesIndex },
-                    new Order() { Val = seriesIndex },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
-                );
-
-                bool bubble3DEnabled = chartDefinition.Bubble3D ?? false;
-
-                if (bubble3DEnabled)
-                    series.Append(new C.InvertIfNegative() { Val = true });
-
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
-
-                NumberLiteral numberLiteralX = new NumberLiteral();
-                numberLiteralX.Append(new C.PointCount() { Val = (uint)pointCount });
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string? x = points[i].Attribute("x")?.Value;
-
-                    numberLiteralX.Append(new C.NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(x)
-                    });
-                }
-
-                NumberLiteral numberLiteralY = new NumberLiteral();
-                numberLiteralY.Append(new C.PointCount() { Val = (uint)pointCount });
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string? y = points[i].Attribute("y")?.Value;
-
-                    numberLiteralY.Append(new C.NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(y)
-                    });
-                }
-
-                NumberLiteral numberLiteralSize = new NumberLiteral();
-                numberLiteralSize.Append(new C.PointCount() { Val = (uint)pointCount });
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string? size = points[i].Attribute("size")?.Value;
-
-                    numberLiteralSize.Append(new C.NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(size)
-                    });
-                }
-
-                //applyPointLevelStyling(seriesDefinition, series, useMarker: false);
-
-                series.Append(new C.XValues(numberLiteralX));
-                series.Append(new C.YValues(numberLiteralY));
-                series.Append(new C.BubbleSize(numberLiteralSize));
-
-                if (bubble3DEnabled)
-                    series.Append(new C.Bubble3D() { Val = true });
-
-                //applySeriesFormat(chartDefinition, seriesDefinition, series);
-                addDataLabels(series, chartDefinition);
-
-                bubbleChart.Append(series);
-
-                seriesIndex++;
-            }
-        }
-        private static void addRadarSeries(ChartDefinition chartDefinition, XElement chartNode, C.RadarChart radarChart)
-        {
-            uint seriesIndex = 0;
-
-            foreach (XElement seriesNode in chartNode.Elements("series"))
-            {
-                RadarChartSeries series = new RadarChartSeries(
-                    new C.Index() { Val = seriesIndex },
-                    new Order() { Val = seriesIndex },
-                    new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
-                );
-
-                List<XElement> points = seriesNode.Elements("point").ToList();
-                uint pointCount = (uint)points.Count;
-
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
-
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
-
-                stringLiteral.Append(new PointCount() { Val = (uint)pointCount });
-
-                for (int i = 0; i < pointCount; i++)
-                {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
-
-                    stringLiteral.Append(new StringPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(categoryName)
-                    });
-                    numberLiteral.Append(new NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(valueStr)
-                    });
-                }
-
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
+                buildCategoryAndValues(seriesDefinition, out var cat, out var vals);
 
                 switch (chartDefinition.RadarStyle)
                 {
-                    case RadarStyle.Marker:
+                    case Internal.RadarStyle.Marker:
                         // çizgi + marker
                         ensureShapeLineVisible(series);
-                        //ensureMarker(series, chartDefinition, seriesDefinition);
-                        //applyPointLevelStyling(seriesDefinition, series, useMarker: true);
-                        //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
+                        ensureMarker(series, chartDefinition, seriesDefinition);
+                        applyPointLevelStyling(seriesDefinition, series, useMarker: true);
+                        applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
                         break;
-                    case RadarStyle.Filled:
+                    case Internal.RadarStyle.Filled:
                         // alan dolu, marker istemiyoruz, çizgi opsiyonel (outline)
                         ensureNoMarker(series);
                         ensureShapeLineVisible(series);
 
                         // Seri rengini hem doldurma hem outline için uygula
                         // (toOutline=false -> fill; true -> line)
-                        //applySeriesFormat(chartDefinition, seriesDefinition, series); // fill
-                        //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
+                        applySeriesFormat(chartDefinition, seriesDefinition, series); // fill
+                        applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
                         break;
-                    case RadarStyle.Standard:
+                    case Internal.RadarStyle.Standard:
                     default:
                         // sadece çizgi, marker yok
                         ensureNoMarker(series);
                         ensureShapeLineVisible(series);
 
                         // seri çizgi rengi
-                        //applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
+                        applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true);
                         break;
                 }
 
-                series.Append(catAxisData);
-                series.Append(values);
+                series.Append(cat);
+                series.Append(vals);
 
-                addDataLabels(series, chartDefinition);
+                addDataLabels(series, seriesDefinition);
 
                 radarChart.Append(series);
 
-                seriesIndex++;
+                idx++;
             }
         }
         private static uint getSafeId()
@@ -2317,14 +2613,74 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(catAxis);
         }
-        private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
+        //private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
+        //{
+        //    if (owner == null || chartDefinition == null)
+        //        return;
+
+        //    ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
+
+        //    if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
+        //        return;
+
+        //    C.DataLabels dataLabels = new();
+        //    dataLabels.Append(new C.ShowValue() { Val = true });
+
+        //    DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
+
+        //    if (position != null)
+        //        dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
+
+        //    bool showPercent = false;
+        //    bool showBubbleSize = false;
+        //    bool showLeaderLines = false;
+
+        //    switch (chartDefinition.Type)
+        //    {
+        //        case ChartType.Pie:
+        //            showPercent = valueLabelsDefinition.ShowPercent;
+        //            showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
+        //            break;
+        //        case ChartType.Doughnut:
+        //            showPercent = valueLabelsDefinition.ShowPercent;
+        //            showLeaderLines = true;
+        //            break;
+        //        case ChartType.Bubble:
+        //            showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
+        //            break;
+        //        default:
+        //            break;
+        //    }
+
+        //    dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
+        //    dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
+        //    dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
+        //    dataLabels.Append(new C.ShowPercent() { Val = showPercent });
+        //    dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
+        //    dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
+
+        //    if (valueLabelsDefinition.TextFormat != null)
+        //    {
+        //        C.TextProperties textProperties = new();
+        //        if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
+        //            dataLabels.Append(textProperties);
+        //    }
+
+        //    owner.Append(dataLabels);
+        //}
+        private static void addDataLabels(OpenXmlCompositeElement owner, SeriesDefinition seriesDefinition)
         {
-            if (owner == null || chartDefinition == null)
+            if (owner is null || seriesDefinition is null)
                 return;
 
-            ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
+            ChartDefinition chartDefinition = seriesDefinition.ChartDefinition;
 
-            if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
+            if (chartDefinition is null)
+                return;
+
+            ValueLabelDefinition valueLabelsDefinition = seriesDefinition.ValueLabels;
+
+            if (valueLabelsDefinition is null || !valueLabelsDefinition.Show)
                 return;
 
             C.DataLabels dataLabels = new();
@@ -2332,7 +2688,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
 
-            if (position != null)
+            if (position is not null)
                 dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
 
             bool showPercent = false;
@@ -2352,8 +2708,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 case ChartType.Bubble:
                     showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
                     break;
-                default:
-                    break;
             }
 
             dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
@@ -2363,11 +2717,50 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
             dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
 
-            if (valueLabelsDefinition.TextFormat != null)
+            if (valueLabelsDefinition.TextFormat is not null)
             {
                 C.TextProperties textProperties = new();
                 if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
                     dataLabels.Append(textProperties);
+            }
+
+            // Her point için ayrı data label
+            if (seriesDefinition.Points.Any(x => x.ValueLabels is not null))
+            {
+                uint pointIndex = 0;
+                foreach (PointDefinition point in seriesDefinition.Points)
+                {
+                    if (point.ValueLabels is ValueLabelDefinition pointValueLabel)
+                    {
+                        C.DataLabel pointDataLabel = new(
+                            new C.Index() { Val = pointIndex },
+                            new C.ShowValue() { Val = true },
+                            new C.ShowLegendKey() { Val = pointValueLabel.ShowLegendKey },
+                            new C.ShowCategoryName() { Val = pointValueLabel.ShowCategoryName },
+                            new C.ShowSeriesName() { Val = pointValueLabel.ShowSeriesName },
+                            new C.ShowPercent() { Val = pointValueLabel.ShowPercent && (chartDefinition.Type == ChartType.Pie || chartDefinition.Type == ChartType.Doughnut) },
+                            new C.ShowBubbleSize() { Val = pointValueLabel.ShowBubbleSize && chartDefinition.Type == ChartType.Bubble }
+                        );
+
+                        if (pointValueLabel.Position is not null)
+                        {
+                            DataLabelPositionValues? pointPos = mapDataLabelPosition(pointValueLabel.Position.Value, chartDefinition);
+                            if (pointPos is not null)
+                                pointDataLabel.Append(new C.DataLabelPosition() { Val = pointPos.Value });
+                        }
+
+                        if (pointValueLabel.TextFormat is not null)
+                        {
+                            C.TextProperties textProps = new();
+                            if (applyTextFormat(textProps, pointValueLabel.TextFormat))
+                                pointDataLabel.Append(textProps);
+                        }
+
+                        dataLabels.Append(pointDataLabel);
+                    }
+
+                    pointIndex++;
+                }
             }
 
             owner.Append(dataLabels);

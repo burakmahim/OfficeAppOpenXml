@@ -48,12 +48,12 @@ namespace OfficeAppOpenXmlLibrary
                             currentRow += rowCount + 1;
                         }
 
+                        int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
                             ExcelOpenXmlComponents.ChartComponent.AddChart(worksheetPart, chartElement);
+                            chartIndex++;
                         }
-
-
 
                         Sheet sheet = new Sheet()
                         {
