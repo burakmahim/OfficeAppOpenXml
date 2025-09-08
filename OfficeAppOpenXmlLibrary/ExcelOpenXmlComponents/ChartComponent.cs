@@ -1,20 +1,20 @@
-﻿using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Drawing.Spreadsheet;
-using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
-using DocumentFormat.OpenXml;
 using A = DocumentFormat.OpenXml.Drawing;
 using C = DocumentFormat.OpenXml.Drawing.Charts;
-using System.Globalization;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using System.Xml;
-using System.Text.RegularExpressions;
-using System;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using System.IO;
+using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
 
 namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
@@ -91,6 +91,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             public bool? RoundedCorners { get; set; }
             public GroupingType? GroupingType { get; set; }
             public bool? VaryColors { get; set; }
+            public FillStyle FillStyle { get; set; } = FillStyle.Auto;
             public bool? ShowDataLabelsOverMaximum { get; set; }
             public bool CreateNewParagraph { get; set; } //default true
             public bool ShowCategoryAxis { get; set; } //default true
@@ -782,6 +783,15 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             internal static FillDefinition ParseFill(XElement fillNode)
             {
                 FillDefinition fillDefinition = new FillDefinition();
+
+                // <fill style="None"> desteği (yeni enum/property yok)
+                FillStyle? style = XElementAttributeGetter.AsEnum<FillStyle>(fillNode, "style");
+                if (style.HasValue && style.Value == FillStyle.None)
+                {
+                    // Hiçbir alt tanım koyma; applyFormat boş fill gördüğünde NoFill basacak
+                    return fillDefinition; // (solid/pattern/gradient = null)
+                }
+
 
                 XElement? solidNode = fillNode.Element("solid");
                 if (solidNode != null)
@@ -2694,16 +2704,15 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 return;
 
             C.ChartShapeProperties charShapeProperties = getOrAddChartShapeProps(node);
-
             if (charShapeProperties is null)
                 return;
 
+            // local helpers
             FillDefinition getFillDefinition()
             {
                 for (int i = 0; i < formats.Length; i++)
                     if (formats[i]?.FillDefinition is FillDefinition fd)
                         return fd;
-
                 return null;
             }
             LineDefinition getLineDefinition()
@@ -2711,7 +2720,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 for (int i = 0; i < formats.Length; i++)
                     if (formats[i]?.LineDefinition is LineDefinition ld)
                         return ld;
-
                 return null;
             }
             EffectsDefinition getEffectsDefintion()
@@ -2719,12 +2727,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 for (int i = 0; i < formats.Length; i++)
                     if (formats[i]?.EffectsDefinition is EffectsDefinition ed)
                         return ed;
-
                 return null;
             }
 
+            // ===== FILL =====
             if (getFillDefinition() is FillDefinition fillDefinition)
             {
+                // clear previous fill
                 charShapeProperties.RemoveAllChildren<A.NoFill>();
                 charShapeProperties.RemoveAllChildren<A.SolidFill>();
                 charShapeProperties.RemoveAllChildren<A.PatternFill>();
@@ -2732,10 +2741,20 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 bool fillApplied = false;
 
-                if (fillDefinition.GradientFillDefinition is not null)
+                // NoFill fallback: <fill/> (solid/pattern/gradient yoksa) => a:noFill
+                if (fillDefinition.GradientFillDefinition is null &&
+                    fillDefinition.PatternFillDefinition is null &&
+                    (fillDefinition.SolidFillDefinition is null ||
+                     fillDefinition.SolidFillDefinition.Color is null))
+                {
+                    charShapeProperties.Append(new A.NoFill());
+                    fillApplied = true;
+                }
+
+                // gradient
+                if (!fillApplied && fillDefinition.GradientFillDefinition is not null)
                 {
                     A.GradientFill gradientFill = buildGradientFill(fillDefinition.GradientFillDefinition);
-
                     if (gradientFill is not null)
                     {
                         charShapeProperties.Append(gradientFill);
@@ -2743,10 +2762,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     }
                 }
 
+                // pattern
                 if (!fillApplied && fillDefinition.PatternFillDefinition is not null)
                 {
                     A.PatternFill patternFill = buildPatternFill(fillDefinition.PatternFillDefinition);
-
                     if (patternFill is not null)
                     {
                         charShapeProperties.Append(patternFill);
@@ -2754,19 +2773,25 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     }
                 }
 
-                if (!fillApplied && fillDefinition.SolidFillDefinition is not null)
+                // solid
+                if (!fillApplied && fillDefinition.SolidFillDefinition?.Color is not null)
                 {
                     A.SolidFill solidFill = buildSolidFill(fillDefinition.SolidFillDefinition.Color, "dedede");
-
                     if (solidFill is not null)
                     {
                         charShapeProperties.Append(solidFill);
                         fillApplied = true;
                     }
                 }
+
+                // last safety: nothing applied -> NoFill
+                if (!fillApplied)
+                {
+                    charShapeProperties.Append(new A.NoFill());
+                }
             }
 
-            // LINE (A.Outline)
+            // ===== LINE (A.Outline) =====
             if (getLineDefinition() is LineDefinition lineDefinition)
             {
                 A.Outline outline = getOrAddOutline(charShapeProperties);
@@ -2792,7 +2817,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     if (lineDefinition.GradientLineDefinition is not null)
                     {
                         A.GradientFill gradientFill = buildGradientFill(lineDefinition.GradientLineDefinition);
-
                         if (gradientFill is not null)
                         {
                             outline.Append(gradientFill);
@@ -2803,7 +2827,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     if (!styleApplied && lineDefinition.SolidLineDefinition is not null)
                     {
                         A.SolidFill solidFill = buildSolidFill(lineDefinition.SolidLineDefinition.Color, "000000");
-
                         if (solidFill is not null)
                         {
                             outline.Append(solidFill);
@@ -2843,10 +2866,12 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 }
             }
 
-            // EFFECTS (shadow, glow, soft-edges, 3D, reflection)
+            // ===== EFFECTS (shadow, glow, soft-edges, 3D, reflection) =====
             if (getEffectsDefintion() is EffectsDefinition effectsDefinition)
                 applyEffects(node, effectsDefinition);
         }
+
+
         private static void applyEffects(OpenXmlCompositeElement node, EffectsDefinition effectsDefinition)
         {
             if (node is null || effectsDefinition is null)
