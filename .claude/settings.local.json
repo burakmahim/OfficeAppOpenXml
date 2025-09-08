@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\Users\\excalibur\\Documents\\GitHub\\OfficeAppOpenXml\\OfficeAppOpenXmlLibrary/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

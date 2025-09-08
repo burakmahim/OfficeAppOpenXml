@@ -15,7 +15,7 @@ namespace OfficeAppOpenXml.Core.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Presentation");
         }
 
         public IActionResult Privacy()
