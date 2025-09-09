@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using DocumentFormat.OpenXml.VariantTypes;
+using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
 
 namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
@@ -528,6 +529,15 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 if (XElementAttributeGetter.AsInt32(seriesNode, "marker-size", out int markerSize))
                     seriesDefinition.Marker.Size = clamp(markerSize, 2, 72);
 
+                ColorA color = ColorA.Parse(seriesNode, "color", "transparency");
+                if (color != null)
+                {
+                    seriesDefinition.Format = new FormatDefinition();
+                    seriesDefinition.Format.FillDefinition = new FillDefinition();
+                    seriesDefinition.Format.FillDefinition.SolidFillDefinition = new SolidDefinition();
+                    seriesDefinition.Format.FillDefinition.SolidFillDefinition.Color = color;
+                }
+
                 XElement? formatNode = seriesNode.Element("format");
                 if (formatNode != null)
                 {
@@ -577,56 +587,63 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         seriesDefinition.ValueLabels.TextFormat = XElementAttributeGetter.ParseTextFormat(textFormat);
                     }
 
-                    IEnumerable<XElement> point = valueLabelNode.Elements("point");
-                    if (point != null)
+                }
+
+                IEnumerable<XElement> point = seriesNode.Elements("point");
+                if (point != null)
+                {
+                    foreach (XElement pointNode in point)
                     {
-                        foreach (XElement pointNode in point)
+                        PointDefinition pointDefinition = new PointDefinition();
+
+                        string? category = XElementAttributeGetter.AsString(pointNode, "category");
+                        if (!string.IsNullOrEmpty(category))
+                            pointDefinition.Category = category;
+
+                        if (XElementAttributeGetter.AsDouble(pointNode, "value", out double value))
+                            pointDefinition.Value = value;
+
+                        if (XElementAttributeGetter.AsDouble(pointNode, "x", out double x))
+                            pointDefinition.X = x;
+
+                        if (XElementAttributeGetter.AsDouble(pointNode, "y", out double y))
+                            pointDefinition.Y = y;
+
+                        if (XElementAttributeGetter.AsDouble(pointNode, "size", out double size))
+                            pointDefinition.Size = size;
+
+                        XElement? pointVolueLabel = pointNode.Element("value-labels");
+                        if (pointVolueLabel != null)
                         {
-                            PointDefinition pointDefinition = new PointDefinition();
+                            Nullable<DataLabelPosition> pointDataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition>(pointVolueLabel, "position");
+                            if (pointDataLabelPosition.HasValue)
+                                pointDefinition.ValueLabels.Position = pointDataLabelPosition.Value;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show", out bool showP))
+                                pointDefinition.ValueLabels.Show = showP;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-legend-key", out bool showLegendKeyP))
+                                pointDefinition.ValueLabels.ShowLegendKey = showLegendKeyP;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-category-name", out bool showCategoryNameP))
+                                pointDefinition.ValueLabels.ShowCategoryName = showCategoryNameP;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-series-name", out bool showSeriesNameP))
+                                pointDefinition.ValueLabels.ShowSeriesName = showSeriesNameP;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-percent", out bool showPercentP))
+                                pointDefinition.ValueLabels.ShowPercent = showPercentP;
+                            if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-bubble-size", out bool showBubbleSizeP))
+                                pointDefinition.ValueLabels.ShowBubbleSize = showBubbleSizeP;
                             
-                            string? category = XElementAttributeGetter.AsString(pointNode, "category");
-                            if (!string.IsNullOrEmpty(category))
-                                pointDefinition.Category = category;
-
-                            if (XElementAttributeGetter.AsDouble(pointNode, "value", out double value))
-                                pointDefinition.Value = value;
-
-                            if (XElementAttributeGetter.AsDouble(pointNode, "x", out double x))
-                                pointDefinition.X = x;
-
-                            if (XElementAttributeGetter.AsDouble(pointNode, "y", out double y))
-                                pointDefinition.Y = y;                            
-                            
-                            if (XElementAttributeGetter.AsDouble(pointNode, "size", out double size))
-                                pointDefinition.Size = size;
-
-                            XElement? pointVolueLabel = pointNode.Element("value-labels");
-                            if (pointVolueLabel != null)
+                            XElement? textFormatP = pointVolueLabel.Element("text-format");
+                            if (textFormatP != null)
                             {
-                                Nullable<DataLabelPosition> pointDataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition>(pointVolueLabel, "position");
-                                if (pointDataLabelPosition.HasValue)
-                                    pointDefinition.ValueLabels.Position = pointDataLabelPosition.Value;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show", out bool showP))
-                                    pointDefinition.ValueLabels.Show = showP;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-legend-key", out bool showLegendKeyP))
-                                    pointDefinition.ValueLabels.ShowLegendKey = showLegendKeyP;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-category-name", out bool showCategoryNameP))
-                                    pointDefinition.ValueLabels.ShowCategoryName = showCategoryNameP;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-series-name", out bool showSeriesNameP))
-                                    pointDefinition.ValueLabels.ShowSeriesName = showSeriesNameP;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-percent", out bool showPercentP))
-                                    pointDefinition.ValueLabels.ShowPercent = showPercentP;
-                                if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-bubble-size", out bool showBubbleSizeP))
-                                    pointDefinition.ValueLabels.ShowBubbleSize = showBubbleSizeP;
-                                XElement? textFormatP = pointVolueLabel.Element("text-format");
-                                if (textFormatP != null)
-                                {
-                                    pointDefinition.ValueLabels.TextFormat = XElementAttributeGetter.ParseTextFormat(textFormatP);
-                                }
+                                pointDefinition.ValueLabels.TextFormat = XElementAttributeGetter.ParseTextFormat(textFormatP);
                             }
-
-                            seriesDefinition.Points.Add(pointDefinition);
                         }
+
+                        if(pointNode.Element("format") != null)
+                        {
+                            pointDefinition.PointFormat = XElementAttributeGetter.ParseFormatNode(pointNode.Element("format"));
+                        }  
+
+                        seriesDefinition.Points.Add(pointDefinition);
                     }
                 }
 
