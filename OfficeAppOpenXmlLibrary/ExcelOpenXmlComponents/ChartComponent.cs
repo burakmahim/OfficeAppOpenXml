@@ -1706,50 +1706,62 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             foreach (XElement seriesNode in chartNode.Elements("series"))
             {
-
-                BarChartSeries series = new BarChartSeries(
-                    new C.Index() { Val = seriesIndex },
-                    new C.Order() { Val = seriesIndex },
+                var series = new C.BarChartSeries(
+                    new C.Index { Val = seriesIndex },
+                    new C.Order { Val = seriesIndex },
                     new C.SeriesText(new C.NumericValue(seriesNode.Attribute("name")?.Value ?? ""))
                 );
 
-                List<XElement> points = seriesNode.Elements("point").ToList();
+                // Kategori ve değerler
+                var points = seriesNode.Elements("point").ToList();
                 uint pointCount = (uint)points.Count;
 
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
+                var catAxisData = new C.CategoryAxisData();
+                var values = new C.Values();
+                var stringLiteral = new C.StringLiteral();
+                var numberLiteral = new C.NumberLiteral();
 
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
-
-                stringLiteral.Append(new PointCount() { Val = pointCount });
-                numberLiteral.Append(new PointCount() { Val = pointCount });
+                stringLiteral.Append(new C.PointCount { Val = pointCount });
+                numberLiteral.Append(new C.PointCount { Val = pointCount });
 
                 for (int i = 0; i < pointCount; i++)
                 {
-                    string categoryName = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
-                    string valueStr = points[i].Attribute("value")?.Value ?? "0";
+                    string cat = points[i].Attribute("category")?.Value ?? $"Kategori {i + 1}";
+                    string val = points[i].Attribute("value")?.Value ?? "0";
 
-                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(categoryName) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(valueStr) });
+                    stringLiteral.Append(new C.StringPoint { Index = (uint)i, NumericValue = new C.NumericValue(cat) });
+                    numberLiteral.Append(new C.NumericPoint { Index = (uint)i, NumericValue = new C.NumericValue(val) });
                 }
 
                 catAxisData.Append(stringLiteral);
                 values.Append(numberLiteral);
 
-                //applyPointLevelStyling(seriesDefinition, series, useMarker: false);
-
                 series.Append(catAxisData);
                 series.Append(values);
 
-                //(chartDefinition, seriesDefinition, series);
+                // >>> SERİ FORMATINI UYGULA (varsa)
+                XElement? seriesFormatNode = seriesNode.Element("format");
+                if (seriesFormatNode != null)
+                {
+                    var fmt = XElementAttributeGetter.ParseFormatNode(seriesFormatNode);
+                    try
+                    {
+                        applyFormat(series, fmt);
+                    }
+                    catch
+                    {
+                        // format uygulanamazsa grafiğin oluşmasını engelleme
+                    }
+                }
+                // <<<
+
                 addDataLabels(series, chartDefinition);
 
                 barChart.Append(series);
-
                 seriesIndex++;
             }
         }
+
         private static void addLineSeries(ChartDefinition chartDefinition, XElement chartNode, OpenXmlCompositeElement lineChart)
         {
             uint idx = 0;
@@ -3264,20 +3276,27 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             return new A.SolidFill(rgb);
         }
-        private static A.PatternFill buildPatternFill(PatternDefinition patternDefinition)
+        private static A.PatternFill buildPatternFill(PatternDefinition d)
         {
-            if (patternDefinition is null)
-                return null;
+            if (d == null) return null;
 
-            A.PatternFill patternFill = new()
+            var pf = new A.PatternFill
             {
-                Preset = mapPatternPreset(patternDefinition.Preset),
-                ForegroundColor = new A.ForegroundColor(toHexFill(patternDefinition.ForegroundColor, "000000")),
-                BackgroundColor = new A.BackgroundColor(toHexFill(patternDefinition.BackgroundColor, "FFFFFF")),
+                Preset = mapPatternPreset(d.Preset)
             };
 
-            return patternFill;
+            var fg = toHexFill(d.ForegroundColor, "000000"); // OpenXmlElement bekliyoruz
+            var bg = toHexFill(d.BackgroundColor, "FFFFFF");
+
+            if (fg != null)
+                pf.ForegroundColor = new A.ForegroundColor(fg);
+
+            if (bg != null)
+                pf.BackgroundColor = new A.BackgroundColor(bg);
+
+            return pf;
         }
+
         private static A.GradientFill buildGradientFill(GradientDefinition gradientDefinition)
         {
             if (gradientDefinition is null)
