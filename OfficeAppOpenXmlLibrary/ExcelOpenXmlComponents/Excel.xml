@@ -3,9 +3,14 @@
 		<chart type="line" width="600" height="400">
 			<plot-area>
 				<format>
-					<!-- NoFill: arka plan şeffaf -->
-					<fill/>
+					<fill style="Gradient">
+						<gradient angle="90">
+							<stop position="0"   color="#FFFFFF" transparency="0"/>
+							<stop position="100" color="#CCE5FF" transparency="0"/>
+						</gradient>
+					</fill>
 				</format>
+
 			</plot-area>
 			<series name="Satış">
 				<point category="Ocak" value="100"/>

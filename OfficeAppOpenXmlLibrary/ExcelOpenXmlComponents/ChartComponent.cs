@@ -2719,7 +2719,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (charShapeProperties is null)
                 return;
 
-            // local helpers
             FillDefinition getFillDefinition()
             {
                 for (int i = 0; i < formats.Length; i++)
@@ -2742,10 +2741,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 return null;
             }
 
-            // ===== FILL =====
+            // ===================== FILL =====================
             if (getFillDefinition() is FillDefinition fillDefinition)
             {
-                // clear previous fill
+                // önce mevcut doldurma nodelarını temizle
                 charShapeProperties.RemoveAllChildren<A.NoFill>();
                 charShapeProperties.RemoveAllChildren<A.SolidFill>();
                 charShapeProperties.RemoveAllChildren<A.PatternFill>();
@@ -2753,7 +2752,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 bool fillApplied = false;
 
-                // NoFill fallback: <fill/> (solid/pattern/gradient yoksa) => a:noFill
+                // <<< NoFill fallback >>>  (hiç tanım yoksa)
                 if (fillDefinition.GradientFillDefinition is null &&
                     fillDefinition.PatternFillDefinition is null &&
                     (fillDefinition.SolidFillDefinition is null ||
@@ -2763,13 +2762,22 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                     fillApplied = true;
                 }
 
-                // gradient
+                // <<< CHANGED: Gradient + try/catch fallback >>>
                 if (!fillApplied && fillDefinition.GradientFillDefinition is not null)
                 {
-                    A.GradientFill gradientFill = buildGradientFill(fillDefinition.GradientFillDefinition);
-                    if (gradientFill is not null)
+                    try
                     {
-                        charShapeProperties.Append(gradientFill);
+                        A.GradientFill gradientFill = buildGradientFill(fillDefinition.GradientFillDefinition);
+                        if (gradientFill is not null)
+                        {
+                            charShapeProperties.Append(gradientFill);
+                            fillApplied = true;
+                        }
+                    }
+                    catch
+                    {
+                        // gradient patlarsa görünmez kalmasın
+                        charShapeProperties.Append(new A.NoFill());
                         fillApplied = true;
                     }
                 }
@@ -2795,15 +2803,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                         fillApplied = true;
                     }
                 }
-
-                // last safety: nothing applied -> NoFill
-                if (!fillApplied)
-                {
-                    charShapeProperties.Append(new A.NoFill());
-                }
             }
 
-            // ===== LINE (A.Outline) =====
+            // ===================== LINE (Outline) =====================
             if (getLineDefinition() is LineDefinition lineDefinition)
             {
                 A.Outline outline = getOrAddOutline(charShapeProperties);
@@ -2826,12 +2828,21 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                     bool styleApplied = false;
 
+                    // <<< CHANGED: Gradient line + try/catch fallback >>>
                     if (lineDefinition.GradientLineDefinition is not null)
                     {
-                        A.GradientFill gradientFill = buildGradientFill(lineDefinition.GradientLineDefinition);
-                        if (gradientFill is not null)
+                        try
                         {
-                            outline.Append(gradientFill);
+                            A.GradientFill gradientFill = buildGradientFill(lineDefinition.GradientLineDefinition);
+                            if (gradientFill is not null)
+                            {
+                                outline.Append(gradientFill);
+                                styleApplied = true;
+                            }
+                        }
+                        catch
+                        {
+                            outline.Append(new A.NoFill());
                             styleApplied = true;
                         }
                     }
@@ -2878,11 +2889,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 }
             }
 
-            // ===== EFFECTS (shadow, glow, soft-edges, 3D, reflection) =====
+            // ===================== EFFECTS =====================
             if (getEffectsDefintion() is EffectsDefinition effectsDefinition)
                 applyEffects(node, effectsDefinition);
         }
-
 
         private static void applyEffects(OpenXmlCompositeElement node, EffectsDefinition effectsDefinition)
         {
