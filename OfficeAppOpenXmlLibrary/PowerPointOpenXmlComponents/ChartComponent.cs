@@ -9,6 +9,7 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
@@ -3323,6 +3324,160 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             return gradientFill;
         }
+        private static A.Outline buildBorder(string color, Dimension width)
+        {
+            A.Outline outline = new A.Outline(new A.SolidFill(toHexFill(color, "000000")));
+
+            if (width is not null)
+                outline.Width = width.ToEmu();
+
+            return outline;
+        }
+        private static A.SolidFill buildSolidFill(string color)
+        {
+            return new A.SolidFill(toHexFill(color, "dedede"));
+        }
+        private static A.PatternFill buildPatternFill(PatternFillPreset patternFillPreset, string foreGround, string backGround)
+        {
+            A.PatternFill p = new A.PatternFill() { Preset = mapPatternPreset(patternFillPreset) };
+
+            p.ForegroundColor = new A.ForegroundColor(toHexFill(foreGround, "000000"));
+            p.BackgroundColor = new A.BackgroundColor(toHexFill(backGround, "FFFFFF"));
+
+            return p;
+        }
+        private static void applyTickLabelRotation(OpenXmlCompositeElement axisNode, int? rotation)
+        {
+            if (!rotation.HasValue)
+                return;
+            // OpenXML rot = derece * 60000, saat yönünün tersine
+            C.TextProperties txPr = axisNode.GetFirstChild<C.TextProperties>();
+            if (txPr is null)
+            {
+                txPr = new C.TextProperties(
+                    new A.BodyProperties(),
+                    new A.ListStyle(),
+                    new A.Paragraph(new A.Run(new A.Text("")))
+                );
+                axisNode.Append(txPr);
+            }
+            txPr.BodyProperties ??= new A.BodyProperties();
+            txPr.BodyProperties.Rotation = rotation.Value * 60000;
+        }
+
+        //private static t getwallorfloor<t>(bool show, ıfillandbordercontainer fillandbordercontainer, fillstyle fillstyle, ıfillandbordercontainer defaultfillandbordercontainer = null, int? gradientangleoverride = null) where t : openxmlcompositeelement, new()
+        //{
+        //    t elem = new t();
+        //    if (!show)
+        //    {
+        //        // görünmez yapmak için: nofill + noline
+        //        elem.append(new c.chartshapeproperties(
+        //            new a.nofill(),
+        //            new a.outline(new a.nofill())
+        //        ));
+        //    }
+        //    else
+        //    {
+        //        applyfillandborder(elem, fillandbordercontainer, fillstyle, defaultfillandbordercontainer, gradientangleoverride);
+        //    }
+        //    return elem;
+        //}
+        //private static void applyfillandborder(openxmlcompositeelement node, ıfillandbordercontainer definition, fillstyle fillstyle, ıfillandbordercontainer defaultdefinition = null, int? gradientangleoverride = null)
+        //{
+        //    if (node is null || definition is null)
+        //        return;
+
+        //    c.chartshapeproperties shapeproperties = new();
+
+        //    bool tryaddborder(formatdefinition container)
+        //    {
+        //        if (container is null || !container.hasborder())
+        //            return false;
+
+        //        shapeproperties.append(buildborder(container.bordercolor, container.borderwidth));
+
+        //        return true;
+        //    }
+        //    bool tryaddgradientfill(ıfillandbordercontainer container, bool tryfallback)
+        //    {
+        //        if (container is null)
+        //            return false;
+
+        //        if (container.hasgradientfill())
+        //        {
+        //            shapeproperties.append(buildlineargradientfill(container.gradientfillcolor1, container.gradientfillcolor2, gradientangleoverride ?? container.gradientangle));
+
+        //            return true;
+        //        }
+        //        else if (tryfallback)
+        //        {
+        //            return tryaddpatternfill(container, true);
+        //        }
+
+        //        return false;
+        //    }
+        //    bool tryaddpatternfill(ıfillandbordercontainer container, bool tryfallback)
+        //    {
+        //        if (container is null)
+        //            return false;
+
+        //        if (container.haspatternfill())
+        //        {
+        //            shapeproperties.append(buildpatternfill(container.patternfillpreset.value, container.patternfillforeground, container.patternfillbackground));
+
+        //            return true;
+        //        }
+        //        else if (tryfallback)
+        //        {
+        //            return tryaddsolidfill(container);
+        //        }
+
+        //        return false;
+        //    }
+        //    bool tryaddsolidfill(ıfillandbordercontainer container)
+        //    {
+        //        if (container is null)
+        //            return false;
+
+        //        if (container.hassolidfill())
+        //        {
+        //            shapeproperties.append(buildsolidfill(container.solidfillcolor));
+
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+
+        //    switch (fillstyle)
+        //    {
+        //        case fillstyle.auto:
+        //            if (!tryaddgradientfill(definition, true))
+        //                tryaddgradientfill(defaultdefinition, true);
+        //            break;
+        //        case fillstyle.gradient:
+        //            if (!tryaddgradientfill(definition, false))
+        //                tryaddgradientfill(defaultdefinition, false);
+        //            break;
+        //        case fillstyle.pattern:
+        //            if (!tryaddpatternfill(definition, false))
+        //                tryaddpatternfill(defaultdefinition, false);
+        //            break;
+        //        case fillstyle.solid:
+        //            if (!tryaddsolidfill(definition))
+        //                tryaddsolidfill(defaultdefinition);
+        //            break;
+        //        case fillstyle.none:
+        //        default:
+        //            break;
+        //    }
+
+        //    if (!tryaddborder(definition))
+        //        tryaddborder(defaultdefinition);
+
+        //    if (shapeproperties.haschildren)
+        //        node.append(shapeproperties);
+        //}
         private static C.Floor ensureFloor(OpenXmlCompositeElement plotArea)
         {
             C.Floor floor = plotArea.GetFirstChild<C.Floor>();
@@ -3372,28 +3527,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             dataLabels ??= node.AppendChild(new C.DataLabels());
 
             return dataLabels;
-        }
-        private static A.Outline buildBorder(string color, Dimension width)
-        {
-            A.Outline outline = new A.Outline(new A.SolidFill(toHexFill(color, "000000")));
-
-            if (width is not null)
-                outline.Width = width.ToEmu();
-
-            return outline;
-        }
-        private static A.SolidFill buildSolidFill(string color)
-        {
-            return new A.SolidFill(toHexFill(color, "dedede"));
-        }
-        private static A.PatternFill buildPatternFill(PatternFillPreset patternFillPreset, string foreGround, string backGround)
-        {
-            A.PatternFill p = new A.PatternFill() { Preset = mapPatternPreset(patternFillPreset) };
-
-            p.ForegroundColor = new A.ForegroundColor(toHexFill(foreGround, "000000"));
-            p.BackgroundColor = new A.BackgroundColor(toHexFill(backGround, "FFFFFF"));
-
-            return p;
         }
         private static GroupingValues mapGrouping(GroupingType value)
         {
@@ -4704,5 +4837,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         ValueLabelDefinition ValueLabels { get; }
         ChartDefinition GetChartDefinition();
     }
+
 }
 

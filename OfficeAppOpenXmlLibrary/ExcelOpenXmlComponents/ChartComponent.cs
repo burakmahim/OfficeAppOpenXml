@@ -13,6 +13,7 @@ using System.Xml;
 using DocumentFormat.OpenXml.VariantTypes;
 using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
 using System;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 {
@@ -523,9 +524,41 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 SeriesDefinition seriesDefinition = new SeriesDefinition();
                 seriesDefinition.Marker = new MarkerDefinition();
 
-                // Series title parsing
-                string? seriesTitle = seriesNode.Attribute("title")?.Value ?? "";
-                seriesDefinition.Title = new TitleDefinition { Text = seriesTitle };
+                seriesDefinition.Title = new TitleDefinition();
+                string? seriesTitleAttr = chartNode.Attribute("title")?.Value;
+                XElement? titleNode = chartNode.Element("title");
+
+                if (titleNode != null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        seriesDefinition.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? titleText = null;
+
+                if (titleNode is not null)
+                {
+                    titleText = titleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(titleText))
+                        titleText = titleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(titleText))
+                {
+                    seriesDefinition.Title.Text = titleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(seriesTitleAttr))
+                {
+                    seriesDefinition.Title.Text = seriesTitleAttr;
+                }
+                else
+                {
+                    seriesDefinition.Title.Text = string.Empty;
+                }
 
                 Nullable<MarkerType> seriesMarker = XElementAttributeGetter.AsEnum<MarkerType>(seriesNode, "marker-type");
                 if (seriesMarker.HasValue)
@@ -552,6 +585,13 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 XElement? markerNode = seriesNode.Element("marker");
                 if (markerNode != null)
                 {
+                    Nullable<MarkerType> seriesMarkerAttr = XElementAttributeGetter.AsEnum<MarkerType>(markerNode, "marker-type");
+                    if (seriesMarkerAttr.HasValue)
+                        seriesDefinition.Marker.Type = seriesMarkerAttr.Value;
+
+                    if (XElementAttributeGetter.AsInt32(markerNode, "marker-size", out int markerSizeAttr))
+                        seriesDefinition.Marker.Size = clamp(markerSizeAttr, 2, 72);
+
                     XElement? markerFormatNode = markerNode.Element("format");
                     if (markerFormatNode != null)
                     {
@@ -1089,9 +1129,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 return textFormat;
             }
 
-
         }
-        public static void AddChart(WorksheetPart worksheetPart, XElement chartNode)
+        public static void AddChart(WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
@@ -1154,20 +1193,26 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chartPart.ChartSpace.Save();
 
+            // Dinamik pozisyon hesaplaması
+            int chartHeight = 14; // Chart yüksekliği (satır sayısı)
+            int chartSpacing = 2;  // Chart'lar arası boşluk
+            int startRow = 1 + (chartIndex * (chartHeight + chartSpacing));
+            int endRow = startRow + chartHeight;
+
             TwoCellAnchor twoCellAnchor = new TwoCellAnchor();
             twoCellAnchor.Append(new Xdr.FromMarker(
                 new Xdr.ColumnId("1"), new Xdr.ColumnOffset("0"),
-                new Xdr.RowId("1"), new Xdr.RowOffset("0")
+                new Xdr.RowId(startRow.ToString()), new Xdr.RowOffset("0")
             ));
 
             twoCellAnchor.Append(new Xdr.ToMarker(
                 new Xdr.ColumnId("8"), new Xdr.ColumnOffset("0"),
-                new Xdr.RowId("15"), new Xdr.RowOffset("0")
+                new Xdr.RowId(endRow.ToString()), new Xdr.RowOffset("0")
             ));
 
             GraphicFrame graphicFrame = new GraphicFrame();
             graphicFrame.Append(new NonVisualGraphicFrameProperties(
-                new NonVisualDrawingProperties() { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
+                new NonVisualDrawingProperties() { Id = (UInt32Value)(uint)(chartIndex + 2), Name = "Chart" + (chartIndex + 1) },
                 new NonVisualGraphicFrameDrawingProperties()
             ));
 
@@ -1521,9 +1566,44 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         {
             C.Chart chart = new C.Chart();
 
-            string chartTitle = chartNode.Attribute("title")?.Value ?? "";
+            chartDefinition.Title = new TitleDefinition();
+            string? chartTitleAttr = chartNode.Attribute("title")?.Value;
+            XElement? titleNode = chartNode.Element("title");
+            
+            if(titleNode != null)
+            {
+                XElement? titleFormatNode = titleNode.Element("text-format");
+                if (titleFormatNode != null)
+                {
+                    chartDefinition.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                }
+            }
 
-            A.Text text = new A.Text(chartTitle);
+            string? titleText = null;
+
+            if (titleNode is not null)
+            {
+                titleText = titleNode.Attribute("text")?.Value;
+
+                if (string.IsNullOrWhiteSpace(titleText))
+                    titleText = titleNode.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(titleText))
+            {
+                chartDefinition.Title.Text = titleText;
+            }
+            else if (!string.IsNullOrWhiteSpace(chartTitleAttr))
+            {
+                chartDefinition.Title.Text = chartTitleAttr;
+            }
+            else
+            {
+                chartDefinition.Title.Text = string.Empty;
+            }
+
+
+            A.Text text = new A.Text(chartDefinition.Title.Text);
             A.Run run = new A.Run(text);
             A.Paragraph paragraph = new A.Paragraph(run);
             C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
@@ -1531,6 +1611,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             C.Title title = new C.Title(chartText, new Overlay() { Val = false });
 
             chart.Append(title);
+
+            if (chartDefinition.Title.TextFormat is not null)
+                applyTextFormat(richText, chartDefinition.Title.TextFormat);
 
             if (allowView3D && chartDefinition.ThreeDView is not null)
             {
@@ -1654,7 +1737,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 BarChartSeries series = new BarChartSeries(
                     new C.Index() { Val = seriesIndex },
                     new Order() { Val = seriesIndex },
-                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 CategoryAxisData catAxisData = new CategoryAxisData();
@@ -1667,8 +1750,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                 {
-                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Category) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
+                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
+                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
                 }
 
                 catAxisData.Append(stringLiteral);
@@ -1696,7 +1779,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 LineChartSeries series = new(
                     new C.Index() { Val = idx },
                     new Order() { Val = idx },
-                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out C.Values vals);
@@ -1724,7 +1807,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 AreaChartSeries series = new(
                     new C.Index() { Val = idx },
                     new Order() { Val = idx },
-                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out C.Values vals);
@@ -1749,7 +1832,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 C.PieChartSeries series = new(
                     new C.Index() { Val = idx },
                     new Order() { Val = idx },
-                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 buildCategoryAndValues(seriesDefinition, out CategoryAxisData cat, out C.Values vals);
@@ -1775,7 +1858,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 C.BubbleChartSeries series = new(
                     new C.Index() { Val = idx },
                     new Order() { Val = idx },
-                    new SeriesText(new NumericValue() { Text = seriesDefinition.Title })
+                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 bool bubble3DEnabled = chartDefinition.Bubble3D ?? false;
@@ -1786,17 +1869,17 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 NumberLiteral xNumLit = new();
                 xNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                    xNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
+                    xNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
 
                 NumberLiteral yNumLit = new();
                 yNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                    yNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
+                    yNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
 
                 NumberLiteral szNumLit = new();
                 szNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                    szNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new NumericValue(seriesDefinition.Points[i].Size?.ToString(CultureInfo.InvariantCulture)) });
+                    szNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Size?.ToString(CultureInfo.InvariantCulture)) });
 
                 applyPointLevelStyling(seriesDefinition, series, useMarker: false);
 
@@ -2016,6 +2099,52 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(valAx, targetAxisDefinition);
 
+            XElement? valueAxisNode = chartNode.Element("value-axis");
+
+            if(valueAxisNode  != null)
+            {
+                chartDefinition.ValueAxis.Title = new TitleDefinition();
+                string? valueAxisTitleAttr = valueAxisNode.Attribute("title")?.Value;
+                XElement? valueAxisTitleNode = valueAxisNode.Element("title");
+
+                if (valueAxisTitleNode != null)
+                {
+                    XElement? titleFormatNode = valueAxisTitleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        chartDefinition.ValueAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? valueAxisTitleText = null;
+
+                if (valueAxisTitleNode is not null)
+                {
+                    valueAxisTitleText = valueAxisTitleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(valueAxisTitleText))
+                        valueAxisTitleText = valueAxisTitleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(valueAxisTitleText))
+                {
+                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(valueAxisTitleAttr))
+                {
+                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleAttr;
+                }
+
+                A.Text text = new A.Text(chartDefinition.ValueAxis.Title.Text);
+                A.Run run = new A.Run(text);
+                A.Paragraph paragraph = new A.Paragraph(run);
+                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+                C.ChartText chartText = new C.ChartText(richText);
+                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
+
+                valAx.Append(title);
+            }
+
             if (addMajorGridLines)
                 addMajorGridlines(valAx, targetMajorGridlinesFormat);
 
@@ -2083,6 +2212,58 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
 
+            
+            XElement? catAxisNode = chartNode.Element("category-axis");
+
+            if (catAxisNode != null)
+            {
+                chartDefinition.CategoryAxis.Title = new TitleDefinition();
+                string? catAxisNodeAttr = catAxisNode.Attribute("title")?.Value;
+                XElement? titleNode = catAxisNode.Element("title");
+
+                if (titleNode != null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        chartDefinition.CategoryAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? titleText = null;
+
+                if (titleNode is not null)
+                {
+                    titleText = titleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(titleText))
+                        titleText = titleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(titleText))
+                {
+                    chartDefinition.CategoryAxis.Title.Text = titleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(catAxisNodeAttr))
+                {
+                    chartDefinition.CategoryAxis.Title.Text = catAxisNodeAttr;
+                }
+                else
+                {
+                    chartDefinition.CategoryAxis.Title.Text = string.Empty;
+                }
+
+
+                A.Text text = new A.Text(chartDefinition.CategoryAxis.Title.Text);
+                A.Run run = new A.Run(text);
+                A.Paragraph paragraph = new A.Paragraph(run);
+                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+                C.ChartText chartText = new C.ChartText(richText);
+                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
+
+                catAxis.Append(title);
+            }
+
             bool addMajorGridLines;
             FormatDefinition targetMajorGridlinesFormat = null;
 
@@ -2113,61 +2294,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             plotArea.Append(catAxis);
         }
-        //private static void addDataLabels(OpenXmlCompositeElement owner, ChartDefinition chartDefinition)
-        //{
-        //    if (owner == null || chartDefinition == null)
-        //        return;
-
-        //    ValueLabelDefinition valueLabelsDefinition = chartDefinition.ValueLabels;
-
-        //    if (valueLabelsDefinition == null || !valueLabelsDefinition.Show)
-        //        return;
-
-        //    C.DataLabels dataLabels = new();
-        //    dataLabels.Append(new C.ShowValue() { Val = true });
-
-        //    DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
-
-        //    if (position != null)
-        //        dataLabels.Append(new C.DataLabelPosition() { Val = position.Value });
-
-        //    bool showPercent = false;
-        //    bool showBubbleSize = false;
-        //    bool showLeaderLines = false;
-
-        //    switch (chartDefinition.Type)
-        //    {
-        //        case ChartType.Pie:
-        //            showPercent = valueLabelsDefinition.ShowPercent;
-        //            showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
-        //            break;
-        //        case ChartType.Doughnut:
-        //            showPercent = valueLabelsDefinition.ShowPercent;
-        //            showLeaderLines = true;
-        //            break;
-        //        case ChartType.Bubble:
-        //            showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
-        //            break;
-        //        default:
-        //            break;
-        //    }
-
-        //    dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
-        //    dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
-        //    dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
-        //    dataLabels.Append(new C.ShowPercent() { Val = showPercent });
-        //    dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
-        //    dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
-
-        //    if (valueLabelsDefinition.TextFormat != null)
-        //    {
-        //        C.TextProperties textProperties = new();
-        //        if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
-        //            dataLabels.Append(textProperties);
-        //    }
-
-        //    owner.Append(dataLabels);
-        //}
         private static void addDataLabels(OpenXmlCompositeElement owner, IValueLabelsContainer valueLabelsContainer)
         {
             if (owner is null || valueLabelsContainer is null)
@@ -3224,8 +3350,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             return null; 
         }
-
-
         private static A.RgbColorModelHex toHexFill(string hexOrNamed, string fallback = null, int? transparency = null)
         {
             string hexColor = ToHexColorCode(string.IsNullOrWhiteSpace(hexOrNamed) ? fallback : hexOrNamed);

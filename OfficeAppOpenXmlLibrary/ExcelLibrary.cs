@@ -51,7 +51,7 @@ namespace OfficeAppOpenXmlLibrary
                         int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
-                            ExcelOpenXmlComponents.ChartComponent.AddChart(worksheetPart, chartElement);
+                            ExcelOpenXmlComponents.ChartComponent.AddChart(worksheetPart, chartElement, chartIndex);
                             chartIndex++;
                         }
 
