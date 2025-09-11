@@ -30,6 +30,7 @@ namespace OfficeAppOpenXmlLibrary
                         string sheetName = sheetElement.Attribute("name")?.Value ?? $"Sayfa {sheetCounter}";
 
                         WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+
                         Worksheet worksheet = new Worksheet();
                         SheetData sheetData = new SheetData();
 
@@ -39,6 +40,7 @@ namespace OfficeAppOpenXmlLibrary
                         int colCount = 0;
                         int currentRow = 1;
 
+                        worksheetPart.Worksheet = worksheet;
 
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
@@ -46,11 +48,11 @@ namespace OfficeAppOpenXmlLibrary
                             currentRow += rowCount + 1;
                         }
 
-                        worksheetPart.Worksheet = worksheet;
-
+                        int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
-                            ChartComponent.AddChart(worksheetPart, chartElement);
+                            ExcelOpenXmlComponents.ChartComponent.AddChart(worksheetPart, chartElement, chartIndex);
+                            chartIndex++;
                         }
 
                         Sheet sheet = new Sheet()
