@@ -1,0 +1,210 @@
+﻿<excel>
+	<sheet name="Line Chart">
+		<chart type="line" width="600" height="400">
+			<plot-area>
+				<format>
+					<fill style="Gradient">
+						<gradient angle="90">
+							<stop position="0"   color="#FFFFFF" transparency="0"/>
+							<stop position="100" color="#CCE5FF" transparency="0"/>
+						</gradient>
+					</fill>
+				</format>
+
+			</plot-area>
+			<series name="Satış">
+				<point category="Ocak" value="100"/>
+				<point category="Şubat" value="150"/>
+				<point category="Mart" value="120"/>
+				<point category="Nisan" value="180"/>
+			</series>
+			<series name="Hedef">
+				<point category="Ocak" value="110"/>
+				<point category="Şubat" value="130"/>
+				<point category="Mart" value="140"/>
+				<point category="Nisan" value="160"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Area Chart">
+		<chart type="area" width="600" height="400">
+			<plot-area>
+				<format>
+					<fill style="Solid">
+						<solid color="#FFE6CC" transparency="0"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Gelir">
+				<point category="Q1" value="200"/>
+				<point category="Q2" value="250"/>
+				<point category="Q3" value="180"/>
+				<point category="Q4" value="300"/>
+			</series>
+			<series name="Gider">
+				<point category="Q1" value="150"/>
+				<point category="Q2" value="180"/>
+				<point category="Q3" value="160"/>
+				<point category="Q4" value="220"/>
+			</series>
+		</chart>
+	</sheet>
+
+
+	<sheet name="Column Chart">
+		<chart type="column" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- Pattern -->
+					<fill style="Pattern">
+						<pattern preset="Percent20" foreground-color="#FFFFFF" background-color="#336699"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="2023">
+				<point category="İstanbul" value="500"/>
+				<point category="Ankara" value="300"/>
+				<point category="İzmir" value="250"/>
+				<point category="Bursa" value="200"/>
+			</series>
+			<series name="2024">
+				<point category="İstanbul" value="550"/>
+				<point category="Ankara" value="320"/>
+				<point category="İzmir" value="280"/>
+				<point category="Bursa" value="230"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Bar Chart">
+		<chart type="bar" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- Solid -->
+					<fill style="Solid">
+						<solid color="#F0F0F0" transparency="0"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Performans">
+				<point category="Takım A" value="85"/>
+				<point category="Takım B" value="92"/>
+				<point category="Takım C" value="78"/>
+				<point category="Takım D" value="88"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Pie Chart">
+		<chart type="pie" width="600" height="400" vary-colors="true">
+			<plot-area>
+				<format>
+					<!-- NoFill -->
+					<fill/>
+				</format>
+			</plot-area>
+			<series name="Pazar Payı">
+				<point category="Ürün A" value="35"/>
+				<point category="Ürün B" value="25"/>
+				<point category="Ürün C" value="20"/>
+				<point category="Ürün D" value="20"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Doughnut Chart">
+		<chart type="doughnut" width="600" height="400" vary-colors="true">
+			<plot-area>
+				<format>
+					<!-- Solid (hafif şeffaf) -->
+					<fill style="Solid">
+						<solid color="#FFFFFF" transparency="20"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Bölge Satış">
+				<point category="Kuzey" value="40"/>
+				<point category="Güney" value="30"/>
+				<point category="Doğu" value="20"/>
+				<point category="Batı" value="10"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Scatter Chart">
+		<chart type="scatter" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- NoFill -->
+					<fill/>
+				</format>
+			</plot-area>
+			<series name="Korelasyon">
+				<point x="10" y="20"/>
+				<point x="20" y="35"/>
+				<point x="30" y="25"/>
+				<point x="40" y="45"/>
+				<point x="50" y="38"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Bubble Chart">
+		<chart type="bubble" width="600" height="400">
+			<plot-area>
+				<format>
+					<fill style="Solid">
+						<solid color="#E6F0FA" transparency="0"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Bubble Test">
+				<point x="15" y="25" size="10"/>
+				<point x="25" y="35" size="12"/>
+				<point x="35" y="20" size="8"/>
+				<point x="45" y="40" size="14"/>
+			</series>
+		</chart>
+	</sheet>
+
+
+	<sheet name="Radar Chart Standard">
+		<chart type="radar" radar-style="standard" width="600" height="400">
+			<plot-area>
+				<format>
+					<fill style="Solid">
+						<solid color="#F2F2F2" transparency="0"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Performans">
+				<point category="Hız" value="80"/>
+				<point category="Güç" value="90"/>
+				<point category="Dayanıklılık" value="70"/>
+				<point category="Verimlilik" value="85"/>
+				<point category="Maliyet" value="75"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="Radar Chart Filled">
+		<chart type="radar" radar-style="filled" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- Solid -->
+					<fill style="Solid">
+						<solid color="#E6F7FF" transparency="30"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Beceri Analizi">
+				<point category="İletişim" value="85"/>
+				<point category="Liderlik" value="78"/>
+				<point category="Teknik" value="92"/>
+				<point category="Yaratıcılık" value="88"/>
+				<point category="Problem Çözme" value="90"/>
+			</series>
+		</chart>
+	</sheet>
+</excel>
