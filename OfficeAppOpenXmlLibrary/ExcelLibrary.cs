@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System.Xml.Linq;
 using System.IO;
 using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.OpenXmlChartComponent;
 using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
 
 namespace OfficeAppOpenXmlLibrary
@@ -51,7 +52,7 @@ namespace OfficeAppOpenXmlLibrary
                         int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
-                            ExcelOpenXmlComponents.ChartComponent.AddChart(worksheetPart, chartElement, chartIndex);
+                            ChartComponent.ExcelAddChart(worksheetPart, chartElement, chartIndex);
                             chartIndex++;
                         }
 

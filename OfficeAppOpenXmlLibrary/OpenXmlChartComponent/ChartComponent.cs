@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Drawing.Spreadsheet;
@@ -7,19 +8,23 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using A = DocumentFormat.OpenXml.Drawing;
 using C = DocumentFormat.OpenXml.Drawing.Charts;
+using XDR = DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using XS = DocumentFormat.OpenXml.Spreadsheet;
+using P = DocumentFormat.OpenXml.Presentation;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using DocumentFormat.OpenXml.VariantTypes;
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
 using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
 using System;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
-namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
+namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 {
     public class ChartComponent
     {
-       
+
         private static ChartDefinition GetChartDefinitionFromXml(XElement chartNode)
         {
             ChartDefinition chartDefinition = new ChartDefinition();
@@ -676,7 +681,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                                 pointDefinition.ValueLabels.ShowPercent = showPercentP;
                             if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-bubble-size", out bool showBubbleSizeP))
                                 pointDefinition.ValueLabels.ShowBubbleSize = showBubbleSizeP;
-                            
+
                             XElement? textFormatP = pointVolueLabel.Element("text-format");
                             if (textFormatP != null)
                             {
@@ -684,10 +689,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                             }
                         }
 
-                        if(pointNode.Element("format") != null)
+                        if (pointNode.Element("format") != null)
                         {
                             pointDefinition.PointFormat = XElementAttributeGetter.ParseFormatNode(pointNode.Element("format"));
-                        }  
+                        }
 
                         seriesDefinition.Points.Add(pointDefinition);
                     }
@@ -716,9 +721,9 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             {
                 string value = AsString(element, attributeName);
                 if (bool.TryParse(value, out result))
-                    return true;    
+                    return true;
                 result = defaultValue;
-                return false;       
+                return false;
             }
 
             public static T? AsEnum<T>(XElement element, string attributeName) where T : struct, Enum
@@ -1130,22 +1135,132 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             }
 
         }
-        public static void AddChart(WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)
+        public static void ExcelAddChart(WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
             if (chartDefinition is null || chartDefinition.Series.Count == 0)
                 return;
 
+            // DrawingsPart ve WorksheetDrawing’i hazırla
             DrawingsPart drawingsPart = worksheetPart.DrawingsPart ?? worksheetPart.AddNewPart<DrawingsPart>();
             if (drawingsPart.WorksheetDrawing == null)
-                drawingsPart.WorksheetDrawing = new WorksheetDrawing();
+                drawingsPart.WorksheetDrawing = new XDR.WorksheetDrawing();
 
+            // ChartPart oluştur
             ChartPart chartPart = drawingsPart.AddNewPart<ChartPart>();
             string relId = drawingsPart.GetIdOfPart(chartPart);
 
+            // ChartSpace ve Chart
             C.ChartSpace chartSpace = new C.ChartSpace();
-            chartSpace.Append(new EditingLanguage() { Val = "tr-TR" });
+            chartSpace.Append(new C.EditingLanguage() { Val = "tr-TR" });
+
+            C.Chart? chart = null;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar:
+                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Bar);
+                    break;
+                case ChartType.Column:
+                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Column);
+                    break;
+                case ChartType.Line:
+                    chart = getLineChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Area:
+                    chart = getAreaChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Pie:
+                    chart = getPieChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Doughnut:
+                    chart = getDoughnutChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Scatter:
+                    chart = getScatterChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Bubble:
+                    chart = getBubbleChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Radar:
+                    chart = getRadarChart(chartDefinition, chartNode);
+                    break;
+                default:
+                    break;
+            }
+
+            if (chart is null)
+                return;
+
+            chartSpace.Append(new C.RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
+            chartSpace.Append(chart);
+
+            chartPart.ChartSpace = chartSpace;
+            chartPart.ChartSpace.Save();
+
+            // --- Dinamik pozisyon hesaplaması (satır aralığına göre) ---
+            int chartHeight = 14; // grafik yüksekliği (satır)
+            int chartSpacing = 2;  // grafikler arası boşluk
+            int startRow = 1 + (chartIndex * (chartHeight + chartSpacing));
+            int endRow = startRow + chartHeight;
+
+            // --- TwoCellAnchor + GraphicFrame (XDR.* kullan) ---
+            TwoCellAnchor twoCellAnchor = new XDR.TwoCellAnchor();
+
+            twoCellAnchor.Append(new XDR.FromMarker(
+                new XDR.ColumnId("1"), new XDR.ColumnOffset("0"),
+                new XDR.RowId(startRow.ToString()), new XDR.RowOffset("0")
+            ));
+
+            twoCellAnchor.Append(new XDR.ToMarker(
+                new XDR.ColumnId("8"), new XDR.ColumnOffset("0"),
+                new XDR.RowId(endRow.ToString()), new XDR.RowOffset("0")
+            ));
+
+            var graphicFrame = new XDR.GraphicFrame(
+                new XDR.NonVisualGraphicFrameProperties(
+                    new XDR.NonVisualDrawingProperties()
+                    {
+                        Id = (UInt32Value)(uint)(chartIndex + 2),
+                        Name = "Chart" + (chartIndex + 1)
+                    },
+                    new XDR.NonVisualGraphicFrameDrawingProperties()
+                ),
+                new XDR.Transform(
+                    new A.Offset() { X = 0, Y = 0 },
+                    new A.Extents() { Cx = 0, Cy = 0 }
+                ),
+                new A.Graphic(
+                    new A.GraphicData(
+                        new C.ChartReference() { Id = relId }
+                    )
+                    { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
+                )
+            );
+
+            twoCellAnchor.Append(graphicFrame);
+            twoCellAnchor.Append(new XDR.ClientData());
+
+            drawingsPart.WorksheetDrawing.Append(twoCellAnchor);
+            drawingsPart.WorksheetDrawing.Save();
+
+            // Worksheet <drawing> ilişkisini ekle
+            if (!worksheetPart.Worksheet.Elements<XS.Drawing>().Any())
+            {
+                worksheetPart.Worksheet.Append(new XS.Drawing() { Id = worksheetPart.GetIdOfPart(drawingsPart) });
+            }
+
+            worksheetPart.Worksheet.Save();
+        }
+        public static void PowerPointAddChart(SlidePart slidePart, XElement chartNode, ref uint shapeId)
+        {
+            ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
+
+            ChartPart chartPart = slidePart.AddNewPart<ChartPart>();
+            C.ChartSpace chartSpace = new C.ChartSpace();
+            chartPart.ChartSpace = chartSpace;
+            chartPart.ChartSpace.Append(new C.EditingLanguage() { Val = "en-US" });
 
             C.Chart? chart = null;
 
@@ -1181,7 +1296,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
                 default:
                     break;
             }
-
             if (chart is null)
                 return;
 
@@ -1189,57 +1303,31 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             chartSpace.Append(chart);
 
-            chartPart.ChartSpace = chartSpace;
-
             chartPart.ChartSpace.Save();
 
-            // Dinamik pozisyon hesaplaması
-            int chartHeight = 14; // Chart yüksekliği (satır sayısı)
-            int chartSpacing = 2;  // Chart'lar arası boşluk
-            int startRow = 1 + (chartIndex * (chartHeight + chartSpacing));
-            int endRow = startRow + chartHeight;
-
-            TwoCellAnchor twoCellAnchor = new TwoCellAnchor();
-            twoCellAnchor.Append(new Xdr.FromMarker(
-                new Xdr.ColumnId("1"), new Xdr.ColumnOffset("0"),
-                new Xdr.RowId(startRow.ToString()), new Xdr.RowOffset("0")
-            ));
-
-            twoCellAnchor.Append(new Xdr.ToMarker(
-                new Xdr.ColumnId("8"), new Xdr.ColumnOffset("0"),
-                new Xdr.RowId(endRow.ToString()), new Xdr.RowOffset("0")
-            ));
-
-            GraphicFrame graphicFrame = new GraphicFrame();
-            graphicFrame.Append(new NonVisualGraphicFrameProperties(
-                new NonVisualDrawingProperties() { Id = (UInt32Value)(uint)(chartIndex + 2), Name = "Chart" + (chartIndex + 1) },
-                new NonVisualGraphicFrameDrawingProperties()
-            ));
-
-            graphicFrame.Append(new Transform(
-                new A.Offset() { X = 0, Y = 0 },
-                new A.Extents() { Cx = 0, Cy = 0 }
-            ));
-
-            graphicFrame.Append(new A.Graphic(
+            P.GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new P.GraphicFrame());
+            graphicFrame.NonVisualGraphicFrameProperties = new P.NonVisualGraphicFrameProperties(
+                new P.NonVisualDrawingProperties { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
+                new P.NonVisualGraphicFrameDrawingProperties(),
+                new P.ApplicationNonVisualDrawingProperties()
+            );
+            graphicFrame.Transform = new P.Transform(
+                new A.Offset { X = 1524000L, Y = 1524000L },
+                new A.Extents { Cx = 6096000L, Cy = 4064000L }
+            );
+            graphicFrame.Graphic = new A.Graphic(
                 new A.GraphicData(
-                    new C.ChartReference() { Id = relId }
+                    new C.ChartReference { Id = slidePart.GetIdOfPart(chartPart) }
                 )
                 { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
-            ));
+            );
 
-            graphicFrame.Append(new ClientData());
-            twoCellAnchor.Append(graphicFrame);
-            drawingsPart.WorksheetDrawing.Append(twoCellAnchor);
-            drawingsPart.WorksheetDrawing.Save();
 
-            if (!worksheetPart.Worksheet.Elements<Drawing>().Any())
-            {
-                worksheetPart.Worksheet.Append(new Drawing() { Id = worksheetPart.GetIdOfPart(drawingsPart) });
-            }
 
-            worksheetPart.Worksheet.Save();
+            slidePart.Slide.Save();
         }
+
+
         private static C.Chart getBarChart(ChartDefinition chartDefinition, XElement chartNode, BarDirectionValues direction)
         {
 
@@ -1375,7 +1463,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
                 addAxisIds(area3DChart, catId, valId);
                 //addAreaSeries(chartDefinition, chartNode, area3DChart);
-                addAreaSeries(chartDefinition, area3DChart);    
+                addAreaSeries(chartDefinition, area3DChart);
                 addDataLabels(area3DChart, chartDefinition);
 
                 plotArea.Append(area3DChart);
@@ -1569,8 +1657,8 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             chartDefinition.Title = new TitleDefinition();
             string? chartTitleAttr = chartNode.Attribute("title")?.Value;
             XElement? titleNode = chartNode.Element("title");
-            
-            if(titleNode != null)
+
+            if (titleNode != null)
             {
                 XElement? titleFormatNode = titleNode.Element("text-format");
                 if (titleFormatNode != null)
@@ -2027,7 +2115,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         private static uint getSafeId()
         {
             byte[] guidBytes = Guid.NewGuid().ToByteArray();
-            return BitConverter.ToUInt32(guidBytes, 0) & 0x7FFFFFFF; 
+            return BitConverter.ToUInt32(guidBytes, 0) & 0x7FFFFFFF;
         }
         private static void addAxisIds(OpenXmlCompositeElement owner, params uint[] ids)
         {
@@ -2101,7 +2189,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             XElement? valueAxisNode = chartNode.Element("value-axis");
 
-            if(valueAxisNode  != null)
+            if (valueAxisNode != null)
             {
                 chartDefinition.ValueAxis.Title = new TitleDefinition();
                 string? valueAxisTitleAttr = valueAxisNode.Attribute("title")?.Value;
@@ -2212,7 +2300,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
 
             applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
 
-            
+
             XElement? catAxisNode = chartNode.Element("category-axis");
 
             if (catAxisNode != null)
@@ -3345,10 +3433,10 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             if (colorOrName.StartsWith("#"))
                 colorOrName = colorOrName.Substring(1);
 
-            if (System.Text.RegularExpressions.Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
+            if (Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
                 return colorOrName.ToUpper();
 
-            return null; 
+            return null;
         }
         private static A.RgbColorModelHex toHexFill(string hexOrNamed, string fallback = null, int? transparency = null)
         {
@@ -3608,6 +3696,24 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
             p.BackgroundColor = new A.BackgroundColor(toHexFill(backGround, "FFFFFF"));
 
             return p;
+        }
+        private static void applyTickLabelRotation(OpenXmlCompositeElement axisNode, int? rotation)
+        {
+            if (!rotation.HasValue)
+                return;
+            // OpenXML rot = derece * 60000, saat yönünün tersine
+            C.TextProperties txPr = axisNode.GetFirstChild<C.TextProperties>();
+            if (txPr is null)
+            {
+                txPr = new C.TextProperties(
+                    new A.BodyProperties(),
+                    new A.ListStyle(),
+                    new A.Paragraph(new A.Run(new A.Text("")))
+                );
+                axisNode.Append(txPr);
+            }
+            txPr.BodyProperties ??= new A.BodyProperties();
+            txPr.BodyProperties.Rotation = rotation.Value * 60000;
         }
         private static GroupingValues mapGrouping(GroupingType value)
         {
@@ -4197,7 +4303,7 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         public SeriesDefinition SeriesDefinition { get; set; }
         public PointDefinition()
         {
-            
+
         }
         public  /*Ctor*/                PointDefinition(SeriesDefinition seriesDefinition)
         {
@@ -4918,4 +5024,6 @@ namespace OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents
         ChartDefinition GetChartDefinition();
     }
 }
+
+
 

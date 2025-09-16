@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Presentation;
 using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.OpenXmlChartComponent;
 using System.Xml.Linq;
 using A = DocumentFormat.OpenXml.Drawing;
 
@@ -228,7 +229,7 @@ namespace OfficeAppOpenXmlLibrary
                         {
                             foreach (XElement chart in chartElements)
                             {
-                                PowerPointOpenXmlComponents.ChartComponent.AddChart(slidePart, chart, ref shapeId);
+                                ChartComponent.PowerPointAddChart(slidePart, chart, ref shapeId);
                             }
                         }
 
