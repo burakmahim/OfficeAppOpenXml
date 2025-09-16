@@ -31,27 +31,27 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             //chart
 
-            Nullable<ChartType> chartType = XElementAttributeGetter.AsEnum<ChartType>(chartNode, "type");
+            Nullable<ChartType>         chartType       = XElementAttributeGetter.AsEnum<ChartType>         (chartNode, "type"              );
             if (chartType.HasValue)
-                chartDefinition.Type = chartType.Value;
+                chartDefinition.Type                    = chartType.Value;
 
-            Nullable<RadarStyle> radarStyle = XElementAttributeGetter.AsEnum<RadarStyle>(chartNode, "radar-style");
+            Nullable<RadarStyle>        radarStyle      = XElementAttributeGetter.AsEnum<RadarStyle>        (chartNode, "radar-style"       );
             if (radarStyle.HasValue)
-                chartDefinition.RadarStyle = radarStyle.Value;
+                chartDefinition.RadarStyle              = radarStyle.Value;
 
-            Nullable<GroupingType> groupingType = XElementAttributeGetter.AsEnum<GroupingType>(chartNode, "grouping-type");
+            Nullable<GroupingType>      groupingType    = XElementAttributeGetter.AsEnum<GroupingType>      (chartNode, "grouping-type"     );
             if (groupingType.HasValue)
-                chartDefinition.GroupingType = groupingType.Value;
+                chartDefinition.GroupingType            = groupingType.Value;
 
-            Nullable<ScatterStyle> scatterStyle = XElementAttributeGetter.AsEnum<ScatterStyle>(chartNode, "scatter-style");
+            Nullable<ScatterStyle>      scatterStyle    = XElementAttributeGetter.AsEnum<ScatterStyle>      (chartNode, "scatter-style"     );
             if (scatterStyle.HasValue)
-                chartDefinition.ScatterStyle = scatterStyle.Value;
+                chartDefinition.ScatterStyle            = scatterStyle.Value;
 
-            Nullable<BlanksDisplayedAs> displayBlanksAs = XElementAttributeGetter.AsEnum<BlanksDisplayedAs>(chartNode, "display-blanks-as");
+            Nullable<BlanksDisplayedAs> displayBlanksAs = XElementAttributeGetter.AsEnum<BlanksDisplayedAs> (chartNode, "display-blanks-as" );
             if (displayBlanksAs.HasValue)
-                chartDefinition.BlanksDisplayedAs = displayBlanksAs.Value;
+                chartDefinition.BlanksDisplayedAs       = displayBlanksAs.Value;
 
-            Nullable<MarkerType> markerType = XElementAttributeGetter.AsEnum<MarkerType>(chartNode, "marker-type");
+            Nullable<MarkerType> markerType             = XElementAttributeGetter.AsEnum<MarkerType>        (chartNode, "marker-type"       );
             if (markerType.HasValue)
             {
                 if (chartDefinition.Marker == null)
@@ -533,7 +533,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 string? seriesTitleAttr = chartNode.Attribute("title")?.Value;
                 XElement? titleNode = chartNode.Element("title");
 
-                if (titleNode != null)
+				string? dataRangeAttr = seriesNode.Attribute("data-range")?.Value;
+				if (!string.IsNullOrWhiteSpace(dataRangeAttr))
+				{
+					seriesDefinition.DataRange = dataRangeAttr;
+				}
+
+				string? categoryRangeAttr = seriesNode.Attribute("category-range")?.Value;
+				if (!string.IsNullOrWhiteSpace(categoryRangeAttr))
+				{
+					seriesDefinition.CategoryRange = categoryRangeAttr;
+				}
+
+				if (titleNode != null)
                 {
                     XElement? titleFormatNode = titleNode.Element("text-format");
                     if (titleFormatNode != null)
@@ -1831,19 +1843,35 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 CategoryAxisData catAxisData = new CategoryAxisData();
                 C.Values values = new C.Values();
 
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
+                bool hasCategoryRange = !string.IsNullOrEmpty(seriesDefinition.CategoryRange);
+                bool hasDataRange = !string.IsNullOrEmpty(seriesDefinition.DataRange);
 
-                stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
-
-                for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                if (hasCategoryRange || hasDataRange)
                 {
-                    stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
-                }
+                    StringReference stringReference = new StringReference();
+                    stringReference.Append(new C.Formula(seriesDefinition.CategoryRange!));
+                    catAxisData.Append(stringReference);
 
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
+                    NumberReference numberReference = new NumberReference();
+                    numberReference.Append(new C.Formula(seriesDefinition.DataRange!));
+                    values.Append(numberReference);
+                }
+                else
+                {
+                    StringLiteral stringLiteral = new StringLiteral();
+                    NumberLiteral numberLiteral = new NumberLiteral();
+
+                    stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+
+                    for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                    {
+                        stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
+                        numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
+                    }
+
+                    catAxisData.Append(stringLiteral);
+                    values.Append(numberLiteral);
+                }
 
                 applyPointLevelStyling(seriesDefinition, series, useMarker: false);
 
@@ -2661,27 +2689,43 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             catAxisData = new CategoryAxisData();
             values = new C.Values();
 
-            var stringLiteral = new StringLiteral();
-            var numberLiteral = new NumberLiteral();
+            bool hasCategoryRange = !string.IsNullOrEmpty(s.CategoryRange);
+            bool hasDataRange = !string.IsNullOrEmpty(s.DataRange);
 
-            stringLiteral.Append(new PointCount() { Val = (uint)s.Points.Count });
-
-            for (int i = 0; i < s.Points.Count; i++)
+            if (hasCategoryRange || hasDataRange)
             {
-                stringLiteral.Append(new StringPoint()
-                {
-                    Index = (uint)i,
-                    NumericValue = new C.NumericValue(s.Points[i].Category)
-                });
-                numberLiteral.Append(new NumericPoint()
-                {
-                    Index = (uint)i,
-                    NumericValue = new C.NumericValue(s.Points[i].Value?.ToString(CultureInfo.InvariantCulture))
-                });
-            }
+                    StringReference stringReference = new StringReference();
+                    stringReference.Append(new C.Formula(s.CategoryRange!));
+                    catAxisData.Append(stringReference);
 
-            catAxisData.Append(stringLiteral);
-            values.Append(numberLiteral);
+                    NumberReference numberReference = new NumberReference();
+                    numberReference.Append(new C.Formula(s.DataRange!));
+                    values.Append(numberReference);
+            }
+            else
+            {
+                StringLiteral stringLiteral = new StringLiteral();
+                NumberLiteral numberLiteral = new NumberLiteral();
+
+                stringLiteral.Append(new PointCount() { Val = (uint)s.Points.Count });
+
+                for (int i = 0; i < s.Points.Count; i++)
+                {
+                    stringLiteral.Append(new StringPoint()
+                    {
+                        Index = (uint)i,
+                        NumericValue = new C.NumericValue(s.Points[i].Category)
+                    });
+                    numberLiteral.Append(new NumericPoint()
+                    {
+                        Index = (uint)i,
+                        NumericValue = new C.NumericValue(s.Points[i].Value?.ToString(CultureInfo.InvariantCulture))
+                    });
+                }
+
+                catAxisData.Append(stringLiteral);
+                values.Append(numberLiteral);
+            }
         }
         private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
         {
@@ -4258,6 +4302,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
     class SeriesDefinition : IValueLabelsContainer
     {
+        public string? CategoryRange { get; set; }
+        public string? DataRange { get; set; }
         public TitleDefinition Title { get; set; }
         public ColorA ColorA { get { return Format?.FillDefinition?.SolidFillDefinition?.Color; } }
         public string Color { get { return ColorA?.Color; } }
