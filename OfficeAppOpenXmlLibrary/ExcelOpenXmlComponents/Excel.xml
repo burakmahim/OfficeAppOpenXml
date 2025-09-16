@@ -1209,5 +1209,72 @@
 
 		</chart>
 	</sheet>
+	<sheet name="Radar Chart Filled">
+		<chart type="radar" radar-style="filled" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- Solid -->
+					<fill style="Solid">
+						<solid color="#E6F7FF" transparency="30"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Beceri Analizi">
+				<point category="İletişim" value="85"/>
+				<point category="Liderlik" value="78"/>
+				<point category="Teknik" value="92"/>
+				<point category="Yaratıcılık" value="88"/>
+				<point category="Problem Çözme" value="90"/>
+			</series>
+		</chart>
+	</sheet>
+	<sheet name="Area Chart">
+		<chart type="area" width="600" height="400">
+			<plot-area>
+				<format>
+					<fill style="Solid">
+						<solid color="#FFE6CC" transparency="0"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="Gelir">
+				<point category="Q1" value="200"/>
+				<point category="Q2" value="250"/>
+				<point category="Q3" value="180"/>
+				<point category="Q4" value="300"/>
+			</series>
+			<series name="Gider">
+				<point category="Q1" value="150"/>
+				<point category="Q2" value="180"/>
+				<point category="Q3" value="160"/>
+				<point category="Q4" value="220"/>
+			</series>
+		</chart>
+	</sheet>
 
+
+	<sheet name="Column Chart">
+		<chart type="column" width="600" height="400">
+			<plot-area>
+				<format>
+					<!-- Pattern -->
+					<fill style="Pattern">
+						<pattern preset="Percent20" foreground-color="#FFFFFF" background-color="#336699"/>
+					</fill>
+				</format>
+			</plot-area>
+			<series name="2023">
+				<point category="İstanbul" value="500"/>
+				<point category="Ankara" value="300"/>
+				<point category="İzmir" value="250"/>
+				<point category="Bursa" value="200"/>
+			</series>
+			<series name="2024">
+				<point category="İstanbul" value="550"/>
+				<point category="Ankara" value="320"/>
+				<point category="İzmir" value="280"/>
+				<point category="Bursa" value="230"/>
+			</series>
+		</chart>
+	</sheet>
 </excel>
