@@ -5,6 +5,14 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Common\ChartDefinition.cs" />
+	  <Compile Remove="Common\ChartSupport.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="Common\ChartDefinition.cs" />
+	  <None Include="Common\ChartSupport.cs" />
+	</ItemGroup>
 	
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />

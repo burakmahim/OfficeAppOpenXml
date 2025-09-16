@@ -8,12 +8,15 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class CreateSlides
     {
-        public static void CreateDefaultSlide(SlidePart slidePart, XElement slideNode, ref uint shapeId)
+        public                                      OpenXmlPackage              MyFunc                                                                              ()                                                          
+        {
+            return null;
+        }
+        public  static                              void                        CreateDefaultSlide                                                                  (SlidePart slidePart, XElement slideNode, ref uint shapeId) 
         {
             ShapeTree shapeTree = slidePart.Slide.CommonSlideData.ShapeTree;
-
-            string title = slideNode.Element("title")?.Value ?? "";
-            string content = slideNode.Element("content")?.Value ?? "";
+            string    title     = slideNode.Element("title"  )?.Value ?? "";
+            string    content   = slideNode.Element("content")?.Value ?? "";
 
             foreach (Shape shape in shapeTree.Descendants<Shape>())
             {
@@ -43,7 +46,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             }
         }
-        public static void CreateHeaderSlide(SlidePart slidePart, XElement slideNode, ref uint shapeId)
+        public  static                              void                        CreateHeaderSlide                                                                   (SlidePart slidePart, XElement slideNode, ref uint shapeId) 
         {
             ShapeTree shapeTree = slidePart.Slide.CommonSlideData.ShapeTree;
 
@@ -75,7 +78,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 }
             }
         }
-        public static void CreateTwoContentSlide(SlidePart slidePart, XElement slideNode, ref uint shapeId)
+        public  static                              void                        CreateTwoContentSlide                                                               (SlidePart slidePart, XElement slideNode, ref uint shapeId) 
         {
             ShapeTree? shapeTree = slidePart?.Slide?.CommonSlideData?.ShapeTree;
 
@@ -123,15 +126,16 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             {
                 bodyShapes[1].TextBody = new TextBody(
                     new A.BodyProperties(),
-                    new A.ListStyle(),
-                    new A.Paragraph(new A.Run(new A.Text(rightContent)))
+                    new A.ListStyle     (),
+                    new A.Paragraph     (new A.Run(new A.Text(rightContent)))
                 );
             }
 
         }
-        public static void CreateEmptySlide(SlidePart slidePart, ref uint shapeId)
+        public  static                              void                        CreateEmptySlide                                                                    (SlidePart slidePart, ref uint shapeId)                     
         {
             ShapeTree? shapeTree = slidePart?.Slide?.CommonSlideData?.ShapeTree;
         }
+      
     }
 }

@@ -1,0 +1,799 @@
+﻿<presentation>
+	<!-- Slide 1: 3D Bar Chart -->
+	<slide layout="empty">
+		<chart type="bar"  title="Departman Bütçesi"
+			   grouping-type="clustered" gap-width="100" width = "15cm" height = "15cm">
+			<category-axis title="Departmanlar" />
+			<value-axis title="Bütçe (TL)" />
+			<legend show="true" position="top" />
+			<view-3d shape="box" rotation-x="15" rotation-y="20" depth-percent="150"
+					 right-angle-axes="true" />
+			<series title="2023 Bütçe" color="#5B9BD5">
+				<point category="IT" value="500000" />
+				<point category="HR" value="200000" />
+				<point category="Pazarlama" value="350000" />
+				<point category="Satış" value="450000" />
+			</series>
+			<series title="2024 Hedef" color="#A5A5A5">
+				<point category="IT" value="600000" />
+				<point category="HR" value="250000" />
+				<point category="Pazarlama" value="400000" />
+				<point category="Satış" value="500000" />
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 2: Stacked Area Chart -->
+	<slide layout="empty">
+		<chart type="area" width="500px" height="300px" title="Kaynak Kullanımı"
+			   grouping-type="stacked" x="75" y="100">
+			<category-axis title="Zaman" />
+			<value-axis title="Kullanım %" min="0" max="100" />
+			<legend show="true" position="top" />
+			<series title="CPU" color="#FF9999" color-transparency="30">
+				<point category="09:00" value="25" />
+				<point category="10:00" value="35" />
+				<point category="11:00" value="45" />
+				<point category="12:00" value="30" />
+				<point category="13:00" value="20" />
+			</series>
+			<series title="Memory" color="#99FF99" color-transparency="30">
+				<point category="09:00" value="40" />
+				<point category="10:00" value="50" />
+				<point category="11:00" value="35" />
+				<point category="12:00" value="45" />
+				<point category="13:00" value="55" />
+			</series>
+			<series title="Disk" color="#9999FF" color-transparency="30">
+				<point category="09:00" value="15" />
+				<point category="10:00" value="10" />
+				<point category="11:00" value="20" />
+				<point category="12:00" value="25" />
+				<point category="13:00" value="25" />
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 3: Advanced Features -->
+	<slide layout="empty">
+		<chart type="column" width="600px" height="450px" title="Tüm Özellikler Kombinasyonu"
+			   vary-colors="false" auto-title="false" rounded-corners="true"
+			   overlap="20" gap-width="120" x="50" y="75">
+
+			<category-axis title="Kategoriler" min="0" max="5">
+				<text-format>
+					<font family="Segoe UI" size="11" bold="true" color="2F4F4F" />
+					<rotate>30</rotate>
+				</text-format>
+				<format>
+					<fill></fill>
+					<line visible="true" width="2pt" dash="solid">
+						<solid color="4682B4" />
+					</line>
+					<effects>
+						<shadow type="outer" color="808080" transparency="50"
+								blur-radius="4pt" distance="2pt" angle="45" />
+					</effects>
+				</format>
+			</category-axis>
+
+			<value-axis title="Değerler" min="0" max="150" major-unit="30">
+				<text-format>
+					<font family="Segoe UI" size="10" italic="true" color="8B4513" />
+				</text-format>
+				<format>
+					<line visible="true" width="1pt">
+						<solid color="A0A0A0" />
+					</line>
+				</format>
+			</value-axis>
+
+			<legend show="true" position="top">
+				<format>
+					<fill>
+						<solid color="FFFAF0" transparency="20" />
+					</fill>
+					<line visible="true">
+						<solid color="CD853F" />
+					</line>
+				</format>
+				<text-format>
+					<font family="Calibri" size="10" bold="true" color="8B4513" />
+				</text-format>
+			</legend>
+
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="D3D3D3" />
+					</line>
+				</horizontal-format>
+			</grid>
+
+			<value-labels show="true" position="outsideend" show-series-name="false">
+				<text-format>
+					<font family="Arial" size="9" bold="true" color="FFFFFF" />
+				</text-format>
+			</value-labels>
+
+			<plot-area-format>
+				<line visible="true" width="2pt">
+					<solid color="4682B4" />
+				</line>
+				<effects>
+					<shadow type="inner" color="696969" transparency="60"
+							blur-radius="8pt" distance="4pt" />
+					<soft-edges size="6pt" />
+				</effects>
+			</plot-area-format>
+
+			<text-format>
+				<font family="Segoe UI" size="14" bold="true" color="2C3E50" />
+			</text-format>
+
+			<data-table show="true" show-horizontal-border="true"
+						show-vertical-border="true" show-outline="true" show-keys="true">
+				<text-format>
+					<font family="Consolas" size="9" color="666666" />
+				</text-format>
+			</data-table>
+
+			<series title="Birinci Seri" color="E74C3C">
+				<format>
+					<line visible="true" width="2pt">
+						<solid color="922B21" />
+					</line>
+					<effects>
+						<shadow type="outer" color="000000" transparency="40"
+								blur-radius="5pt" distance="3pt" angle="45" />
+						<glow color="FFD700" size="4pt" transparency="50" />
+					</effects>
+				</format>
+				<point category="A" value="85">
+					<format>
+						<fill>
+							<solid color="FF1493" />
+						</fill>
+					</format>
+					<value-labels show="true" position="outsideend">
+						<text-format>
+							<font color="FF1493" bold="true" />
+						</text-format>
+					</value-labels>
+				</point>
+				<point category="B" value="95" />
+				<point category="C" value="75" />
+				<point category="D" value="110" />
+			</series>
+
+			<series title="İkinci Seri" color="3498DB">
+				<format>
+					<fill>
+						<pattern preset="smallgrid"
+								 foreground-color="3498DB"
+								 background-color="AED6F1" />
+					</fill>
+					<line visible="true" width="1pt" dash="dash">
+						<solid color="2874A6" />
+					</line>
+				</format>
+				<point category="A" value="70" />
+				<point category="B" value="88" />
+				<point category="C" value="92" />
+				<point category="D" value="78" />
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 4: Sales Data with Advanced Formatting -->
+	<slide layout="empty">
+		<chart type="column" width="600px" height="400px" title="Satış Verileri" x="50" y="100">
+			<!-- Chart Title -->
+			<title text="Satış Verileri">
+				<text-format align-horizontal="center" align-vertical="center" wrap="none"
+							 margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+							 rotate="0">
+					<fill>
+						<solid color="#FFFFFF"/>
+					</fill>
+					<line width="1pt" color="#2C3E50"/>
+					<effects>
+						<shadow type="outer" color="#808080" blur-radius="3pt" angle="45" distance="2pt"/>
+						<glow color="#FFAA00" size="5pt" transparency="30"/>
+						<reflection blur-radius="4pt" distance="3pt" start-transparency="10"
+end-transparency="70"/>
+					</effects>
+					<font family="Segoe UI" size="16pt" bold="true" italic="true" color="#2C3E50"
+underline="single" strike="none" caps="none"/>
+				</text-format>
+			</title>
+
+			<!-- Category Axis -->
+			<category-axis title="Aylar">
+				<title text="Aylar">
+					<text-format align-horizontal="center" align-vertical="center" wrap="none"
+								 margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+								 rotate="270">
+						<fill>
+							<solid color="#E6F2FF"/>
+						</fill>
+						<line width="1pt" color="#2C3E50"/>
+						<effects>
+							<shadow type="outer" color="#888888" blur-radius="3pt" distance="2pt" angle="45"/>
+							<glow color="#FFAA00" size="5pt" transparency="20"/>
+						</effects>
+						<font family="Segoe UI" size="12pt" bold="true" italic="false" color="#2C3E50"/>
+					</text-format>
+				</title>
+				<format>
+					<fill>
+						<solid color="#D9EDF7"/>
+					</fill>
+					<line visible="true" width="1pt" dash="solid">
+						<solid color="#2C3E50"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#808080" blur-radius="2pt" distance="1pt" angle="45"/>
+					</effects>
+				</format>
+			</category-axis>
+
+			<!-- Value Axis -->
+			<value-axis title="Miktar">
+				<title text="Miktar">
+					<text-format align-horizontal="center" align-vertical="center" wrap="none"
+								 margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+								 rotate="270">
+						<fill>
+							<solid color="#FFF5E6"/>
+						</fill>
+						<line width="1pt" color="#2C3E50"/>
+						<effects>
+							<shadow type="outer" color="#888888" blur-radius="3pt" distance="2pt" angle="45"/>
+							<glow color="#FFAA00" size="5pt" transparency="20"/>
+						</effects>
+						<font family="Segoe UI" size="12pt" bold="true" italic="true" color="#2C3E50"/>
+					</text-format>
+				</title>
+				<format>
+					<line visible="true" width="1pt" dash="solid">
+						<solid color="#D3D3D3"/>
+					</line>
+				</format>
+			</value-axis>
+
+			<!-- Legend -->
+			<legend show="true" position="top">
+				<text-format>
+					<font family="Calibri" size="10pt" bold="true" color="#2C3E50"/>
+				</text-format>
+			</legend>
+
+			<!-- Data Table -->
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline="true"
+show-keys="true">
+				<text-format>
+					<font family="Consolas" size="9pt" color="#666666"/>
+				</text-format>
+			</data-table>
+
+			<!-- Series 1 -->
+			<series name="2023 Satışları" color="#4472C4">
+				<point category="Ocak" value="150"/>
+				<point category="Şubat" value="200"/>
+				<point category="Mart" value="175"/>
+				<point category="Nisan" value="300"/>
+				<point category="Mayıs" value="250"/>
+			</series>
+
+			<!-- Series 2 -->
+			<series name="2024 Satışları" color="#E7A03A">
+				<point category="Ocak" value="180"/>
+				<point category="Şubat" value="220"/>
+				<point category="Mart" value="195"/>
+				<point category="Nisan" value="350"/>
+				<point category="Mayıs" value="280"/>
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 5: Line Chart with Markers -->
+	<slide layout="empty">
+		<chart type="line" title="Proper Line Chart Test" x="50" y="100" width="600" height="400">
+			<series title="Sales Data">
+				<point category="January" value="10"/>
+				<point category="February" value="15"/>
+				<point category="March" value="12"/>
+				<point category="April" value="18"/>
+				<point category="May" value="22"/>
+				<point category="June" value="25"/>
+				<format>
+					<line visible="true" width="2px" dash="solid">
+						<solid color="#0066CC" transparency="0"/>
+					</line>
+				</format>
+				<marker type="circle" size="6"/>
+			</series>
+			<series title="Target">
+				<point category="January" value="8"/>
+				<point category="February" value="12"/>
+				<point category="March" value="16"/>
+				<point category="April" value="20"/>
+				<point category="May" value="24"/>
+				<point category="June" value="28"/>
+				<format>
+					<line visible="true" width="2px" dash="dash">
+						<solid color="#FF6600" transparency="0"/>
+					</line>
+				</format>
+				<marker type="square" size="10"/>
+			</series>
+			<category-axis min="-5"/>
+			<value-axis min="-5" max="30"/>
+			<legend show="true" position="top"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 6: Advanced Features Demo -->
+	<slide layout="empty">
+		<chart type="column" title="Advanced Chart Features Demonstration" width="700" height="500" x="25" y="75">
+			<category-axis title="Business Categories">
+				<text-format>
+					<font family="Segoe UI" size="11" bold="true" color="#2F4F4F"/>
+				</text-format>
+				<format>
+					<line visible="true" width="2pt" dash="solid">
+						<solid color="#4682B4"/>
+					</line>
+				</format>
+			</category-axis>
+
+			<value-axis title="Performance Values" min="0" max="200">
+				<text-format>
+					<font family="Segoe UI" size="10" color="#2F4F4F"/>
+				</text-format>
+			</value-axis>
+
+			<legend show="true" position="top">
+				<format>
+					<fill>
+						<solid color="#F8F9FA" transparency="20"/>
+					</fill>
+					<line visible="true">
+						<solid color="#6C757D"/>
+					</line>
+				</format>
+				<text-format>
+					<font family="Calibri" size="10" bold="true" color="#495057"/>
+				</text-format>
+			</legend>
+
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="#E9ECEF"/>
+					</line>
+				</horizontal-format>
+			</grid>
+
+			<value-labels show="true" position="outside-end">
+				<text-format>
+					<font family="Arial" size="9" bold="true" color="#FFFFFF"/>
+				</text-format>
+			</value-labels>
+
+			<series title="Q1 Performance" color="#007BFF">
+				<format>
+					<fill>
+						<solid color="#007BFF" transparency="10"/>
+					</fill>
+					<line visible="true" width="1pt">
+						<solid color="#0056B3"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#000000" transparency="30"
+								blur-radius="3pt" distance="2pt" angle="45"/>
+					</effects>
+				</format>
+				<point category="Sales" value="145"/>
+				<point category="Marketing" value="128"/>
+				<point category="Operations" value="156"/>
+				<point category="Support" value="98"/>
+			</series>
+
+			<series title="Q2 Performance" color="#28A745">
+				<format>
+					<fill>
+						<solid color="#28A745" transparency="10"/>
+					</fill>
+					<line visible="true" width="1pt">
+						<solid color="#1E7E34"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#000000" transparency="30"
+								blur-radius="3pt" distance="2pt" angle="45"/>
+					</effects>
+				</format>
+				<point category="Sales" value="162"/>
+				<point category="Marketing" value="135"/>
+				<point category="Operations" value="178"/>
+				<point category="Support" value="112"/>
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 7: 3D Sales Data -->
+	<slide layout="empty">
+		<chart type="column" title="Satış Verileri" width="15cm" height="12cm" auto-title="false"
+			   rounded-corners="false" create-new-paragraph="true" show-category-axis="true"
+			   show-value-axis="true" x="25" y="50">
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true"
+						show-outline-border="true" show-legend-keys="true">
+				<text-format>
+					<font size="8" family="Arial" />
+				</text-format>
+			</data-table>
+			<legend show="true" position="right"></legend>
+			<grid show-horizontal="true" show-vertical="true"></grid>
+			<value-labels show="true" position="outsideend" />
+			<category-axis title="Aylar"></category-axis>
+			<value-axis title="Ciro"></value-axis>
+			<series title="2024" color="#ff0000" >
+				<point category="Ocak"  value="120" />
+				<point category="Şubat" value="150" />
+				<point category="Mart"  value="90"  />
+			</series>
+			<series title="2025" color="#00ff00" >
+				<point category="Ocak"  value="30" />
+				<point category="Şubat" value="40" />
+				<point category="Mart"  value="50"  />
+			</series>
+			<view-3d show-floor="true" show-back-wall="true" show-side-wall="true">
+				<format>
+					<fill>
+						<solid color="0000ff" transparency="70" />
+					</fill>
+					<line>
+						<solid color="ff0000" transparency="0" />
+					</line>
+				</format>
+			</view-3d>
+		</chart>
+	</slide>
+
+	<!-- Slide 8: 3D Bar Chart -->
+	<slide layout="empty">
+		<chart type="bar" title="Satış Raporu" vary-colors="false" x="50" y="100" width="600" height="400">
+			<view-3d shape="box"
+					 rotation-x="15"
+					 rotation-y="20"
+					 rotation-z="0"
+					 perspective="20"
+					 depth-percent="100"
+					 height-percent="100"
+					 right-angle-axes="false"/>
+
+			<legend show="true" position="bottom"/>
+
+			<data-table show="true"
+						show-horizontal-border="true"
+						show-vertical-border="true"
+						show-legend-key="true"/>
+
+			<series title="Q1 Satışlar" color="#4472C4">
+				<point category="Ocak" value="120"/>
+				<point category="Şubat" value="135"/>
+				<point category="Mart" value="150"/>
+			</series>
+
+			<series title="Q2 Satışlar" color="#E70000">
+				<point category="Ocak" value="110"/>
+				<point category="Şubat" value="125"/>
+				<point category="Mart" value="140"/>
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 9: 3D Pie Chart -->
+	<slide layout="empty">
+		<chart type="pie" title="Pie Default" vary-colors="true" x="100" y="100" width="500" height="400">
+			<view-3d shape="box"
+					 rotation-x="15"
+					 rotation-y="40"
+					 rotation-z="0"
+					 perspective="7"
+					 depth-percent="100"
+					 height-percent="100"
+					 right-angle-axes="false"/>
+
+			<series title="Sales">
+				<point category="1st Qtr" value="2.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="2nd Qtr" value="3.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="3rd Qtr" value="1.4">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="4th Qtr" value="1.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+			</series>
+		</chart>
+	</slide>
+
+	<!-- Slide 10: Regional Bar Chart -->
+	<slide layout="empty">
+		<chart title="Sales by Region - Bar Chart" type="bar" overlap="25" gap-width="15"
+			   x="50" y="100" width="600" height="400">
+			<series title="Q1 Sales" color="#FF6B35">
+				<point category="Region 1" value="120"/>
+				<point category="Region 2" value="150"/>
+				<point category="Region 3" value="130"/>
+				<point category="Region 4" value="180"/>
+				<point category="Region 5" value="200"/>
+			</series>
+			<series title="Q2 Sales" color="#4ECDC4">
+				<point category="Region 1" value="140"/>
+				<point category="Region 2" value="160"/>
+				<point category="Region 3" value="145"/>
+				<point category="Region 4" value="195"/>
+				<point category="Region 5" value="220"/>
+			</series>
+			<series title="Q3 Sales" color="#45B7D1">
+				<point category="Region 1" value="135"/>
+				<point category="Region 2" value="155"/>
+				<point category="Region 3" value="140"/>
+				<point category="Region 4" value="185"/>
+				<point category="Region 5" value="210"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 11: 3D Column Sales Analysis -->
+	<slide layout="empty">
+		<chart title="3D Column Sales Analysis" type="column" x="50" y="100" width="600" height="400">
+			<series title="North" color="#FF6B35">
+				<point category="Product A" value="300"/>
+				<point category="Product B" value="250"/>
+				<point category="Product C" value="400"/>
+				<point category="Product D" value="350"/>
+			</series>
+			<series title="South" color="#4ECDC4">
+				<point title="Product A" category="Product A" value="320"/>
+				<point category="Product B" value="280"/>
+				<point category="Product C" value="380"/>
+				<point category="Product D" value="360"/>
+			</series>
+			<series title="East" color="#45B7D1">
+				<point category="Product A" value="290"/>
+				<point category="Product B" value="270"/>
+				<point category="Product C" value="420"/>
+				<point category="Product D" value="340"/>
+			</series>
+			<view-3d shape="box" rotation-x="15" rotation-y="20" perspective="30"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 12: Stock Price Trends -->
+	<slide layout="empty">
+		<chart title="Stock Price Trends" type="line" x="50" y="100" width="600" height="400">
+			<series title="AAPL" color="#FF6B35">
+				<point category="Week 1" value="150"/>
+				<point category="Week 2" value="155"/>
+				<point category="Week 3" value="148"/>
+				<point category="Week 4" value="162"/>
+				<point category="Week 5" value="158"/>
+				<point category="Week 6" value="165"/>
+				<point category="Week 7" value="170"/>
+				<point category="Week 8" value="168"/>
+			</series>
+			<series title="GOOGL" color="#4ECDC4">
+				<point category="Week 1" value="2800"/>
+				<point category="Week 2" value="2850"/>
+				<point category="Week 3" value="2820"/>
+				<point category="Week 4" value="2900"/>
+				<point category="Week 5" value="2880"/>
+				<point category="Week 6" value="2950"/>
+				<point category="Week 7" value="2970"/>
+				<point category="Week 8" value="2960"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="false"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 13: Market Share Distribution -->
+	<slide layout="empty">
+		<chart title="Market Share Distribution" type="pie" width="500" height="400" x="125" y="100">
+			<series title="Browser Share">
+				<point category="Chrome" value="65.2" color="#FF6B35"/>
+				<point category="Firefox" value="15.8" color="#4ECDC4"/>
+				<point category="Safari" value="10.1" color="#45B7D1"/>
+				<point category="Edge" value="5.4" color="#96CEB4"/>
+				<point category="Others" value="3.5" color="#FFEAA7"/>
+			</series>
+			<legend position="right" show="true"/>
+			<value-labels show="true" show-percent="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 14: Height vs Weight Analysis -->
+	<slide layout="empty">
+		<chart title="Height vs Weight Analysis" type="scatter" scatter-style="marker" x="50" y="100" width="600"
+height="400">
+			<series title="Males" color="#FF6B35">
+				<point x="165" y="65"/>
+				<point x="170" y="70"/>
+				<point x="175" y="75"/>
+				<point x="180" y="80"/>
+				<point x="185" y="85"/>
+				<point x="160" y="60"/>
+			</series>
+			<series title="Females" color="#4ECDC4">
+				<point x="155" y="50"/>
+				<point x="160" y="55"/>
+				<point x="165" y="60"/>
+				<point x="170" y="65"/>
+				<point x="175" y="70"/>
+				<point x="150" y="45"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="top" show="true"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 15: Sales Performance Analysis -->
+	<slide layout="empty">
+		<chart title="Sales Performance Analysis" type="bubble" x="50" y="100" width="600" height="400">
+			<series title="Region Performance" color="#FF6B35">
+				<point x="100" y="15000" size="50"/>
+				<point x="200" y="25000" size="75"/>
+				<point x="150" y="18000" size="60"/>
+				<point x="300" y="35000" size="90"/>
+				<point x="250" y="28000" size="80"/>
+				<point x="175" y="20000" size="65"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" show-bubble-size="true"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 16: Performance Radar -->
+	<slide layout="empty">
+		<chart title="Performance Radar" type="radar" radar-style="standard" x="100" y="100" width="500"
+height="400">
+			<series title="Product A" color="#FF6B35">
+				<point category="Speed" value="85"/>
+				<point category="Quality" value="90"/>
+				<point category="Innovation" value="75"/>
+				<point category="Cost" value="70"/>
+				<point category="Service" value="80"/>
+				<point category="Reliability" value="95"/>
+			</series>
+			<series title="Product B" color="#4ECDC4">
+				<point category="Speed" value="70"/>
+				<point category="Quality" value="85"/>
+				<point category="Innovation" value="90"/>
+				<point category="Cost" value="85"/>
+				<point category="Service" value="75"/>
+				<point category="Reliability" value="80"/>
+			</series>
+			<legend position="bottom" show="true"/>
+			<value-labels show="false"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 17: Revenue by Department -->
+	<slide layout="empty">
+		<chart title="Revenue by Department" type="doughnut" width="500" height="400" x="125" y="100">
+			<series title="Revenue %">
+				<point category="Sales" value="35" color="#FF6B35"/>
+				<point category="Marketing" value="25" color="#4ECDC4"/>
+				<point category="Development" value="20" color="#45B7D1"/>
+				<point category="Support" value="15" color="#96CEB4"/>
+				<point category="HR" value="5" color="#FFEAA7"/>
+			</series>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" show-percent="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 18: Revenue Growth Areas -->
+	<slide layout="empty">
+		<chart title="Revenue Growth Areas" type="area" x="50" y="100" width="600" height="400">
+			<series title="Online Sales" color="#FF6B35">
+				<point category="2019" value="50"/>
+				<point category="2020" value="65"/>
+				<point category="2021" value="85"/>
+				<point category="2022" value="120"/>
+				<point category="2023" value="160"/>
+				<point category="2024" value="200"/>
+			</series>
+			<series title="Retail Sales" color="#4ECDC4">
+				<point category="2019" value="200"/>
+				<point category="2020" value="180"/>
+				<point category="2021" value="160"/>
+				<point category="2022" value="150"/>
+				<point category="2023" value="140"/>
+				<point category="2024" value="135"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="top" show="true"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 19: 3D Cylinder Chart -->
+	<slide layout="empty">
+		<chart title="Production Volume - Cylinder" type="column" x="50" y="100" width="600" height="400">
+			<series title="Production" color="#FF6B35">
+				<point category="Factory A" value="1200"/>
+				<point category="Factory B" value="1500"/>
+				<point category="Factory C" value="980"/>
+				<point category="Factory D" value="1800"/>
+			</series>
+			<view-3d shape="cylinder" rotation-x="20" rotation-y="30" perspective="35"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="top" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 20: 3D Cone Chart -->
+	<slide layout="empty">
+		<chart title="Performance Metrics - Cone" type="column" x="50" y="100" width="600" height="400">
+			<series title="Performance" color="#4ECDC4">
+				<point category="Metric 1" value="85"/>
+				<point category="Metric 2" value="92"/>
+				<point category="Metric 3" value="78"/>
+				<point category="Metric 4" value="96"/>
+			</series>
+			<view-3d shape="cone" rotation-x="25" rotation-y="40" perspective="30"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 21: 3D Pyramid Chart -->
+	<slide layout="empty">
+		<chart title="Hierarchy Analysis - Pyramid" type="column" x="50" y="100" width="600" height="400">
+			<series title="Hierarchy" color="#45B7D1">
+				<point category="Level 1" value="500"/>
+				<point category="Level 2" value="300"/>
+				<point category="Level 3" value="150"/>
+				<point category="Level 4" value="50"/>
+			</series>
+			<view-3d shape="pyramid" rotation-x="15" rotation-y="25" perspective="40"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</slide>
+
+	<!-- Slide 22: 3D Market Analysis -->
+	<slide layout="empty">
+		<chart title="3D Market Analysis" type="bubble" bubble-3d="true" x="50" y="100" width="600" height="400">
+			<series title="Market Data" color="#4ECDC4">
+				<point x="15" y="120" size="45"/>
+				<point x="25" y="180" size="70"/>
+				<point x="35" y="160" size="55"/>
+				<point x="45" y="240" size="85"/>
+				<point x="30" y="200" size="75"/>
+				<point x="20" y="140" size="50"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" show-bubble-size="true"/>
+		</chart>
+	</slide>
+</presentation>
