@@ -1,20 +1,30 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using System.Xml.Linq;
+using DocumentFormat.OpenXml;
 using A = DocumentFormat.OpenXml.Drawing;
 using C = DocumentFormat.OpenXml.Drawing.Charts;
-using System.Xml.Linq;
-using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
+using XDR = DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using XS = DocumentFormat.OpenXml.Spreadsheet;
+using P = DocumentFormat.OpenXml.Presentation;
 using System.Globalization;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Text.RegularExpressions;
+using System.Xml;
+using DocumentFormat.OpenXml.VariantTypes;
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+using System;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
+namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 {
-    class ChartComponent
+    public class ChartComponent
     {
+
         private static ChartDefinition GetChartDefinitionFromXml(XElement chartNode)
         {
             ChartDefinition chartDefinition = new ChartDefinition();
@@ -519,9 +529,41 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 SeriesDefinition seriesDefinition = new SeriesDefinition();
                 seriesDefinition.Marker = new MarkerDefinition();
 
-                // Series title parsing
-                string? seriesTitle = seriesNode.Attribute("title")?.Value ?? "";
-                seriesDefinition.Title = new TitleDefinition { Text = seriesTitle };
+                seriesDefinition.Title = new TitleDefinition();
+                string? seriesTitleAttr = chartNode.Attribute("title")?.Value;
+                XElement? titleNode = chartNode.Element("title");
+
+                if (titleNode != null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        seriesDefinition.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? titleText = null;
+
+                if (titleNode is not null)
+                {
+                    titleText = titleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(titleText))
+                        titleText = titleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(titleText))
+                {
+                    seriesDefinition.Title.Text = titleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(seriesTitleAttr))
+                {
+                    seriesDefinition.Title.Text = seriesTitleAttr;
+                }
+                else
+                {
+                    seriesDefinition.Title.Text = string.Empty;
+                }
 
                 Nullable<MarkerType> seriesMarker = XElementAttributeGetter.AsEnum<MarkerType>(seriesNode, "marker-type");
                 if (seriesMarker.HasValue)
@@ -548,6 +590,13 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 XElement? markerNode = seriesNode.Element("marker");
                 if (markerNode != null)
                 {
+                    Nullable<MarkerType> seriesMarkerAttr = XElementAttributeGetter.AsEnum<MarkerType>(markerNode, "marker-type");
+                    if (seriesMarkerAttr.HasValue)
+                        seriesDefinition.Marker.Type = seriesMarkerAttr.Value;
+
+                    if (XElementAttributeGetter.AsInt32(markerNode, "marker-size", out int markerSizeAttr))
+                        seriesDefinition.Marker.Size = clamp(markerSizeAttr, 2, 72);
+
                     XElement? markerFormatNode = markerNode.Element("format");
                     if (markerFormatNode != null)
                     {
@@ -1085,9 +1134,126 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 return textFormat;
             }
 
-
         }
-        public static void AddChart(SlidePart slidePart, XElement chartNode, ref uint shapeId)
+        public static void ExcelAddChart(WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)
+        {
+            ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
+
+            if (chartDefinition is null || chartDefinition.Series.Count == 0)
+                return;
+
+            // DrawingsPart ve WorksheetDrawing’i hazırla
+            DrawingsPart drawingsPart = worksheetPart.DrawingsPart ?? worksheetPart.AddNewPart<DrawingsPart>();
+            if (drawingsPart.WorksheetDrawing == null)
+                drawingsPart.WorksheetDrawing = new XDR.WorksheetDrawing();
+
+            // ChartPart oluştur
+            ChartPart chartPart = drawingsPart.AddNewPart<ChartPart>();
+            string relId = drawingsPart.GetIdOfPart(chartPart);
+
+            // ChartSpace ve Chart
+            C.ChartSpace chartSpace = new C.ChartSpace();
+            chartSpace.Append(new C.EditingLanguage() { Val = "tr-TR" });
+
+            C.Chart? chart = null;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar:
+                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Bar);
+                    break;
+                case ChartType.Column:
+                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Column);
+                    break;
+                case ChartType.Line:
+                    chart = getLineChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Area:
+                    chart = getAreaChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Pie:
+                    chart = getPieChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Doughnut:
+                    chart = getDoughnutChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Scatter:
+                    chart = getScatterChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Bubble:
+                    chart = getBubbleChart(chartDefinition, chartNode);
+                    break;
+                case ChartType.Radar:
+                    chart = getRadarChart(chartDefinition, chartNode);
+                    break;
+                default:
+                    break;
+            }
+
+            if (chart is null)
+                return;
+
+            chartSpace.Append(new C.RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
+            chartSpace.Append(chart);
+
+            chartPart.ChartSpace = chartSpace;
+            chartPart.ChartSpace.Save();
+
+            // --- Dinamik pozisyon hesaplaması (satır aralığına göre) ---
+            int chartHeight = 14; // grafik yüksekliği (satır)
+            int chartSpacing = 2;  // grafikler arası boşluk
+            int startRow = 1 + (chartIndex * (chartHeight + chartSpacing));
+            int endRow = startRow + chartHeight;
+
+            // --- TwoCellAnchor + GraphicFrame (XDR.* kullan) ---
+            TwoCellAnchor twoCellAnchor = new XDR.TwoCellAnchor();
+
+            twoCellAnchor.Append(new XDR.FromMarker(
+                new XDR.ColumnId("1"), new XDR.ColumnOffset("0"),
+                new XDR.RowId(startRow.ToString()), new XDR.RowOffset("0")
+            ));
+
+            twoCellAnchor.Append(new XDR.ToMarker(
+                new XDR.ColumnId("8"), new XDR.ColumnOffset("0"),
+                new XDR.RowId(endRow.ToString()), new XDR.RowOffset("0")
+            ));
+
+            var graphicFrame = new XDR.GraphicFrame(
+                new XDR.NonVisualGraphicFrameProperties(
+                    new XDR.NonVisualDrawingProperties()
+                    {
+                        Id = (UInt32Value)(uint)(chartIndex + 2),
+                        Name = "Chart" + (chartIndex + 1)
+                    },
+                    new XDR.NonVisualGraphicFrameDrawingProperties()
+                ),
+                new XDR.Transform(
+                    new A.Offset() { X = 0, Y = 0 },
+                    new A.Extents() { Cx = 0, Cy = 0 }
+                ),
+                new A.Graphic(
+                    new A.GraphicData(
+                        new C.ChartReference() { Id = relId }
+                    )
+                    { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
+                )
+            );
+
+            twoCellAnchor.Append(graphicFrame);
+            twoCellAnchor.Append(new XDR.ClientData());
+
+            drawingsPart.WorksheetDrawing.Append(twoCellAnchor);
+            drawingsPart.WorksheetDrawing.Save();
+
+            // Worksheet <drawing> ilişkisini ekle
+            if (!worksheetPart.Worksheet.Elements<XS.Drawing>().Any())
+            {
+                worksheetPart.Worksheet.Append(new XS.Drawing() { Id = worksheetPart.GetIdOfPart(drawingsPart) });
+            }
+
+            worksheetPart.Worksheet.Save();
+        }
+        public static void PowerPointAddChart(SlidePart slidePart, XElement chartNode, ref uint shapeId)
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
@@ -1139,28 +1305,29 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             chartPart.ChartSpace.Save();
 
-            GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new GraphicFrame());
-            graphicFrame.NonVisualGraphicFrameProperties = new NonVisualGraphicFrameProperties(
-                new NonVisualDrawingProperties() { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
-                new NonVisualGraphicFrameDrawingProperties(),
-                new ApplicationNonVisualDrawingProperties()
+            P.GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new P.GraphicFrame());
+            graphicFrame.NonVisualGraphicFrameProperties = new P.NonVisualGraphicFrameProperties(
+                new P.NonVisualDrawingProperties { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
+                new P.NonVisualGraphicFrameDrawingProperties(),
+                new P.ApplicationNonVisualDrawingProperties()
             );
-
-            graphicFrame.Transform = new Transform(
-                new A.Offset() { X = 1524000L, Y = 1524000L },
-                new A.Extents() { Cx = 6096000L, Cy = 4064000L }
+            graphicFrame.Transform = new P.Transform(
+                new A.Offset { X = 1524000L, Y = 1524000L },
+                new A.Extents { Cx = 6096000L, Cy = 4064000L }
             );
-
             graphicFrame.Graphic = new A.Graphic(
                 new A.GraphicData(
-                    new C.ChartReference() { Id = slidePart.GetIdOfPart(chartPart) }
+                    new C.ChartReference { Id = slidePart.GetIdOfPart(chartPart) }
                 )
                 { Uri = "http://schemas.openxmlformats.org/drawingml/2006/chart" }
             );
 
 
+
             slidePart.Slide.Save();
         }
+
+
         private static C.Chart getBarChart(ChartDefinition chartDefinition, XElement chartNode, BarDirectionValues direction)
         {
 
@@ -1487,9 +1654,44 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         {
             C.Chart chart = new C.Chart();
 
-            string chartTitle = chartNode.Attribute("title")?.Value ?? "";
+            chartDefinition.Title = new TitleDefinition();
+            string? chartTitleAttr = chartNode.Attribute("title")?.Value;
+            XElement? titleNode = chartNode.Element("title");
 
-            A.Text text = new A.Text(chartTitle);
+            if (titleNode != null)
+            {
+                XElement? titleFormatNode = titleNode.Element("text-format");
+                if (titleFormatNode != null)
+                {
+                    chartDefinition.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                }
+            }
+
+            string? titleText = null;
+
+            if (titleNode is not null)
+            {
+                titleText = titleNode.Attribute("text")?.Value;
+
+                if (string.IsNullOrWhiteSpace(titleText))
+                    titleText = titleNode.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(titleText))
+            {
+                chartDefinition.Title.Text = titleText;
+            }
+            else if (!string.IsNullOrWhiteSpace(chartTitleAttr))
+            {
+                chartDefinition.Title.Text = chartTitleAttr;
+            }
+            else
+            {
+                chartDefinition.Title.Text = string.Empty;
+            }
+
+
+            A.Text text = new A.Text(chartDefinition.Title.Text);
             A.Run run = new A.Run(text);
             A.Paragraph paragraph = new A.Paragraph(run);
             C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
@@ -1497,6 +1699,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             C.Title title = new C.Title(chartText, new Overlay() { Val = false });
 
             chart.Append(title);
+
+            if (chartDefinition.Title.TextFormat is not null)
+                applyTextFormat(richText, chartDefinition.Title.TextFormat);
 
             if (allowView3D && chartDefinition.ThreeDView is not null)
             {
@@ -1982,6 +2187,52 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             applyAxisDefinition(valAx, targetAxisDefinition);
 
+            XElement? valueAxisNode = chartNode.Element("value-axis");
+
+            if (valueAxisNode != null)
+            {
+                chartDefinition.ValueAxis.Title = new TitleDefinition();
+                string? valueAxisTitleAttr = valueAxisNode.Attribute("title")?.Value;
+                XElement? valueAxisTitleNode = valueAxisNode.Element("title");
+
+                if (valueAxisTitleNode != null)
+                {
+                    XElement? titleFormatNode = valueAxisTitleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        chartDefinition.ValueAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? valueAxisTitleText = null;
+
+                if (valueAxisTitleNode is not null)
+                {
+                    valueAxisTitleText = valueAxisTitleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(valueAxisTitleText))
+                        valueAxisTitleText = valueAxisTitleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(valueAxisTitleText))
+                {
+                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(valueAxisTitleAttr))
+                {
+                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleAttr;
+                }
+
+                A.Text text = new A.Text(chartDefinition.ValueAxis.Title.Text);
+                A.Run run = new A.Run(text);
+                A.Paragraph paragraph = new A.Paragraph(run);
+                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+                C.ChartText chartText = new C.ChartText(richText);
+                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
+
+                valAx.Append(title);
+            }
+
             if (addMajorGridLines)
                 addMajorGridlines(valAx, targetMajorGridlinesFormat);
 
@@ -2048,6 +2299,58 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             }
 
             applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
+
+
+            XElement? catAxisNode = chartNode.Element("category-axis");
+
+            if (catAxisNode != null)
+            {
+                chartDefinition.CategoryAxis.Title = new TitleDefinition();
+                string? catAxisNodeAttr = catAxisNode.Attribute("title")?.Value;
+                XElement? titleNode = catAxisNode.Element("title");
+
+                if (titleNode != null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+                    if (titleFormatNode != null)
+                    {
+                        chartDefinition.CategoryAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
+                    }
+                }
+
+                string? titleText = null;
+
+                if (titleNode is not null)
+                {
+                    titleText = titleNode.Attribute("text")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(titleText))
+                        titleText = titleNode.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(titleText))
+                {
+                    chartDefinition.CategoryAxis.Title.Text = titleText;
+                }
+                else if (!string.IsNullOrWhiteSpace(catAxisNodeAttr))
+                {
+                    chartDefinition.CategoryAxis.Title.Text = catAxisNodeAttr;
+                }
+                else
+                {
+                    chartDefinition.CategoryAxis.Title.Text = string.Empty;
+                }
+
+
+                A.Text text = new A.Text(chartDefinition.CategoryAxis.Title.Text);
+                A.Run run = new A.Run(text);
+                A.Paragraph paragraph = new A.Paragraph(run);
+                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+                C.ChartText chartText = new C.ChartText(richText);
+                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
+
+                catAxis.Append(title);
+            }
 
             bool addMajorGridLines;
             FormatDefinition targetMajorGridlinesFormat = null;
@@ -3130,13 +3433,11 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             if (colorOrName.StartsWith("#"))
                 colorOrName = colorOrName.Substring(1);
 
-            if (System.Text.RegularExpressions.Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
+            if (Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
                 return colorOrName.ToUpper();
 
             return null;
         }
-
-
         private static A.RgbColorModelHex toHexFill(string hexOrNamed, string fallback = null, int? transparency = null)
         {
             string hexColor = ToHexColorCode(string.IsNullOrWhiteSpace(hexOrNamed) ? fallback : hexOrNamed);
@@ -3324,160 +3625,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             return gradientFill;
         }
-        private static A.Outline buildBorder(string color, Dimension width)
-        {
-            A.Outline outline = new A.Outline(new A.SolidFill(toHexFill(color, "000000")));
-
-            if (width is not null)
-                outline.Width = width.ToEmu();
-
-            return outline;
-        }
-        private static A.SolidFill buildSolidFill(string color)
-        {
-            return new A.SolidFill(toHexFill(color, "dedede"));
-        }
-        private static A.PatternFill buildPatternFill(PatternFillPreset patternFillPreset, string foreGround, string backGround)
-        {
-            A.PatternFill p = new A.PatternFill() { Preset = mapPatternPreset(patternFillPreset) };
-
-            p.ForegroundColor = new A.ForegroundColor(toHexFill(foreGround, "000000"));
-            p.BackgroundColor = new A.BackgroundColor(toHexFill(backGround, "FFFFFF"));
-
-            return p;
-        }
-        private static void applyTickLabelRotation(OpenXmlCompositeElement axisNode, int? rotation)
-        {
-            if (!rotation.HasValue)
-                return;
-            // OpenXML rot = derece * 60000, saat yönünün tersine
-            C.TextProperties txPr = axisNode.GetFirstChild<C.TextProperties>();
-            if (txPr is null)
-            {
-                txPr = new C.TextProperties(
-                    new A.BodyProperties(),
-                    new A.ListStyle(),
-                    new A.Paragraph(new A.Run(new A.Text("")))
-                );
-                axisNode.Append(txPr);
-            }
-            txPr.BodyProperties ??= new A.BodyProperties();
-            txPr.BodyProperties.Rotation = rotation.Value * 60000;
-        }
-
-        //private static t getwallorfloor<t>(bool show, ıfillandbordercontainer fillandbordercontainer, fillstyle fillstyle, ıfillandbordercontainer defaultfillandbordercontainer = null, int? gradientangleoverride = null) where t : openxmlcompositeelement, new()
-        //{
-        //    t elem = new t();
-        //    if (!show)
-        //    {
-        //        // görünmez yapmak için: nofill + noline
-        //        elem.append(new c.chartshapeproperties(
-        //            new a.nofill(),
-        //            new a.outline(new a.nofill())
-        //        ));
-        //    }
-        //    else
-        //    {
-        //        applyfillandborder(elem, fillandbordercontainer, fillstyle, defaultfillandbordercontainer, gradientangleoverride);
-        //    }
-        //    return elem;
-        //}
-        //private static void applyfillandborder(openxmlcompositeelement node, ıfillandbordercontainer definition, fillstyle fillstyle, ıfillandbordercontainer defaultdefinition = null, int? gradientangleoverride = null)
-        //{
-        //    if (node is null || definition is null)
-        //        return;
-
-        //    c.chartshapeproperties shapeproperties = new();
-
-        //    bool tryaddborder(formatdefinition container)
-        //    {
-        //        if (container is null || !container.hasborder())
-        //            return false;
-
-        //        shapeproperties.append(buildborder(container.bordercolor, container.borderwidth));
-
-        //        return true;
-        //    }
-        //    bool tryaddgradientfill(ıfillandbordercontainer container, bool tryfallback)
-        //    {
-        //        if (container is null)
-        //            return false;
-
-        //        if (container.hasgradientfill())
-        //        {
-        //            shapeproperties.append(buildlineargradientfill(container.gradientfillcolor1, container.gradientfillcolor2, gradientangleoverride ?? container.gradientangle));
-
-        //            return true;
-        //        }
-        //        else if (tryfallback)
-        //        {
-        //            return tryaddpatternfill(container, true);
-        //        }
-
-        //        return false;
-        //    }
-        //    bool tryaddpatternfill(ıfillandbordercontainer container, bool tryfallback)
-        //    {
-        //        if (container is null)
-        //            return false;
-
-        //        if (container.haspatternfill())
-        //        {
-        //            shapeproperties.append(buildpatternfill(container.patternfillpreset.value, container.patternfillforeground, container.patternfillbackground));
-
-        //            return true;
-        //        }
-        //        else if (tryfallback)
-        //        {
-        //            return tryaddsolidfill(container);
-        //        }
-
-        //        return false;
-        //    }
-        //    bool tryaddsolidfill(ıfillandbordercontainer container)
-        //    {
-        //        if (container is null)
-        //            return false;
-
-        //        if (container.hassolidfill())
-        //        {
-        //            shapeproperties.append(buildsolidfill(container.solidfillcolor));
-
-        //            return true;
-        //        }
-
-        //        return false;
-        //    }
-
-        //    switch (fillstyle)
-        //    {
-        //        case fillstyle.auto:
-        //            if (!tryaddgradientfill(definition, true))
-        //                tryaddgradientfill(defaultdefinition, true);
-        //            break;
-        //        case fillstyle.gradient:
-        //            if (!tryaddgradientfill(definition, false))
-        //                tryaddgradientfill(defaultdefinition, false);
-        //            break;
-        //        case fillstyle.pattern:
-        //            if (!tryaddpatternfill(definition, false))
-        //                tryaddpatternfill(defaultdefinition, false);
-        //            break;
-        //        case fillstyle.solid:
-        //            if (!tryaddsolidfill(definition))
-        //                tryaddsolidfill(defaultdefinition);
-        //            break;
-        //        case fillstyle.none:
-        //        default:
-        //            break;
-        //    }
-
-        //    if (!tryaddborder(definition))
-        //        tryaddborder(defaultdefinition);
-
-        //    if (shapeproperties.haschildren)
-        //        node.append(shapeproperties);
-        //}
         private static C.Floor ensureFloor(OpenXmlCompositeElement plotArea)
         {
             C.Floor floor = plotArea.GetFirstChild<C.Floor>();
@@ -3527,6 +3674,46 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             dataLabels ??= node.AppendChild(new C.DataLabels());
 
             return dataLabels;
+        }
+        private static A.Outline buildBorder(string color, Dimension width)
+        {
+            A.Outline outline = new A.Outline(new A.SolidFill(toHexFill(color, "000000")));
+
+            if (width is not null)
+                outline.Width = width.ToEmu();
+
+            return outline;
+        }
+        private static A.SolidFill buildSolidFill(string color)
+        {
+            return new A.SolidFill(toHexFill(color, "dedede"));
+        }
+        private static A.PatternFill buildPatternFill(PatternFillPreset patternFillPreset, string foreGround, string backGround)
+        {
+            A.PatternFill p = new A.PatternFill() { Preset = mapPatternPreset(patternFillPreset) };
+
+            p.ForegroundColor = new A.ForegroundColor(toHexFill(foreGround, "000000"));
+            p.BackgroundColor = new A.BackgroundColor(toHexFill(backGround, "FFFFFF"));
+
+            return p;
+        }
+        private static void applyTickLabelRotation(OpenXmlCompositeElement axisNode, int? rotation)
+        {
+            if (!rotation.HasValue)
+                return;
+            // OpenXML rot = derece * 60000, saat yönünün tersine
+            C.TextProperties txPr = axisNode.GetFirstChild<C.TextProperties>();
+            if (txPr is null)
+            {
+                txPr = new C.TextProperties(
+                    new A.BodyProperties(),
+                    new A.ListStyle(),
+                    new A.Paragraph(new A.Run(new A.Text("")))
+                );
+                axisNode.Append(txPr);
+            }
+            txPr.BodyProperties ??= new A.BodyProperties();
+            txPr.BodyProperties.Rotation = rotation.Value * 60000;
         }
         private static GroupingValues mapGrouping(GroupingType value)
         {
@@ -3984,7 +4171,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         }
 
     }
-
     class ChartDefinition : IValueLabelsContainer
     {
         public bool IsAreaBased
@@ -4837,6 +5023,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         ValueLabelDefinition ValueLabels { get; }
         ChartDefinition GetChartDefinition();
     }
-
 }
+
+
 

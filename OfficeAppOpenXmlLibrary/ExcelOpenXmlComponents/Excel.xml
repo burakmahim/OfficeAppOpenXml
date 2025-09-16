@@ -1,0 +1,1213 @@
+﻿<excel>
+	<!-- 4. 3D Bar Chart -->
+	<sheet name="Departman Bütçesi">
+		<chart type="bar" width="450px" height="300px" title="Departman Bütçesi"
+               grouping-type="clustered" gap-width="100">
+			<category-axis title="Departmanlar" />
+			<value-axis title="Bütçe (TL)" />
+			<legend show="true" position="top" />
+			<view-3d shape="box" rotation-x="15" rotation-y="20" depth-percent="150"
+                     right-angle-axes="true" />
+			<series title="2023 Bütçe" color="#5B9BD5">
+				<point category="IT" value="500000" />
+				<point category="HR" value="200000" />
+				<point category="Pazarlama" value="350000" />
+				<point category="Satış" value="450000" />
+			</series>
+			<series title="2024 Hedef" color="#A5A5A5">
+				<point category="IT" value="600000" />
+				<point category="HR" value="250000" />
+				<point category="Pazarlama" value="400000" />
+				<point category="Satış" value="500000" />
+			</series>
+		</chart>
+	</sheet>
+	<!-- 6. Stacked Area Chart -->
+	<sheet name="Kaynak Kullanımı">
+		<chart type="area" width="500px" height="300px" title="Kaynak Kullanımı"
+               grouping-type="stacked">
+			<category-axis title="Zaman" />
+			<value-axis title="Kullanım %" min="0" max="100" />
+			<legend show="true" position="top" />
+			<series title="CPU" color="#FF9999" color-transparency="30">
+				<point category="09:00" value="25" />
+				<point category="10:00" value="35" />
+				<point category="11:00" value="45" />
+				<point category="12:00" value="30" />
+				<point category="13:00" value="20" />
+			</series>
+			<series title="Memory" color="#99FF99" color-transparency="30">
+				<point category="09:00" value="40" />
+				<point category="10:00" value="50" />
+				<point category="11:00" value="35" />
+				<point category="12:00" value="45" />
+				<point category="13:00" value="55" />
+			</series>
+			<series title="Disk" color="#9999FF" color-transparency="30">
+				<point category="09:00" value="15" />
+				<point category="10:00" value="10" />
+				<point category="11:00" value="20" />
+				<point category="12:00" value="25" />
+				<point category="13:00" value="25" />
+			</series>
+		</chart>
+	</sheet>
+	<sheet name="Tüm Özellikler">
+		<chart type="column" width="600px" height="450px" title="Tüm Özellikler Kombinasyonu"
+			   vary-colors="false" auto-title="false" rounded-corners="true"
+			   overlap="20" gap-width="120">
+
+			<category-axis title="Kategoriler" min="0" max="5">
+				<text-format>
+					<font family="Segoe UI" size="11" bold="true" color="2F4F4F" />
+					<rotate>30</rotate>
+				</text-format>
+				<format>
+					<fill>
+
+					</fill>
+					<line visible="true" width="2pt" dash="solid">
+						<solid color="4682B4" />
+					</line>
+					<effects>
+						<shadow type="outer" color="808080" transparency="50"
+								blur-radius="4pt" distance="2pt" angle="45" />
+					</effects>
+				</format>
+			</category-axis>
+
+			<value-axis title="Değerler" min="0" max="150" major-unit="30">
+				<text-format>
+					<font family="Segoe UI" size="10" italic="true" color="8B4513" />
+				</text-format>
+				<format>
+					<line visible="true" width="1pt">
+						<solid color="A0A0A0" />
+					</line>
+				</format>
+			</value-axis>
+
+			<legend show="true" position="top">
+				<format>
+					<fill>
+						<solid color="FFFAF0" transparency="20" />
+					</fill>
+					<line visible="true">
+						<solid color="CD853F" />
+					</line>
+				</format>
+				<text-format>
+					<font family="Calibri" size="10" bold="true" color="8B4513" />
+				</text-format>
+			</legend>
+
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="D3D3D3" />
+					</line>
+				</horizontal-format>
+			</grid>
+
+			<value-labels show="true" position="outsideend" show-series-name="false">
+				<text-format>
+					<font family="Arial" size="9" bold="true" color="FFFFFF" />
+				</text-format>
+			</value-labels>
+
+			<plot-area-format>
+				<line visible="true" width="2pt">
+					<solid color="4682B4" />
+				</line>
+				<effects>
+					<shadow type="inner" color="696969" transparency="60"
+							blur-radius="8pt" distance="4pt" />
+					<soft-edges size="6pt" />
+				</effects>
+			</plot-area-format>
+
+			<text-format>
+				<font family="Segoe UI" size="14" bold="true" color="2C3E50" />
+			</text-format>
+
+			<data-table show="true" show-horizontal-border="true"
+						show-vertical-border="true" show-outline="true" show-keys="true">
+				<text-format>
+					<font family="Consolas" size="9" color="666666" />
+				</text-format>
+			</data-table>
+
+			<series title="Birinci Seri" color="E74C3C">
+				<format>
+					<line visible="true" width="2pt">
+						<solid color="922B21" />
+					</line>
+					<effects>
+						<shadow type="outer" color="000000" transparency="40"
+								blur-radius="5pt" distance="3pt" angle="45" />
+						<glow color="FFD700" size="4pt" transparency="50" />
+					</effects>
+				</format>
+				<point category="A" value="85">
+					<format>
+						<fill>
+							<solid color="FF1493" />
+						</fill>
+					</format>
+					<value-labels show="true" position="outsideend">
+						<text-format>
+							<font color="FF1493" bold="true" />
+						</text-format>
+					</value-labels>
+				</point>
+				<point category="B" value="95" />
+				<point category="C" value="75" />
+				<point category="D" value="110" />
+			</series>
+
+			<series title="İkinci Seri" color="3498DB">
+				<format>
+					<fill>
+						<pattern preset="smallgrid"
+								 foreground-color="3498DB"
+								 background-color="AED6F1" />
+					</fill>
+					<line visible="true" width="1pt" dash="dash">
+						<solid color="2874A6" />
+					</line>
+				</format>
+				<point category="A" value="70" />
+				<point category="B" value="88" />
+				<point category="C" value="92" />
+				<point category="D" value="78" />
+			</series>
+		</chart>
+	</sheet>
+	<sheet name="Satış Verileri">
+		<chart type="column" width="600px" height="400px" title="Satış Verileri">
+			<!-- Chart Title -->
+			<title text="Satış Verileri">
+				<text-format align-horizontal="center" align-vertical="center" wrap="none"
+                             margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+                             rotate="0">
+					<fill>
+						<solid color="#FFFFFF"/>
+					</fill>
+					<line width="1pt" color="#2C3E50"/>
+					<effects>
+						<shadow type="outer" color="#808080" blur-radius="3pt" angle="45" distance="2pt"/>
+						<glow color="#FFAA00" size="5pt" transparency="30"/>
+						<reflection blur-radius="4pt" distance="3pt" start-transparency="10" end-transparency="70"/>
+					</effects>
+					<font family="Segoe UI" size="16pt" bold="true" italic="true" color="#2C3E50" underline="single" strike="none" caps="none"/>
+				</text-format>
+			</title>
+
+			<!-- Category Axis -->
+			<category-axis title="Aylar">
+				<title text="Aylar">
+					<text-format align-horizontal="center" align-vertical="center" wrap="none"
+                                 margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+                                 rotate="270">
+						<fill>
+							<solid color="#E6F2FF"/>
+						</fill>
+						<line width="1pt" color="#2C3E50"/>
+						<effects>
+							<shadow type="outer" color="#888888" blur-radius="3pt" distance="2pt" angle="45"/>
+							<glow color="#FFAA00" size="5pt" transparency="20"/>
+						</effects>
+						<font family="Segoe UI" size="12pt" bold="true" italic="false" color="#2C3E50"/>
+					</text-format>
+				</title>
+				<format>
+					<fill>
+						<solid color="#D9EDF7"/>
+					</fill>
+					<line visible="true" width="1pt" dash="solid">
+						<solid color="#2C3E50"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#808080" blur-radius="2pt" distance="1pt" angle="45"/>
+					</effects>
+				</format>
+			</category-axis>
+
+			<!-- Value Axis -->
+			<value-axis title="Miktar">
+				<title text="Miktar">
+					<text-format align-horizontal="center" align-vertical="center" wrap="none"
+                                 margin-left="2pt" margin-right="2pt" margin-top="1pt" margin-bottom="1pt"
+                                 rotate="270">
+						<fill>
+							<solid color="#FFF5E6"/>
+						</fill>
+						<line width="1pt" color="#2C3E50"/>
+						<effects>
+							<shadow type="outer" color="#888888" blur-radius="3pt" distance="2pt" angle="45"/>
+							<glow color="#FFAA00" size="5pt" transparency="20"/>
+						</effects>
+						<font family="Segoe UI" size="12pt" bold="true" italic="true" color="#2C3E50"/>
+					</text-format>
+				</title>
+				<format>
+					<line visible="true" width="1pt" dash="solid">
+						<solid color="#D3D3D3"/>
+					</line>
+				</format>
+			</value-axis>
+
+			<!-- Legend -->
+			<legend show="true" position="top">
+				<text-format>
+					<font family="Calibri" size="10pt" bold="true" color="#2C3E50"/>
+				</text-format>
+			</legend>
+
+			<!-- Data Table -->
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline="true" show-keys="true">
+				<text-format>
+					<font family="Consolas" size="9pt" color="#666666"/>
+				</text-format>
+			</data-table>
+
+			<!-- Series 1 -->
+			<series name="2023 Satışları" color="#4472C4">
+				<point category="Ocak" value="150"/>
+				<point category="Şubat" value="200"/>
+				<point category="Mart" value="175"/>
+				<point category="Nisan" value="300"/>
+				<point category="Mayıs" value="250"/>
+			</series>
+
+			<!-- Series 2 -->
+			<series name="2024 Satışları" color="#E7A03A">
+				<point category="Ocak" value="180"/>
+				<point category="Şubat" value="220"/>
+				<point category="Mart" value="195"/>
+				<point category="Nisan" value="350"/>
+				<point category="Mayıs" value="280"/>
+			</series>
+
+		</chart>
+	</sheet>
+	<sheet>
+		<chart type="line" title="Proper Line Chart Test">
+			<series title="Sales Data">
+				<point category="January" value="10"/>
+				<point category="February" value="15"/>
+				<point category="March" value="12"/>
+				<point category="April" value="18"/>
+				<point category="May" value="22"/>
+				<point category="June" value="25"/>
+				<format>
+					<line visible="true" width="2px" dash="solid">
+						<solid color="#0066CC" transparency="0"/>
+					</line>
+				</format>
+				<marker type="circle" size="6"/>
+			</series>
+			<series title="Target">
+				<point category="January" value="8"/>
+				<point category="February" value="12"/>
+				<point category="March" value="16"/>
+				<point category="April" value="20"/>
+				<point category="May" value="24"/>
+				<point category="June" value="28"/>
+
+				<format>
+					<line visible="true" width="2px" dash="dash">
+						<solid color="#FF6600" transparency="0"/>
+					</line>
+				</format>
+
+				<marker type="square" size="10"/>
+			</series>
+
+			<category-axis  min="-5"/>
+			<value-axis  min="-5" max="30"/>
+
+			<legend show="true" position="top"/>
+
+		</chart>
+	</sheet>
+	<sheet name="Advanced Features Demo">
+		<chart type="column" title="Advanced Chart Features Demonstration" width="700" height="500">
+			<category-axis title="Business Categories">
+				<text-format>
+					<font family="Segoe UI" size="11" bold="true" color="#2F4F4F"/>
+				</text-format>
+				<format>
+					<line visible="true" width="2pt" dash="solid">
+						<solid color="#4682B4"/>
+					</line>
+				</format>
+			</category-axis>
+
+			<value-axis title="Performance Values" min="0" max="200">
+				<text-format>
+					<font family="Segoe UI" size="10" color="#2F4F4F"/>
+				</text-format>
+			</value-axis>
+
+			<legend show="true" position="top">
+				<format>
+					<fill>
+						<solid color="#F8F9FA" transparency="20"/>
+					</fill>
+					<line visible="true">
+						<solid color="#6C757D"/>
+					</line>
+				</format>
+				<text-format>
+					<font family="Calibri" size="10" bold="true" color="#495057"/>
+				</text-format>
+			</legend>
+
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="#E9ECEF"/>
+					</line>
+				</horizontal-format>
+			</grid>
+
+			<value-labels show="true" position="outside-end">
+				<text-format>
+					<font family="Arial" size="9" bold="true" color="#FFFFFF"/>
+				</text-format>
+			</value-labels>
+
+			<series title="Q1 Performance" color="#007BFF">
+				<format>
+					<fill>
+						<solid color="#007BFF" transparency="10"/>
+					</fill>
+					<line visible="true" width="1pt">
+						<solid color="#0056B3"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#000000" transparency="30"
+								blur-radius="3pt" distance="2pt" angle="45"/>
+					</effects>
+				</format>
+				<point category="Sales" value="145"/>
+				<point category="Marketing" value="128"/>
+				<point category="Operations" value="156"/>
+				<point category="Support" value="98"/>
+			</series>
+
+			<series title="Q2 Performance" color="#28A745">
+				<format>
+					<fill>
+						<solid color="#28A745" transparency="10"/>
+					</fill>
+					<line visible="true" width="1pt">
+						<solid color="#1E7E34"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#000000" transparency="30"
+								blur-radius="3pt" distance="2pt" angle="45"/>
+					</effects>
+				</format>
+				<point category="Sales" value="162"/>
+				<point category="Marketing" value="135"/>
+				<point category="Operations" value="178"/>
+				<point category="Support" value="112"/>
+			</series>
+		</chart>
+	</sheet>
+	<sheet>
+		<chart type="column" title="Satış Verileri" width="15cm" height="12cm" auto-title="false" rounded-corners="false" create-new-paragraph="true" show-category-axis="true" show-value-axis="true">
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline-border="true" show-legend-keys="true">
+				<text-format>
+					<font size="8" family="Arial" />
+				</text-format>
+			</data-table>
+			<legend show="true" position="right">
+			</legend>
+			<grid show-horizontal="true" show-vertical="true">
+			</grid>
+			<value-labels show="true" position="outsideend" />
+			<category-axis title="Aylar">
+			</category-axis>
+			<value-axis title="Ciro">
+			</value-axis>
+			<series title="2024" color="#ff0000" >
+				<point category="Ocak"  value="120" />
+				<point category="Şubat" value="150" />
+				<point category="Mart"  value="90"  />
+			</series>
+			<series title="2025" color="#00ff00" >
+				<point category="Ocak"  value="30" />
+				<point category="Şubat" value="40" />
+				<point category="Mart"  value="50"  />
+			</series>
+			<view-3d show-floor="true" show-back-wall="true" show-side-wall="true">
+				<format>
+					<fill>
+						<solid color="0000ff" transparency="70" />
+					</fill>
+					<line>
+						<solid color="ff0000" transparency="0" />
+					</line>
+				</format>
+			</view-3d>
+		</chart>
+	</sheet>
+	<sheet name="">
+		<chart type="bar" title="Satış Raporu" vary-colors="false">
+			<view-3d shape="box"
+					 rotation-x="15"
+					 rotation-y="20"
+					 rotation-z="0"
+					 perspective="20"
+					 depth-percent="100"
+					 height-percent="100"
+					 right-angle-axes="false"/>
+
+			<legend show="true" position="bottom"/>
+
+			<data-table show="true"
+						show-horizontal-border="true"
+						show-vertical-border="true"
+						show-legend-key="true"/>
+
+			<series title="Q1 Satışlar" color="#4472C4">
+				<point category="Ocak" value="120"/>
+				<point category="Şubat" value="135"/>
+				<point category="Mart" value="150"/>
+			</series>
+
+			<series title="Q2 Satışlar" color="#E70000">
+				<point category="Ocak" value="110"/>
+				<point category="Şubat" value="125"/>
+				<point category="Mart" value="140"/>
+			</series>
+		</chart>
+	</sheet>
+	<doc>
+		<chart type="pie" title="Pie Default" vary-colors="true">
+			<view-3d shape="box"
+					 rotation-x="15"
+					 rotation-y="40"
+					 rotation-z="0"
+					 perspective="7"
+					 depth-percent="100"
+					 height-percent="100"
+					 right-angle-axes="false"/>
+
+			<series title="Sales">
+				<point category="1st Qtr" value="2.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="2nd Qtr" value="3.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="3rd Qtr" value="1.4">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+				<point category="4th Qtr" value="1.2">
+					<value-labels show="true" position="outsideEnd"/>
+				</point>
+			</series>
+		</chart>
+	</doc>
+	<sheet name="Bar Chart">
+		<chart title="Sales by Region - Bar Chart" type="bar" overlap ="25" gap-width="15">
+			<series title="Q1 Sales" color="#FF6B35">
+				<point category="Region 1" value="120"/>
+				<point category="Region 2" value="150"/>
+				<point category="Region 3" value="130"/>
+				<point category="Region 4" value="180"/>
+				<point category="Region 5" value="200"/>
+			</series>
+			<series title="Q2 Sales" color="#4ECDC4">
+				<point category="Region 1" value="140"/>
+				<point category="Region 2" value="160"/>
+				<point category="Region 3" value="145"/>
+				<point category="Region 4" value="195"/>
+				<point category="Region 5" value="220"/>
+			</series>
+			<series title="Q3 Sales" color="#45B7D1">
+				<point category="Region 1" value="135"/>
+				<point category="Region 2" value="155"/>
+				<point category="Region 3" value="140"/>
+				<point category="Region 4" value="185"/>
+				<point category="Region 5" value="210"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 3. 3D Column Chart -->
+	<sheet name="3D Column Chart">
+		<chart title="3D Column Sales Analysis" type="column">
+			<series title="North" color="#FF6B35">
+				<point category="Product A" value="300"/>
+				<point category="Product B" value="250"/>
+				<point category="Product C" value="400"/>
+				<point category="Product D" value="350"/>
+			</series>
+			<series title="South" color="#4ECDC4">
+				<point title ="Product A" category="Product A" value="320"/>
+				<point category="Product B" value="280"/>
+				<point category="Product C" value="380"/>
+				<point category="Product D" value="360"/>
+			</series>
+			<series title="East" color="#45B7D1">
+				<point category="Product A" value="290"/>
+				<point category="Product B" value="270"/>
+				<point category="Product C" value="420"/>
+				<point category="Product D" value="340"/>
+			</series>
+			<view-3d shape="box" rotation-x="15" rotation-y="20" perspective="30"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 4. Line Chart -->
+	<sheet name="Line Chart">
+		<chart title="Stock Price Trends" type="line">
+			<series title="AAPL" color="#FF6B35">
+				<point category="Week 1" value="150"/>
+				<point category="Week 2" value="155"/>
+				<point category="Week 3" value="148"/>
+				<point category="Week 4" value="162"/>
+				<point category="Week 5" value="158"/>
+				<point category="Week 6" value="165"/>
+				<point category="Week 7" value="170"/>
+				<point category="Week 8" value="168"/>
+			</series>
+			<series title="GOOGL" color="#4ECDC4">
+				<point category="Week 1" value="2800"/>
+				<point category="Week 2" value="2850"/>
+				<point category="Week 3" value="2820"/>
+				<point category="Week 4" value="2900"/>
+				<point category="Week 5" value="2880"/>
+				<point category="Week 6" value="2950"/>
+				<point category="Week 7" value="2970"/>
+				<point category="Week 8" value="2960"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="false"/>
+		</chart>
+	</sheet>
+
+	<!-- 5. Pie Chart with Individual Point Colors -->
+	<sheet name="Pie Chart">
+		<chart title="Market Share Distribution" type="pie" width="500" height="400"
+			   x="75" y="50">
+			<series title="Browser Share">
+				<point category="Chrome" value="65.2" color="#FF6B35"/>
+				<point category="Firefox" value="15.8" color="#4ECDC4"/>
+				<point category="Safari" value="10.1" color="#45B7D1"/>
+				<point category="Edge" value="5.4" color="#96CEB4"/>
+				<point category="Others" value="3.5" color="#FFEAA7"/>
+			</series>
+			<legend position="right" show="true"/>
+			<value-labels show="true" show-percent="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 6. Scatter Chart with X-Y Values -->
+	<sheet name="Scatter Chart">
+		<chart title="Height vs Weight Analysis" type="scatter" scatter-style="marker">
+			<series title="Males" color="#FF6B35">
+				<point x="165" y="65"/>
+				<point x="170" y="70"/>
+				<point x="175" y="75"/>
+				<point x="180" y="80"/>
+				<point x="185" y="85"/>
+				<point x="160" y="60"/>
+			</series>
+			<series title="Females" color="#4ECDC4">
+				<point x="155" y="50"/>
+				<point x="160" y="55"/>
+				<point x="165" y="60"/>
+				<point x="170" y="65"/>
+				<point x="175" y="70"/>
+				<point x="150" y="45"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="top" show="true"/>
+		</chart>
+	</sheet>
+
+	<sheet name="Bubble Chart">
+		<chart title="Sales Performance Analysis" type="bubble">
+			<series title="Region Performance" color="#FF6B35">
+				<point xe="100" y="15000" size="50"/>
+				<point x="200" y="25000" size="75"/>
+				<point x="150" y="18000" size="60"/>
+				<point x="300" y="35000" size="90"/>
+				<point x ="250" y="28000" size="80"/>
+				<point x = "175" y="20000" size="65"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" show-bubble-size="true"/>
+		</chart>
+	</sheet>
+
+	<sheet name="Radar Chart">
+		<chart title="Performance Radar" type="radar" radar-style="standard">
+			<series title="Product A" color="#FF6B35">
+				<point category="Speed" value="85"/>
+				<point category="Quality" value="90"/>
+				<point category="Innovation" value="75"/>
+				<point category="Cost" value="70"/>
+				<point category="Service" value="80"/>
+				<point category="Reliability" value="95"/>
+			</series>
+			<series title="Product B" color="#4ECDC4">
+				<point category="Speed" value="70"/>
+				<point category="Quality" value="85"/>
+				<point category="Innovation" value="90"/>
+				<point category="Cost" value="85"/>
+				<point category="Service" value="75"/>
+				<point category="Reliability" value="80"/>
+			</series>
+			<legend position="bottom" show="true"/>
+			<value-labels show="false"/>
+		</chart>
+	</sheet>
+
+	<!-- 9. Doughnut Chart -->
+	<sheet name="Doughnut Chart">
+		<chart title="Revenue by Department" type="doughnut" width="500" height="400"
+			   x="75" y="50">
+			<series title="Revenue %">
+				<point category="Sales" value="35" color="#FF6B35"/>
+				<point category="Marketing" value="25" color="#4ECDC4"/>
+				<point category="Development" value="20" color="#45B7D1"/>
+				<point category="Support" value="15" color="#96CEB4"/>
+				<point category="HR" value="5" color="#FFEAA7"/>
+			</series>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" show-percent="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 10. Area Chart -->
+	<sheet name="Area Chart">
+		<chart title="Revenue Growth Areas" type="area" >
+			<series title="Online Sales" color="#FF6B35">
+				<point category="2019" value="50"/>
+				<point category="2020" value="65"/>
+				<point category="2021" value="85"/>
+				<point category="2022" value="120"/>
+				<point category="2023" value="160"/>
+				<point category="2024" value="200"/>
+			</series>
+			<series title="Retail Sales" color="#4ECDC4">
+				<point category="2019" value="200"/>
+				<point category="2020" value="180"/>
+				<point category="2021" value="160"/>
+				<point category="2022" value="150"/>
+				<point category="2023" value="140"/>
+				<point category="2024" value="135"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="top" show="true"/>
+		</chart>
+	</sheet>
+
+	<!-- 11. 3D Cylinder Chart -->
+	<sheet name="3D Cylinder Chart">
+		<chart title="Production Volume - Cylinder" type="column" >
+			<series title="Production" color="#FF6B35">
+				<point category="Factory A" value="1200"/>
+				<point category="Factory B" value="1500"/>
+				<point category="Factory C" value="980"/>
+				<point category="Factory D" value="1800"/>
+			</series>
+			<view-3d shape="cylinder" rotation-x="20" rotation-y="30" perspective="35"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="top" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 12. 3D Cone Chart -->
+	<sheet name="3D Cone Chart">
+		<chart title="Performance Metrics - Cone" type="column" >
+			<series title="Performance" color="#4ECDC4">
+				<point category="Metric 1" value="85"/>
+				<point category="Metric 2" value="92"/>
+				<point category="Metric 3" value="78"/>
+				<point category="Metric 4" value="96"/>
+			</series>
+			<view-3d shape="cone" rotation-x="25" rotation-y="40" perspective="30"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="bottom" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 13. 3D Pyramid Chart -->
+	<sheet name="3D Pyramid Chart">
+		<chart title="Hierarchy Analysis - Pyramid" type="column" >
+			<series title="Hierarchy" color="#45B7D1">
+				<point category="Level 1" value="500"/>
+				<point category="Level 2" value="300"/>
+				<point category="Level 3" value="150"/>
+				<point category="Level 4" value="50"/>
+			</series>
+			<view-3d shape="pyramid" rotation-x="15" rotation-y="25" perspective="40"/>
+			<grid show-horizontal="true" show-vertical="false"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" position="outside-end"/>
+		</chart>
+	</sheet>
+
+	<!-- 14. 3D Bubble Chart -->
+	<sheet name="3D Bubble Chart">
+		<chart title="3D Market Analysis" type="bubble" bubble-3d="true">
+			<series title="Market Data" color="#4ECDC4">
+				<point x="15" y="120" size="45"/>
+				<point x="25" y="180" size="70"/>
+				<point x="35" y="160" size="55"/>
+				<point x="45" y="240" size="85"/>
+				<point x="30" y="200" size="75"/>
+				<point x="20" y="140" size="50"/>
+			</series>
+			<grid show-horizontal="true" show-vertical="true"/>
+			<legend position="right" show="true"/>
+			<value-labels show="true" show-bubble-size="true"/>
+		</chart>
+	</sheet>
+	<sheet name="Tüm Özellikler">
+		<chart type="column"
+			   vary-colors="false" auto-title="false" rounded-corners="true"
+			   overlap="20" gap-width="120">
+
+			<category-axis title="Kategoriler" min="0" max="5">
+				<text-format>
+					<font family="Segoe UI" size="11" bold="true" color="2F4F4F" />
+					<rotate>30</rotate>
+				</text-format>
+				<format>
+					<fill>
+
+					</fill>
+					<line visible="true" width="2pt" dash="solid">
+						<solid color="4682B4" />
+					</line>
+					<effects>
+						<shadow type="outer" color="808080" transparency="50"
+								blur-radius="4pt" distance="2pt" angle="45" />
+					</effects>
+				</format>
+			</category-axis>
+
+			<value-axis title="Değerler" min="0" max="150" major-unit="30">
+				<text-format>
+					<font family="Segoe UI" size="10" italic="true" color="8B4513" />
+				</text-format>
+				<format>
+					<line visible="true" width="1pt">
+						<solid color="A0A0A0" />
+					</line>
+				</format>
+			</value-axis>
+
+			<legend show="true" position="top">
+				<format>
+					<fill>
+						<solid color="FFFAF0" transparency="20" />
+					</fill>
+					<line visible="true">
+						<solid color="CD853F" />
+					</line>
+				</format>
+				<text-format>
+					<font family="Calibri" size="10" bold="true" color="8B4513" />
+				</text-format>
+			</legend>
+
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="D3D3D3" />
+					</line>
+				</horizontal-format>
+			</grid>
+
+			<value-labels show="true" position="outsideend" show-series-name="false">
+				<text-format>
+					<font family="Arial" size="9" bold="true" color="FFFFFF" />
+				</text-format>
+			</value-labels>
+
+			<plot-area-format>
+				<line visible="true" width="2pt">
+					<solid color="4682B4" />
+				</line>
+				<effects>
+					<shadow type="inner" color="696969" transparency="60"
+							blur-radius="8pt" distance="4pt" />
+					<soft-edges size="6pt" />
+				</effects>
+			</plot-area-format>
+
+			<text-format>
+				<font family="Segoe UI" size="14" bold="true" color="2C3E50" />
+			</text-format>
+
+			<data-table show="true" show-horizontal-border="true"
+						show-vertical-border="true" show-outline="true" show-keys="true">
+				<text-format>
+					<font family="Consolas" size="9" color="666666" />
+				</text-format>
+			</data-table>
+
+			<series title="Birinci Seri" color="E74C3C">
+				<format>
+					<line visible="true" width="2pt">
+						<solid color="922B21" />
+					</line>
+					<effects>
+						<shadow type="outer" color="000000" transparency="40"
+								blur-radius="5pt" distance="3pt" angle="45" />
+						<glow color="FFD700" size="4pt" transparency="50" />
+					</effects>
+				</format>
+				<point category="A" value="85">
+					<format>
+						<fill>
+							<solid color="FF1493" />
+						</fill>
+					</format>
+					<value-labels show="true" position="outsideend">
+						<text-format>
+							<font color="FF1493" bold="true" />
+						</text-format>
+					</value-labels>
+				</point>
+				<point category="B" value="95" />
+				<point category="C" value="75" />
+				<point category="D" value="110" />
+			</series>
+
+			<series title="İkinci Seri" color="3498DB">
+				<format>
+					<fill>
+						<pattern preset="smallgrid"
+								 foreground-color="3498DB"
+								 background-color="AED6F1" />
+					</fill>
+					<line visible="true" width="1pt" dash="dash">
+						<solid color="2874A6" />
+					</line>
+				</format>
+				<point category="A" value="70" />
+				<point category="B" value="88" />
+				<point category="C" value="92" />
+				<point category="D" value="78" />
+			</series>
+		</chart>
+	</sheet>
+	<sheet>
+		<chart type="column">
+			<view-3d shape="box" rotation-x="15" rotation-y="20" perspective="30"
+					 depth-percent="100" height-percent="100" gap-width="150" gap-depth="100"
+					 right-angle-axes="true" show-floor="true" show-back-wall="true" show-side-wall="true">
+				<floor-format>
+					<fill>
+						<solid color="#E6E6FA" transparency="20"/>
+					</fill>
+				</floor-format>
+				<back-wall-format>
+				</back-wall-format>
+				<side-wall-format>
+					<fill>
+						<pattern preset="lightHorizontal" foreground-color="#D3D3D3" background-color="#FFFFFF"/>
+					</fill>
+				</side-wall-format>
+			</view-3d>
+
+			<series title="Sales Q1" marker-type="circle" marker-size="8">
+				<format>
+					<fill>
+						<solid color="#FF6B6B" transparency="15"/>
+					</fill>
+					<line visible="true" dash="dash" compound="single" cap="round" join="round"
+						  begin-arrow-type="none" end-arrow-type="arrow" join-miter-limit="10">
+						<solid color="#CC5500" transparency="5"/>
+					</line>
+					<effects>
+						<shadow type="outer" preset="bottomRight" blur-radius="4pt"
+								distance="2pt" angle="315" color="#808080" transparency="50"/>
+						<glow color="#FFD700" transparency="20" size="3pt"/>
+						<soft-edges size="2pt"/>
+						<reflection blur-radius="1pt" distance="1pt" start-transparency="0"
+								   end-transparency="80" start-position="0" end-position="100"/>
+						<format-3d material="metal">
+							<bevel top-width="2pt" top-height="2pt" bottom-width="1pt" bottom-height="1pt"
+								   top-preset="angle" bottom-preset="angle"/>
+							<lighting preset="threePt" angle="45" direction="topLeft"/>
+						</format-3d>
+					</effects>
+				</format>
+
+				<text-format align-horizontal="center" align-vertical="middle" wrap="square"
+							 margin-left="5px" margin-right="5px" margin-top="3px" margin-bottom="3px" rotate="15">
+					<line visible="true" dash="solid" compound="single" cap="round">
+						<solid color="#34495E" transparency="0"/>
+					</line>
+					<effects>
+						<shadow type="outer" preset="bottomRight" blur-radius="2pt"
+								color="#7F8C8D" transparency="60"/>
+						<glow color="#E74C3C" transparency="30" size="1pt"/>
+					</effects>
+					<font family="Arial" size="12pt" bold="true" italic="false"
+						  underline="single" strike="none" caps="small"
+						  kerning="1px" spacing="0.5pt"/>
+				</text-format>
+
+				<point category="Jan" value="120"/>
+				<point category="Feb" value="135"/>
+				<point category="Mar" value="150"/>
+			</series>
+
+			<series title="Sales Q2" marker-type="square" marker-size="6">
+				<format>
+					<fill>
+						<pattern preset="darkGrid" foreground-color="#27AE60" foreground-transparency="20"
+								 background-color="#FFFFFF" background-transparency="0"/>
+					</fill>
+				</format>
+
+				<text-format align-horizontal="left" align-vertical="top" wrap="none"
+							 margin-left="2px" margin-right="2px" margin-top="1px" margin-bottom="1px" rotate="-30">
+					<font family="Calibri" size="10pt" bold="false" italic="true"
+						  underline="none" strike="none" caps="none"
+						  kerning="0px" spacing="0pt"/>
+				</text-format>
+
+				<point category="Jan" value="100"/>
+				<point category="Feb" value="115"/>
+				<point category="Mar" value="130"/>
+			</series>
+		</chart>
+
+	</sheet>
+	<sheet>
+		<chart type="column" title="Quarterly Sales Report">
+			<!-- Chart verileri -->
+			<series title="Sales 2023" color="#0066CC">
+				<point category="Q1" value="150000" />
+				<point category="Q2" value="180000" />
+				<point category="Q3" value="160000" />
+				<point category="Q4" value="200000" />
+			</series>
+			<series title="Sales 2024" color="#FF6B35">
+				<point category="Q1" value="165000" />
+				<point category="Q2" value="195000" />
+				<point category="Q3" value="175000" />
+				<point category="Q4" value="220000" />
+			</series>
+			<!-- Plot Area - Renkli gradient arka plan -->
+			<plot-area>
+				<format>
+					<fill>
+					</fill>
+					<line visible="true" width="2pt" dash="solid" compound="double" cap="round" join="round">
+					</line>
+					<effects>
+						<shadow type="outer" preset="bottomrightdropshadow" color="#1565C0" transparency="60" blur-radius="4pt" distance="3pt" angle="315" />
+						<glow color="#2196F3" transparency="40" size="2pt" />
+						<soft-edges size="1pt" />
+					</effects>
+				</format>
+			</plot-area>
+			<!-- Legend - Renkli pattern arka plan -->
+			<legend show="true" position="bottom">
+				<format>
+					<fill>
+						<pattern preset="lighthorizontal" foreground-color="#E8F5E8" foreground-transparency="20" background-color="#C8E6C9" background-transparency="10" />
+					</fill>
+					<line visible="true" width="1.5pt" dash="dashdot" compound="single" cap="round">
+						<solid color="#4CAF50" transparency="0" />
+					</line>
+					<effects>
+						<shadow type="inner" preset="topleftdropshadow" color="#388E3C" transparency="70" blur-radius="2pt" distance="1pt" angle="135" />
+						<reflection blur-radius="1pt" distance="0.5pt" start-transparency="80" end-transparency="95" start-position="0" end-position="40" />
+					</effects>
+				</format>
+				<text-format align-horizontal="center" align-vertical="center" wrap="none" rotate="5" margin-left="3pt" margin-right="3pt">
+					<fill>
+					</fill>
+					<font family="Arial" size="11pt" bold="true" italic="true" underline="single" caps="small" kerning="0.5pt" spacing="1pt" />
+				</text-format>
+			</legend>
+			<!-- Data Table - Renkli multi-gradient -->
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline-border="true" show-legend-key="true">
+				<format>
+					<line visible="true" width="1pt" dash="largedashdot" compound="thickthin" cap="square" join="bevel" join-miter-limit="250">
+					</line>
+					<effects>
+						<shadow type="outer" preset="frontbottomshadow" color="#E65100" transparency="50" blur-radius="3pt" distance="2pt" angle="270" />
+						<glow color="#FF6F00" transparency="30" size="1.5pt" />
+						<format-3d material="plastic">
+							<bevel top-width="1pt" top-height="1pt" bottom-width="0.5pt" bottom-height="0.5pt" top-preset="softround" bottom-preset="angle" />
+							<lighting preset="soft" angle="45" direction="topleft" />
+						</format-3d>
+					</effects>
+				</format>
+				<text-format align-horizontal="right" align-vertical="bottom" wrap="square" rotate="-2" margin-left="2pt" margin-right="4pt" margin-top="1pt" margin-bottom="2pt">
+					<fill>
+						<pattern preset="diagonalcross" foreground-color="#D84315" foreground-transparency="30" background-color="#FFAB91" background-transparency="60" />
+					</fill>
+					<font family="Times New Roman" size="10pt" bold="false" italic="false" underline="double" strike="single" caps="all" kerning="1pt" spacing="0.8pt" />
+				</text-format>
+			</data-table>
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="0.8pt" dash="systemdot">
+					</line>
+				</horizontal-format>
+			</grid>
+			<value-labels show="true" position="top" show-legend-key="false">
+				<text-format align-horizontal="center" rotate="15">
+					<font family="Impact" size="9pt" bold="true" italic="false" underline="none" caps="small" kerning="0.3pt" />
+				</text-format>
+			</value-labels>
+		</chart>
+	</sheet>
+	<sheet name="ColumnChart">
+		<chart type="column" title="Column Chart with Solid Fill">
+			<plot-area>
+				<format>
+					<fill>
+						<solid color="#FF0000" transparency="0.1"/>
+						<pattern preset="DiagonalCross"
+								 foreground-color="#00FF00" foreground-transparency="0.2"
+								 background-color="#0000FF" background-transparency="0.3"/>
+					</fill>
+					<line visible="true" dash="Dash" compound="Single" width="2"/>
+					<effects>
+						<shadow type="Outer" preset="OffsetDiagonalBottomRight"
+								blur-radius="3pt" distance="4pt" angle="45"
+								color="#000000" transparency="0.4"/>
+						<glow color="#FFD700" transparency="0.2"/>
+					</effects>
+				</format>
+			</plot-area>
+			<series>
+				<point category="Jan" value="10"/>
+				<point category="Feb" value="15"/>
+				<point category="Mar" value="8"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="BarChart">
+		<chart type="bar" title="Bar Chart with Pattern Fill">
+			<plot-area>
+				<format>
+					<fill>
+						<solid color="#008000" transparency="0.05"/>
+						<pattern preset="Horizontal"
+								 foreground-color="#FFA500" foreground-transparency="0.15"
+								 background-color="#FFFFFF" background-transparency="0.1"/>
+					</fill>
+					<line visible="true" dash="Solid" compound="Double" width="3"/>
+					<effects>
+						<shadow type="Inner" preset="OffsetCenter"
+								blur-radius="2pt" distance="2pt" angle="0"
+								color="#444444" transparency="0.3"/>
+					</effects>
+				</format>
+			</plot-area>
+			<series>
+				<point category="Q1" value="20"/>
+				<point category="Q2" value="25"/>
+				<point category="Q3" value="18"/>
+			</series>
+		</chart>
+	</sheet>
+
+	<sheet name="LineChart">
+		<chart type="line" title="Line Chart with Simple Fill">
+			<plot-area>
+				<format>
+					<fill>
+						<solid color="#0000FF" transparency="0.05"/>
+					</fill>
+					<line visible="true" dash="Dot" compound="Single" width="1"/>
+				</format>
+			</plot-area>
+			<series>
+				<point category="2019" value="5"/>
+				<point category="2020" value="7"/>
+				<point category="2021" value="6"/>
+			</series>
+		</chart>
+	</sheet>
+	<sheet name="PieChartExample">
+		<chart type="pie" title="Satış Dağılımı">
+			<legend show="true" position="topright">
+				<format>
+					<fill>
+						<solid color="#FF0000" transparency="0.2"/>
+						<pattern preset="DiagonalCross"
+                                 foreground-color="#00FF00" foreground-transparency="0.1"
+                                 background-color="#0000FF" background-transparency="0.3"/>
+					</fill>
+					<line visible="true" dash="Dash" compound="Double"/>
+					<effects>
+						<shadow type="Outer" preset="OffsetDiagonalBottomRight"
+                                blur-radius="4pt" distance="6pt" angle="45"
+                                color="#000000" transparency="0.5"/>
+						<glow color="#FFD700" transparency="0.3"/>
+					</effects>
+				</format>
+				<text-format>
+					<font name="Arial" size="12" bold="true" italic="false"/>
+				</text-format>
+			</legend>
+
+			<series title="2025 Satış">
+				<point category="Elektronik" value="45"/>
+				<point category="Mobilya" value="25"/>
+				<point category="Giyim" value="15"/>
+				<point category="Gıda" value="10"/>
+				<point category="Diğer" value="5"/>
+			</series>
+		</chart>
+	</sheet>
+	<sheet name="SampleChart">
+		<chart type="column" title="Shadow Glow Example">
+
+			<category-axis>
+				<format>
+					<line visible="true" width="3pt" dash="solid" compound="single" cap="round" join="miter"
+						  begin-arrow-type="triangle" end-arrow-type="arrow" join-miter-limit="10">
+						<solid color="#0000FF" transparency="0"/>
+					</line>
+
+					<effects>
+						<shadow type="outer" color="#FF0000" transparency="20" blur-radius="5pt" angle="45" distance="4pt"/>
+						<glow color="#00FF00" transparency="30" size="10pt"/>
+					</effects>
+
+				</format>
+			</category-axis>
+
+			<series title="Series 1">
+				<point category="A" value="10"/>
+				<point category="B" value="20"/>
+				<point category="C" value="30"/>
+			</series>
+
+		</chart>
+	</sheet>
+
+</excel>
