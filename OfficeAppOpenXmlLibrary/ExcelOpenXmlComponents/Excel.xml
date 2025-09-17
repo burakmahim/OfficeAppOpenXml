@@ -2,7 +2,7 @@
 	<!-- 4. 3D Bar Chart -->
 	<sheet name="Departman Bütçesi">
 		<chart type="bar" width="450px" height="300px" title="Departman Bütçesi"
-               grouping-type="clustered" gap-width="100">
+               grouping-type="stacked" gap-width="100">
 			<category-axis title="Departmanlar" />
 			<value-axis title="Bütçe (TL)" />
 			<legend show="true" position="top" />
@@ -552,7 +552,7 @@
 				<point category="Product D" value="350"/>
 			</series>
 			<series title="South" color="#4ECDC4">
-				<point title ="Product A" category="Product A" value="320"/>
+				<point category="Product A" value="320"/>
 				<point category="Product B" value="280"/>
 				<point category="Product C" value="380"/>
 				<point category="Product D" value="360"/>
@@ -642,7 +642,7 @@
 	<sheet name="Bubble Chart">
 		<chart title="Sales Performance Analysis" type="bubble">
 			<series title="Region Performance" color="#FF6B35">
-				<point xe="100" y="15000" size="50"/>
+				<point x="100" y="15000" size="50"/>
 				<point x="200" y="25000" size="75"/>
 				<point x="150" y="18000" size="60"/>
 				<point x="300" y="35000" size="90"/>

@@ -13,25 +13,21 @@ using XS = DocumentFormat.OpenXml.Spreadsheet;
 using P = DocumentFormat.OpenXml.Presentation;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Xml;
-using DocumentFormat.OpenXml.VariantTypes;
-using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
-using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
-using System;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+
 
 namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 {
-    public class ChartComponent
+    public class ChartComponent     
     {
 
-        private static ChartDefinition GetChartDefinitionFromXml(XElement chartNode)
+        private     static  ChartDefinition             GetChartDefinitionFromXml(XElement chartNode)                                                               
         {
             ChartDefinition chartDefinition = new ChartDefinition();
-
+			chartDefinition.Title           = new TitleDefinition();
+			
             //chart
 
-            Nullable<ChartType>         chartType       = XElementAttributeGetter.AsEnum<ChartType>         (chartNode, "type"              );
+			Nullable<ChartType>         chartType       = XElementAttributeGetter.AsEnum<ChartType>         (chartNode, "type"              );
             if (chartType.HasValue)
                 chartDefinition.Type                    = chartType.Value;
 
@@ -101,14 +97,22 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (XElementAttributeGetter.AsInt32     (chartNode, "bubble-scale"      , out int bubbleScaleValue      ))
                 chartDefinition.BubbleScale         = clamp(bubbleScaleValue, 0, 300);
 
-            //category-axis 
+			string?   chartTitlteAttribute = chartNode.Attribute("title")?.Value;
+			XElement? chartTitleNode       = chartNode.Element("title");
+			if (chartTitlteAttribute != null || chartTitleNode != null)
+			{
+				chartDefinition.Title = XElementAttributeGetter.ParseTitle(chartTitleNode, chartNode);
+			}
 
-            XElement? categoryAxisNode  = chartNode.Element("category-axis");
+			//category-axis 
+
+			XElement? categoryAxisNode  = chartNode.Element("category-axis");
             if (categoryAxisNode != null)
             {
-                chartDefinition.CategoryAxis = new AxisDefinition();
+                chartDefinition.CategoryAxis        = new AxisDefinition();
+				chartDefinition.CategoryAxis.Title  = new TitleDefinition();
 
-                if (XElementAttributeGetter.AsDouble        (categoryAxisNode, "min"        , out double minValue ))
+				if (XElementAttributeGetter.AsDouble        (categoryAxisNode, "min"        , out double minValue ))
                     chartDefinition.CategoryAxis.Min        = minValue;
 
                 if (XElementAttributeGetter.AsDouble        (categoryAxisNode, "max"        , out double maxValue ))
@@ -123,22 +127,30 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     chartDefinition.CategoryAxis.TickLabelTextFormat = XElementAttributeGetter.ParseTextFormat(textFormat);
                 }
 
-                XElement? format        = categoryAxisNode.Element("format"     );
-                if (format      != null)                  
+                XElement? format        = categoryAxisNode.Element("format");
+                if (format != null)                  
                 {
-                    chartDefinition.CategoryAxis.AxisLineFormat      = XElementAttributeGetter.ParseFormatNode(format    );
+                    chartDefinition.CategoryAxis.AxisLineFormat      = XElementAttributeGetter.ParseFormatNode(format);
                 }
 
-            }
+                string ?  titleAttrCategory     = categoryAxisNode.Attribute("title")?.Value;
+				XElement? titleCategory         = categoryAxisNode.Element("title");
+                if (titleCategory != null || titleAttrCategory != null)
+                {
+                    chartDefinition.CategoryAxis.Title               = XElementAttributeGetter.ParseTitle(titleCategory, categoryAxisNode);
+				}
+
+			}
 
             //value-axis
 
             XElement? valueAxisNode     = chartNode.Element("value-axis"   );
             if (valueAxisNode    != null)
             {
-                chartDefinition.ValueAxis = new AxisDefinition();
+                chartDefinition.ValueAxis       = new AxisDefinition();
+				chartDefinition.ValueAxis.Title = new TitleDefinition();
 
-                if (XElementAttributeGetter.AsDouble    (valueAxisNode, "min"       , out double minValue))
+				if (XElementAttributeGetter.AsDouble    (valueAxisNode, "min"       , out double minValue))
                     chartDefinition.ValueAxis.Min       = minValue;
 
                 if (XElementAttributeGetter.AsDouble    (valueAxisNode, "max"       , out double maxValue))
@@ -158,8 +170,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 {
                     chartDefinition.ValueAxis.TickLabelTextFormat = XElementAttributeGetter.ParseTextFormat(textFormat);
                 }
+				
+                string? titleAttrValue = valueAxisNode.Attribute("title")?.Value;
+				XElement? titleValue   = valueAxisNode.Element("title");
+				if (titleAttrValue != null || titleValue != null)
+				{
+					chartDefinition.ValueAxis.Title = XElementAttributeGetter.ParseTitle(titleValue, valueAxisNode);
+				}
 
-            }
+			}
 
             //legend
 
@@ -677,12 +696,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     }
                 }
 
-                chartDefinition.Series.Add(seriesDefinition);
+				string? titleAttrSeries = seriesNode.Attribute("title")?.Value;
+				XElement? titleSeries   = seriesNode.Element("title");
+				if (titleSeries != null || titleAttrSeries != null)
+				{
+					seriesDefinition.Title = XElementAttributeGetter.ParseTitle(titleSeries, seriesNode);
+				}
+
+				chartDefinition.Series.Add(seriesDefinition);
             }
 
             return chartDefinition;
         }
-        public static class XElementAttributeGetter
+        public      static  class                       XElementAttributeGetter                                                                                     
         {
             public   static string    AsString    (XElement element, string attributeName                                                 )
             {
@@ -724,7 +750,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
             }
 
-            //Format Parse
+
             internal static FormatDefinition     ParseFormatNode(XElement formatNode    )   
             {
                 FormatDefinition formatDefinition       = new FormatDefinition();
@@ -1024,7 +1050,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return format3DDefinition;
             }
 
-            //Text-Format Parse
+
             internal static TextFormatDefinition ParseTextFormat(XElement textFormatNode)   
             {
                 TextFormatDefinition textFormat = new TextFormatDefinition();
@@ -1116,8 +1142,60 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return textFormat;
             }
 
-        }
-        public static void ExcelAddChart(WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)
+            internal static TitleDefinition      ParseTitle     (XElement titleNode, XElement? attrNode)
+            {
+                TitleDefinition titleDefinition = new TitleDefinition();
+
+				string? attrTitle = attrNode?.Attribute("title")?.Value;
+
+				if (titleNode != null && attrTitle == null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+
+                    if (titleFormatNode != null)
+                    {
+                        titleDefinition.TextFormat = ParseTextFormat(titleFormatNode);
+                    }
+
+                    string? titleNodeAttr = titleNode.Element("text")?.Value;
+
+                    if (titleNodeAttr != null)
+                    {
+                        titleDefinition.Text = titleNodeAttr;
+                    }
+                }
+
+				else if (attrNode != null && attrTitle != null && titleNode != null)
+                {
+                    XElement? titleFormatNode = titleNode.Element("text-format");
+
+                    if (titleFormatNode != null)
+                    {
+                        titleDefinition.TextFormat = ParseTextFormat(titleFormatNode);
+                    }
+
+                    string? titleNodeAttr = titleNode.Attribute("text")?.Value;
+
+                    if (titleNodeAttr  != null)
+                    {
+                        titleDefinition.Text        = titleNodeAttr;
+                    }
+                }
+
+                else if (attrNode != null && attrTitle != null && titleNode == null)
+				{
+					titleDefinition.Text = attrTitle;
+				}
+
+                else
+                    titleDefinition.Text = string.Empty;
+
+				return titleDefinition;
+
+			}
+		}
+
+        public      static  void                        ExcelAddChart           (WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)               
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
@@ -1137,45 +1215,12 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             C.ChartSpace chartSpace = new C.ChartSpace();
             chartSpace.Append(new C.EditingLanguage() { Val = "tr-TR" });
 
-            C.Chart? chart = null;
+            C.Chart? chart = new C.Chart();
 
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Bar);
-                    break;
-                case ChartType.Column:
-                    chart = getBarChart(chartDefinition, chartNode, C.BarDirectionValues.Column);
-                    break;
-                case ChartType.Line:
-                    chart = getLineChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Area:
-                    chart = getAreaChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Pie:
-                    chart = getPieChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Doughnut:
-                    chart = getDoughnutChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Scatter:
-                    chart = getScatterChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Bubble:
-                    chart = getBubbleChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Radar:
-                    chart = getRadarChart(chartDefinition, chartNode);
-                    break;
-                default:
-                    break;
-            }
+            chart = getChart(chartDefinition, chart);
 
-            if (chart is null)
-                return;
 
-            chartSpace.Append(new C.RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
+			chartSpace.Append(new C.RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
             chartSpace.Append(chart);
 
             chartPart.ChartSpace = chartSpace;
@@ -1235,7 +1280,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             worksheetPart.Worksheet.Save();
         }
-        public static void PowerPointAddChart(SlidePart slidePart, XElement chartNode, ref uint shapeId)
+        public      static  void                        PowerPointAddChart      (SlidePart slidePart, XElement chartNode, ref uint shapeId)                         
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
 
@@ -1246,42 +1291,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             C.Chart? chart = null;
 
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                    chart = getBarChart(chartDefinition, chartNode, BarDirectionValues.Bar);
-                    break;
-                case ChartType.Column:
-                    chart = getBarChart(chartDefinition, chartNode, BarDirectionValues.Column);
-                    break;
-                case ChartType.Line:
-                    chart = getLineChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Area:
-                    chart = getAreaChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Pie:
-                    chart = getPieChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Doughnut:
-                    chart = getDoughnutChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Scatter:
-                    chart = getScatterChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Bubble:
-                    chart = getBubbleChart(chartDefinition, chartNode);
-                    break;
-                case ChartType.Radar:
-                    chart = getRadarChart(chartDefinition, chartNode);
-                    break;
-                default:
-                    break;
-            }
-            if (chart is null)
-                return;
+            chart = getChart(chartDefinition, chart);
 
-            chartSpace.Append(new RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
+			chartSpace.Append(new RoundedCorners() { Val = chartDefinition.RoundedCorners ?? false });
 
             chartSpace.Append(chart);
 
@@ -1305,34 +1317,71 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             );
 
 
-
             slidePart.Slide.Save();
         }
-        private static C.Chart getBarChart(ChartDefinition chartDefinition, XElement chartNode, BarDirectionValues direction)
+
+        private     static  C.Chart                     getChart                (ChartDefinition chartDefinition, C.Chart chart)                                    
         {
+            chart = null;
 
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar:
+                    chart = getBarChart(chartDefinition, C.BarDirectionValues.Bar);
+                    break;
+                case ChartType.Column:
+                    chart = getBarChart(chartDefinition, C.BarDirectionValues.Column);
+                    break;
+                case ChartType.Line:
+                    chart = getLineChart(chartDefinition);
+                    break;
+                case ChartType.Area:
+                    chart = getAreaChart(chartDefinition);
+                    break;
+                case ChartType.Pie:
+                    chart = getPieChart(chartDefinition);
+                    break;
+                case ChartType.Doughnut:
+                    chart = getDoughnutChart(chartDefinition);
+                    break;
+                case ChartType.Scatter:
+                    chart = getScatterChart(chartDefinition);
+                    break;
+                case ChartType.Bubble:
+                    chart = getBubbleChart(chartDefinition);
+                    break;
+                case ChartType.Radar:
+                    chart = getRadarChart(chartDefinition);
+                    break;
+                default:
+                    break;
+            }
+
+            return chart;
+
+        }
+		private     static  C.Chart                     getBarChart             (ChartDefinition chartDefinition, BarDirectionValues barDirection)                  
+        {
             uint categoryAxisId = getSafeId();
-            uint valueAxisId = getSafeId();
+            uint valueAxisId    = getSafeId();
 
-            C.PlotArea plotArea = new C.PlotArea();
-
-            AxisPositionValues categoryAxisPosition = direction == BarDirectionValues.Column ? AxisPositionValues.Bottom : AxisPositionValues.Left;
-            AxisPositionValues valueAxisPosition = direction == BarDirectionValues.Column ? AxisPositionValues.Left : AxisPositionValues.Bottom;
+            C.PlotArea plotArea = new ();
+            AxisPositionValues categoryAxisPosition = barDirection == BarDirectionValues.Column ? AxisPositionValues.Bottom : AxisPositionValues.Left;
+            AxisPositionValues valueAxisPosition    = barDirection == BarDirectionValues.Column ? AxisPositionValues.Left   : AxisPositionValues.Bottom;
 
             if (chartDefinition.ThreeDView is not null)
             {
                 Bar3DChart bar3DChart = new Bar3DChart()
                 {
-                    BarDirection = new C.BarDirection() { Val = direction },
-                    BarGrouping = new C.BarGrouping() { Val = mapBarGrouping(chartDefinition.GroupingType ?? GroupingType.Clustered) },
-                    VaryColors = new C.VaryColors() { Val = chartDefinition.VaryColors ?? false }
+                    BarDirection = new BarDirection() { Val = barDirection },
+                    BarGrouping  = new BarGrouping () { Val = mapBarGrouping(chartDefinition.GroupingType ?? GroupingType.Clustered) },
+                    VaryColors   = new VaryColors  () { Val = chartDefinition.VaryColors ?? false }
                 };
 
                 addAxisIds(bar3DChart, categoryAxisId, valueAxisId);
 
                 applyBar3DOptions(bar3DChart, chartDefinition.ThreeDView);
 
-                //addBarSeries(chartDefinition,  chartNode, bar3DChart);
                 addBarSeries(chartDefinition, bar3DChart);
 
                 addDataLabels(bar3DChart, chartDefinition);
@@ -1343,14 +1392,13 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             {
                 BarChart barChart = new BarChart()
                 {
-                    BarDirection = new BarDirection() { Val = direction },
-                    BarGrouping = new BarGrouping() { Val = mapBarGrouping(chartDefinition.GroupingType ?? GroupingType.Clustered) },
-                    VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
+                    BarDirection = new BarDirection() { Val = barDirection },
+                    BarGrouping  = new BarGrouping () { Val = mapBarGrouping(chartDefinition.GroupingType ?? GroupingType.Clustered) },
+                    VaryColors   = new VaryColors  () { Val = chartDefinition.VaryColors ?? false }
                 };
 
                 addAxisIds(barChart, categoryAxisId, valueAxisId);
 
-                //addBarSeries(chartDefinition, chartNode, barChart);
                 addBarSeries(chartDefinition, barChart);
 
                 if (chartDefinition.Overlap.HasValue)
@@ -1364,19 +1412,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 plotArea.Append(barChart);
             }
 
-            addCategoryAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, categoryAxisPosition);
-            addValueAxis(chartDefinition, chartNode, plotArea, categoryAxisId, valueAxisId, valueAxisPosition);
-            addLayout(chartDefinition.Layout, plotArea);
+            addCategoryAxis (chartDefinition, plotArea, categoryAxisId, valueAxisId, categoryAxisPosition);
+            addValueAxis    (chartDefinition, plotArea, categoryAxisId, valueAxisId, valueAxisPosition);
+            addLayout       (chartDefinition.Layout, plotArea);
             //addWallsAndFloor(plotArea, chartDefinition.ThreeDViewDefinition);
 
-            return GetChartCommon(chartDefinition, chartNode, plotArea);
+            return getChartCommon(chartDefinition, plotArea);
         }
-        private static C.Chart getLineChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getLineChart            (ChartDefinition chartDefinition)                                                   
         {
             uint catId = getSafeId();
             uint valId = getSafeId();
 
-            C.PlotArea plotArea = new();
+            C.PlotArea plotArea = new ();
 
             bool use3D = chartDefinition.ThreeDView is not null;
 
@@ -1384,112 +1432,107 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             {
                 Line3DChart line3DChart = new Line3DChart()
                 {
-                    Grouping = new Grouping() { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
-                    VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
+                    Grouping   = new Grouping()  { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
+                    VaryColors = new VaryColors(){ Val = chartDefinition.VaryColors ?? false }
                 };
 
-                addAxisIds(line3DChart, catId, valId);
-                //addLineSeries(chartDefinition, chartNode, line3DChart);
-                addLineSeries(chartDefinition, line3DChart);
+                addAxisIds   (line3DChart, catId, valId);
+                addLineSeries(chartDefinition, line3DChart);              
                 addDataLabels(line3DChart, chartDefinition);
 
                 plotArea.Append(line3DChart);
 
-                addCategoryAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addValueAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addLayout(chartDefinition.Layout, plotArea);
+                addCategoryAxis (chartDefinition, plotArea, catId, valId);
+                addValueAxis    (chartDefinition, plotArea, catId, valId);
+                addLayout       (chartDefinition.Layout, plotArea);
 
-                return GetChartCommon(chartDefinition, chartNode, plotArea);
+                return getChartCommon(chartDefinition, plotArea);
             }
             else
             {
-                LineChart lineChart = new LineChart()
-                {
-                    Grouping = new Grouping() { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
-                    VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
-                };
+                LineChart lineChart = new()
+                    {
+                        Grouping   = new Grouping  () { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
+                        VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
+                    };
 
                 addAxisIds(lineChart, catId, valId);
 
-                //addLineSeries(chartDefinition, chartNode, lineChart);
                 addLineSeries(chartDefinition, lineChart);
                 addDataLabels(lineChart, chartDefinition);
 
                 plotArea.Append(lineChart);
 
-                addCategoryAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addValueAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addLayout(chartDefinition.Layout, plotArea);
+                addCategoryAxis(chartDefinition, plotArea, catId, valId);
+                addValueAxis   (chartDefinition, plotArea, catId, valId);
+                addLayout      (chartDefinition.Layout, plotArea);
 
-                return GetChartCommon(chartDefinition, chartNode, plotArea);
+                return getChartCommon(chartDefinition, plotArea);
             }
+
         }
-        private static C.Chart getAreaChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getAreaChart            (ChartDefinition chartDefinition)                                                   
         {
             uint catId = getSafeId();
             uint valId = getSafeId();
 
-            C.PlotArea plotArea = new();
+            C.PlotArea plotArea = new ();
 
             bool use3D = chartDefinition.ThreeDView is not null;
 
             if (use3D)
             {
-                Area3DChart area3DChart = new()
+                Area3DChart area3DChart = new ()
                 {
-                    Grouping = new Grouping() { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
+                    Grouping   = new Grouping() { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
                     VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
                 };
 
-                addAxisIds(area3DChart, catId, valId);
-                //addAreaSeries(chartDefinition, chartNode, area3DChart);
+                addAxisIds   (area3DChart, catId, valId);
                 addAreaSeries(chartDefinition, area3DChart);
                 addDataLabels(area3DChart, chartDefinition);
 
                 plotArea.Append(area3DChart);
 
-                addCategoryAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addValueAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addLayout(chartDefinition.Layout, plotArea);
+                addCategoryAxis (chartDefinition, plotArea, catId, valId);
+                addValueAxis    (chartDefinition, plotArea, catId, valId);
+                addLayout       (chartDefinition.Layout, plotArea);
 
-                return GetChartCommon(chartDefinition, chartNode, plotArea);
+                return getChartCommon(chartDefinition, plotArea);
             }
             else
             {
                 AreaChart areaChart = new()
-                {
-                    Grouping = new Grouping() { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
-                    VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
-                };
+                    {
+                        Grouping   = new Grouping  () { Val = mapGrouping(chartDefinition.GroupingType ?? GroupingType.Standard) },
+                        VaryColors = new VaryColors() { Val = chartDefinition.VaryColors ?? false }
+                    };
 
-                addAxisIds(areaChart, catId, valId);
-                //addAreaSeries(chartDefinition, chartNode, areaChart);
+                addAxisIds   (areaChart, catId, valId);
                 addAreaSeries(chartDefinition, areaChart);
                 addDataLabels(areaChart, chartDefinition);
 
                 plotArea.Append(areaChart);
 
-                addCategoryAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addValueAxis(chartDefinition, chartNode, plotArea, catId, valId);
-                addLayout(chartDefinition.Layout, plotArea);
+                addCategoryAxis(chartDefinition, plotArea, catId, valId);
+                addValueAxis   (chartDefinition, plotArea, catId, valId);
+                addLayout      (chartDefinition.Layout, plotArea);
 
-                return GetChartCommon(chartDefinition, chartNode, plotArea);
+                return getChartCommon(chartDefinition, plotArea);
             }
         }
-        private static C.Chart getPieChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getPieChart             (ChartDefinition chartDefinition)                                                   
         {
+            C.PlotArea plotArea = new();
 
-            C.PlotArea plotArea = new C.PlotArea();
-
-            bool use3D = chartDefinition.ThreeDView is not null;
+            bool use3D      = chartDefinition.ThreeDView is not null;
 
             if (use3D)
             {
-                C.Pie3DChart pie3D = new(new VaryColors() { Val = chartDefinition.VaryColors ?? true });
+                C.Pie3DChart pie3D = new (new VaryColors() { Val = chartDefinition.VaryColors ?? true });
 
-                //addPieSeries(chartDefinition, chartNode, pie3D);
                 addPieSeries(chartDefinition, pie3D);
-                addDataLabels(pie3D, chartDefinition);
+                addDataLabels         (pie3D, chartDefinition);
 
                 if (chartDefinition.FirstSliceAngle.HasValue)
                     pie3D.Append(new C.FirstSliceAngle() { Val = (UInt16Value)(ushort)clamp(chartDefinition.FirstSliceAngle.Value, 0, 360) });
@@ -1499,16 +1542,14 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 addLayout(chartDefinition.Layout, plotArea);
 
                 // Pie3D'de view3D istemiyoruz
-                return GetChartCommon(chartDefinition, chartNode, plotArea, allowView3D: false);
+                return getChartCommon(chartDefinition, plotArea, allowView3D: false);
             }
-
             else
             {
                 C.PieChart pieChart = new(new VaryColors() { Val = chartDefinition.VaryColors ?? true });
 
-                //addPieSeries(chartDefinition, chartNode, pieChart);
-                addPieSeries(chartDefinition, pieChart);
-                addDataLabels(pieChart, chartDefinition);
+                addPieSeries   (chartDefinition, pieChart);
+                addDataLabels  (pieChart, chartDefinition);
 
                 if (chartDefinition.FirstSliceAngle.HasValue)
                     pieChart.Append(new C.FirstSliceAngle() { Val = (UInt16Value)(ushort)clamp(chartDefinition.FirstSliceAngle.Value, 0, 360) });
@@ -1517,21 +1558,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 addLayout(chartDefinition.Layout, plotArea);
 
-                return GetChartCommon(chartDefinition, chartNode, plotArea);
+                return getChartCommon(chartDefinition, plotArea);
             }
-
         }
-        private static C.Chart getDoughnutChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getDoughnutChart        (ChartDefinition chartDefinition)                                                   
         {
             C.PlotArea plotArea = new();
 
-            C.DoughnutChart doughnut = new(
+            C.DoughnutChart doughnut = new (
                 new VaryColors() { Val = chartDefinition.VaryColors ?? true }
             );
 
-            //addPieSeries(chartDefinition, chartNode, doughnut);
             addPieSeries(chartDefinition, doughnut);
-            addDataLabels(doughnut, chartDefinition);
+            addDataLabels         (doughnut, chartDefinition);
 
             if (chartDefinition.FirstSliceAngle.HasValue)
                 doughnut.Append(new C.FirstSliceAngle() { Val = (UInt16Value)(ushort)clamp(chartDefinition.FirstSliceAngle.Value, 0, 360) });
@@ -1542,38 +1581,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             addLayout(chartDefinition.Layout, plotArea);
 
-            return GetChartCommon(chartDefinition, chartNode, plotArea);
+            return getChartCommon(chartDefinition, plotArea);
         }
-        private static C.Chart getScatterChart(ChartDefinition chartDefinition, XElement chartNode)
-        {
-            uint xId = getSafeId();
-            uint yId = getSafeId();
-
-            C.PlotArea plotArea = new();
-            C.ScatterStyleValues scatterStyle = mapScatterStyle(chartDefinition.ScatterStyle);
-
-            C.ScatterChart scatter = new(
-                new C.ScatterStyle() { Val = scatterStyle },
-                new C.VaryColors() { Val = chartDefinition.VaryColors ?? false }
-            );
-
-            //addScatterSeries(chartDefinition, chartNode, scatter, scatterStyle);
-            addScatterSeries(chartDefinition, scatter, scatterStyle);
-            addDataLabels(scatter, chartDefinition);
-            addAxisIds(scatter, xId, yId);
-
-            plotArea.Append(scatter);
-
-            // X = Bottom, Y = Left (numerik çift eksen)
-            addValueAxis(chartDefinition, chartNode, plotArea, yId, xId, position: AxisPositionValues.Bottom); // X
-            addValueAxis(chartDefinition, chartNode, plotArea, xId, yId, position: AxisPositionValues.Left); // Y
-
-            addLayout(chartDefinition.Layout, plotArea);
-
-            return GetChartCommon(chartDefinition, chartNode, plotArea);
-
-        }
-        private static C.Chart getBubbleChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getBubbleChart          (ChartDefinition chartDefinition)                                                   
         {
             // İki value axis ID’si (X ve Y)
             uint xId = getSafeId();
@@ -1581,107 +1591,88 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             C.PlotArea plotArea = new();
 
-            C.BubbleChart bubbleChart = new(
+            C.BubbleChart bubbleChart = new (
                 new VaryColors() { Val = chartDefinition.VaryColors ?? false }
             );
 
-            //addBubbleSeries(chartDefinition, chartNode, bubbleChart);
-            addBubbleSeries(chartDefinition, bubbleChart);
-            addDataLabels(bubbleChart, chartDefinition);
+            addBubbleSeries (chartDefinition, bubbleChart);
+            addDataLabels   (bubbleChart, chartDefinition);
 
             if (chartDefinition.BubbleScale.HasValue)
                 bubbleChart.Append(new C.BubbleScale() { Val = (UInt32Value)(uint)clamp(chartDefinition.BubbleScale.Value, 0, 300) });
 
             bubbleChart.Append(new C.ShowNegativeBubbles() { Val = true });
 
-            addAxisIds(bubbleChart, xId, yId);
+            addAxisIds      (bubbleChart, xId, yId);
 
             plotArea.Append(bubbleChart);
 
-            addValueAxis(chartDefinition, chartNode, plotArea, yId, xId, position: AxisPositionValues.Bottom);
-            addValueAxis(chartDefinition, chartNode, plotArea, xId, yId);
+            addValueAxis(chartDefinition, plotArea, yId, xId, position: AxisPositionValues.Bottom);
+            addValueAxis(chartDefinition, plotArea, xId, yId);
 
             addLayout(chartDefinition.Layout, plotArea);
 
-            return GetChartCommon(chartDefinition, chartNode, plotArea);
+            return getChartCommon(chartDefinition, plotArea);
         }
-        private static C.Chart getRadarChart(ChartDefinition chartDefinition, XElement chartNode)
+        private     static  C.Chart                     getScatterChart         (ChartDefinition chartDefinition)                                                   
+        {
+            uint xId = getSafeId();
+            uint yId = getSafeId();
+
+            C.PlotArea plotArea = new ();
+            C.ScatterStyleValues scatterStyle = mapScatterStyle(chartDefinition.ScatterStyle);
+
+            C.ScatterChart scatter = new (
+                new C.ScatterStyle() { Val = scatterStyle },
+                new C.VaryColors()   { Val = chartDefinition.VaryColors ?? false }
+            );
+
+            addScatterSeries(chartDefinition, scatter, scatterStyle);
+            addDataLabels   (scatter, chartDefinition);
+            addAxisIds      (scatter, xId, yId);
+
+            plotArea.Append(scatter);
+
+            // X = Bottom, Y = Left (numerik çift eksen)
+            addValueAxis(chartDefinition, plotArea, yId, xId, position: AxisPositionValues.Bottom); // X
+            addValueAxis(chartDefinition, plotArea, xId, yId, position: AxisPositionValues.Left  ); // Y
+
+            addLayout(chartDefinition.Layout, plotArea);
+
+            return getChartCommon(chartDefinition, plotArea);
+        }
+        private     static  C.Chart                     getRadarChart           (ChartDefinition chartDefinition)                                                   
         {
             uint catId = getSafeId();
             uint valId = getSafeId();
 
-            C.PlotArea plotArea = new();
+            C.PlotArea plotArea = new ();
 
-            C.RadarChart radar = new(
+            C.RadarChart radar = new (
                 new C.RadarStyle { Val = mapRadarStyle(chartDefinition.RadarStyle) },
                 new C.VaryColors { Val = chartDefinition.VaryColors ?? false }
             );
 
-            //addRadarSeries(chartDefinition, chartNode, radar);
             addRadarSeries(chartDefinition, radar);
 
             addAxisIds(radar, catId, valId);
             plotArea.Append(radar);
 
-            addCategoryAxis(chartDefinition, chartNode, plotArea, catId, valId, AxisPositionValues.Bottom);
-            addValueAxis(chartDefinition, chartNode, plotArea, catId, valId, AxisPositionValues.Left);
+            addCategoryAxis(chartDefinition, plotArea, catId, valId, AxisPositionValues.Bottom);
+            addValueAxis   (chartDefinition, plotArea, catId, valId, AxisPositionValues.Left  );
 
             addLayout(chartDefinition.Layout, plotArea);
 
-            return GetChartCommon(chartDefinition, chartNode, plotArea);
+            return getChartCommon(chartDefinition, plotArea);
         }
-        private static C.Chart GetChartCommon(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, bool allowView3D = true)
+        private     static  C.Chart                     getChartCommon          (ChartDefinition chartDefinition, C.PlotArea plotArea, bool allowView3D = true)     
         {
-            C.Chart chart = new C.Chart();
+            if (plotArea is null)
+                return null;
 
-            chartDefinition.Title = new TitleDefinition();
-            string? chartTitleAttr = chartNode.Attribute("title")?.Value;
-            XElement? titleNode = chartNode.Element("title");
+           C.Chart chart = new ();
 
-            if (titleNode != null)
-            {
-                XElement? titleFormatNode = titleNode.Element("text-format");
-                if (titleFormatNode != null)
-                {
-                    chartDefinition.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
-                }
-            }
-
-            string? titleText = null;
-
-            if (titleNode is not null)
-            {
-                titleText = titleNode.Attribute("text")?.Value;
-
-                if (string.IsNullOrWhiteSpace(titleText))
-                    titleText = titleNode.Value;
-            }
-
-            if (!string.IsNullOrWhiteSpace(titleText))
-            {
-                chartDefinition.Title.Text = titleText;
-            }
-            else if (!string.IsNullOrWhiteSpace(chartTitleAttr))
-            {
-                chartDefinition.Title.Text = chartTitleAttr;
-            }
-            else
-            {
-                chartDefinition.Title.Text = string.Empty;
-            }
-
-
-            A.Text text = new A.Text(chartDefinition.Title.Text);
-            A.Run run = new A.Run(text);
-            A.Paragraph paragraph = new A.Paragraph(run);
-            C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
-            C.ChartText chartText = new C.ChartText(richText);
-            C.Title title = new C.Title(chartText, new Overlay() { Val = false });
-
-            chart.Append(title);
-
-            if (chartDefinition.Title.TextFormat is not null)
-                applyTextFormat(richText, chartDefinition.Title.TextFormat);
+            addTitle(chartDefinition, chart);
 
             if (allowView3D && chartDefinition.ThreeDView is not null)
             {
@@ -1702,17 +1693,21 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             }
 
             chart.Append(plotArea);
-            chart.Append(new DisplayBlanksAs() { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
-            chart.Append(new AutoTitleDeleted() { Val = !chartDefinition.AutoTitle ?? false });
-            chart.Append(new PlotVisibleOnly() { Val = chartDefinition.PlotVisibleOnly ?? false });
+
+            chart.Append(new AutoTitleDeleted() { Val = !(chartDefinition.AutoTitle ?? false) });
+
+            chart.Append(new DisplayBlanksAs () { Val = mapBlanksDisplayedAs(chartDefinition.BlanksDisplayedAs ?? BlanksDisplayedAs.Gap) });
+
+            chart.Append(new PlotVisibleOnly () { Val = chartDefinition.PlotVisibleOnly ?? false });
+
             chart.Append(new ShowDataLabelsOverMaximum() { Val = chartDefinition.ShowDataLabelsOverMaximum ?? true });
 
             if (chartDefinition.Legend is LegendDefinition legendDefinition && legendDefinition.Show)
             {
                 C.Legend legend = new C.Legend(
                     new C.LegendPosition() { Val = mapLegendPosition(chartDefinition.Legend.Position) },
-                    new Layout(),
-                    new Overlay() { Val = false }
+                    new Layout          (),
+                    new Overlay         () { Val = false }
                 );
 
                 if (legendDefinition.LegendEntryTextFormat is not null)
@@ -1731,8 +1726,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     {
                         C.TextProperties textProperties = new();
 
-                        C.LegendEntry legendEntry = new(
-                            new C.Index() { Val = (uint)index },
+                        C.LegendEntry legendEntry = new (
+                            new C.Index () { Val = (uint)index },
                             new C.Delete() { Val = false },
                             textProperties
                         );
@@ -1752,14 +1747,13 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 chart.Append(legend);
             }
 
-
             if (chartDefinition.DataTable is DataTableDefinition dataTableDefinition && dataTableDefinition.Show)
             {
-                C.DataTable dataTable = new(
+                C.DataTable dataTable = new (
                     new C.ShowHorizontalBorder() { Val = dataTableDefinition.ShowHorizontalBorder },
-                    new C.ShowVerticalBorder() { Val = dataTableDefinition.ShowVerticalBorder },
-                    new C.ShowOutlineBorder() { Val = dataTableDefinition.ShowOutlineBorder },
-                    new C.ShowKeys() { Val = dataTableDefinition.ShowLegendKey }
+                    new C.ShowVerticalBorder  () { Val = dataTableDefinition.ShowVerticalBorder   },
+                    new C.ShowOutlineBorder   () { Val = dataTableDefinition.ShowOutlineBorder    },
+                    new C.ShowKeys            () { Val = dataTableDefinition.ShowLegendKey        }
                     );
 
                 if (dataTableDefinition.BoxFormat is not null)
@@ -1767,7 +1761,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 if (dataTableDefinition.TextFormat is not null)
                 {
-                    C.TextProperties txPr = new();
+                    C.TextProperties txPr = new ();
                     if (applyTextFormat(txPr, dataTableDefinition.TextFormat))
                         dataTable.Append(txPr);                // c:txPr
                 }
@@ -1782,21 +1776,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             return chart;
         }
-        private static void applyBar3DOptions(C.Bar3DChart bar3DChart, ThreeDViewDefinition viewDefinition)
-        {
-            if (bar3DChart is null || viewDefinition is null)
-                return;
-
-            // gapWidth: 0..500
-            bar3DChart.Append(new C.GapWidth() { Val = (UInt16Value)(ushort)clamp(viewDefinition.GapWidth ?? 150, 0, 500) });
-
-            // gapDepth: 0..500
-            bar3DChart.Append(new C.GapDepth() { Val = (UInt16Value)(ushort)clamp(viewDefinition.GapDepth ?? 150, 0, 500) });
-
-            // shape: box / cone / coneToMax / cylinder / pyramid / pyramidToMaximum
-            bar3DChart.Append(new C.Shape() { Val = mapShapeValues(viewDefinition.Shape) });
-        }
-        private static void addBarSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement barChart)
+       
+        private     static  void                        addBarSeries            (ChartDefinition chartDefinition, OpenXmlCompositeElement barChart)                 
         {
             uint seriesIndex = 0;
 
@@ -1804,42 +1785,26 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             {
                 BarChartSeries series = new BarChartSeries(
                     new C.Index() { Val = seriesIndex },
-                    new Order() { Val = seriesIndex },
+                    new Order  () { Val = seriesIndex },
                     new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
-
+                
                 CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values = new C.Values();
+                C.Values values              = new C.Values();
 
-                bool hasCategoryRange = !string.IsNullOrEmpty(seriesDefinition.CategoryRange);
-                bool hasDataRange = !string.IsNullOrEmpty(seriesDefinition.DataRange);
+                StringLiteral stringLiteral = new StringLiteral();
+                NumberLiteral numberLiteral = new NumberLiteral();
 
-                if (hasCategoryRange || hasDataRange)
+                stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+
+                for (int i = 0; i < seriesDefinition.Points.Count; i++)
                 {
-                    StringReference stringReference = new StringReference();
-                    stringReference.Append(new C.Formula(seriesDefinition.CategoryRange!));
-                    catAxisData.Append(stringReference);
-
-                    NumberReference numberReference = new NumberReference();
-                    numberReference.Append(new C.Formula(seriesDefinition.DataRange!));
-                    values.Append(numberReference);
+                    stringLiteral.Append(new StringPoint () { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
+                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
                 }
-                else
-                {
-                    StringLiteral stringLiteral = new StringLiteral();
-                    NumberLiteral numberLiteral = new NumberLiteral();
 
-                    stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
-
-                    for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                    {
-                        stringLiteral.Append(new StringPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
-                        numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
-                    }
-
-                    catAxisData.Append(stringLiteral);
-                    values.Append(numberLiteral);
-                }
+                catAxisData.Append(stringLiteral);
+                values     .Append(numberLiteral);
 
                 applyPointLevelStyling(seriesDefinition, series, useMarker: false);
 
@@ -1854,15 +1819,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 seriesIndex++;
             }
         }
-        private static void addLineSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement lineChart)
+        private     static  void                        addLineSeries           (ChartDefinition chartDefinition, OpenXmlCompositeElement lineChart)                
         {
             uint idx = 0;
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                LineChartSeries series = new(
+                LineChartSeries series = new (
                     new C.Index() { Val = idx },
-                    new Order() { Val = idx },
+                    new Order  () { Val = idx },
                     new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
@@ -1882,15 +1847,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 idx++;
             }
         }
-        private static void addAreaSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement areaChart)
+        private     static  void                        addAreaSeries           (ChartDefinition chartDefinition, OpenXmlCompositeElement areaChart)                
         {
             uint idx = 0;
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                AreaChartSeries series = new(
+                AreaChartSeries series = new (
                     new C.Index() { Val = idx },
-                    new Order() { Val = idx },
+                    new Order  () { Val = idx },
                     new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
@@ -1907,15 +1872,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 idx++;
             }
         }
-        private static void addPieSeries(ChartDefinition chartDefinition, OpenXmlCompositeElement owner)
+        private     static  void                        addPieSeries            (ChartDefinition chartDefinition, OpenXmlCompositeElement owner)                    
         {
             uint idx = 0;
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.PieChartSeries series = new(
+                C.PieChartSeries series = new (
                     new C.Index() { Val = idx },
-                    new Order() { Val = idx },
+                    new Order  () { Val = idx },
                     new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
@@ -1933,15 +1898,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 idx++;
             }
         }
-        private static void addBubbleSeries(ChartDefinition chartDefinition, C.BubbleChart bubbleChart)
+        private     static  void                        addBubbleSeries         (ChartDefinition chartDefinition, C.BubbleChart bubbleChart)                        
         {
             uint idx = 0;
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.BubbleChartSeries series = new(
+                C.BubbleChartSeries series = new (
                     new C.Index() { Val = idx },
-                    new Order() { Val = idx },
+                    new Order  () { Val = idx },
                     new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
@@ -1950,17 +1915,17 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 if (bubble3DEnabled)
                     series.Append(new C.InvertIfNegative() { Val = true });
 
-                NumberLiteral xNumLit = new();
+                NumberLiteral xNumLit = new ();
                 xNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                     xNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
 
-                NumberLiteral yNumLit = new();
+                NumberLiteral yNumLit = new ();
                 yNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                     yNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
 
-                NumberLiteral szNumLit = new();
+                NumberLiteral szNumLit = new ();
                 szNumLit.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                     szNumLit.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Size?.ToString(CultureInfo.InvariantCulture)) });
@@ -1982,7 +1947,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 idx++;
             }
         }
-        private static void addScatterSeries(ChartDefinition chartDefinition, C.ScatterChart scatterChart, C.ScatterStyleValues scatterStyle)
+        private     static  void                        addScatterSeries        (ChartDefinition chartDefinition, C.ScatterChart scatterChart, C.ScatterStyleValues scatterStyle)   
         {
             bool wantsLine =
                 scatterStyle == C.ScatterStyleValues.Line ||
@@ -2003,20 +1968,20 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.ScatterChartSeries series = new(
-                    new C.Index() { Val = idx },
-                    new C.Order() { Val = idx },
+                C.ScatterChartSeries series = new (
+                    new C.Index () { Val = idx },
+                    new C.Order () { Val = idx },
                     new C.SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
                 );
 
                 // X
-                C.NumberLiteral xNum = new();
+                C.NumberLiteral xNum = new ();
                 xNum.Append(new C.PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                     xNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].X?.ToString(CultureInfo.InvariantCulture)) });
 
                 // Y
-                C.NumberLiteral yNum = new();
+                C.NumberLiteral yNum = new ();
                 yNum.Append(new C.PointCount() { Val = (uint)seriesDefinition.Points.Count });
                 for (int i = 0; i < seriesDefinition.Points.Count; i++)
                     yNum.Append(new C.NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Y?.ToString(CultureInfo.InvariantCulture)) });
@@ -2054,13 +2019,13 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 idx++;
             }
         }
-        private static void addRadarSeries(ChartDefinition chartDefinition, C.RadarChart radarChart)
+        private     static  void                        addRadarSeries          (ChartDefinition chartDefinition, C.RadarChart radarChart)                          
         {
             uint idx = 0;
 
             foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
             {
-                C.RadarChartSeries series = new(
+                C.RadarChartSeries series = new (
                     new C.Index { Val = idx },
                     new C.Order { Val = idx },
                     new C.SeriesText(new C.NumericValue { Text = seriesDefinition.Title })
@@ -2070,27 +2035,27 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 switch (chartDefinition.RadarStyle)
                 {
-                    case RadarStyle.Marker:
+                    case RadarStyle.Marker  :
                         // çizgi + marker
                         ensureShapeLineVisible(series);
-                        ensureMarker(series, chartDefinition, seriesDefinition);
-                        applyPointLevelStyling(seriesDefinition, series, useMarker: true);
+                        ensureMarker     (series, chartDefinition, seriesDefinition);
+                        applyPointLevelStyling (seriesDefinition, series, useMarker: true);
                         applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
                         break;
-                    case RadarStyle.Filled:
+                    case RadarStyle.Filled  :
                         // alan dolu, marker istemiyoruz, çizgi opsiyonel (outline)
-                        ensureNoMarker(series);
+                        ensureNoMarker   (series);
                         ensureShapeLineVisible(series);
 
                         // Seri rengini hem doldurma hem outline için uygula
                         // (toOutline=false -> fill; true -> line)
                         applySeriesFormat(chartDefinition, seriesDefinition, series); // fill
-                        applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true); // outline
+                        applySeriesFormat(chartDefinition, seriesDefinition, series, toOutline: true ); // outline
                         break;
                     case RadarStyle.Standard:
-                    default:
+                    default                          :
                         // sadece çizgi, marker yok
-                        ensureNoMarker(series);
+                        ensureNoMarker   (series);
                         ensureShapeLineVisible(series);
 
                         // seri çizgi rengi
@@ -2107,392 +2072,30 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 idx++;
             }
-        }
-        private static uint getSafeId()
-        {
-            byte[] guidBytes = Guid.NewGuid().ToByteArray();
-            return BitConverter.ToUInt32(guidBytes, 0) & 0x7FFFFFFF;
-        }
-        private static void addAxisIds(OpenXmlCompositeElement owner, params uint[] ids)
-        {
-            if (owner is null || ids is null)
-                return;
+        }     
+      
+        //private     static  void                        addTitle                (ITitleOwner titleOwner, OpenXmlCompositeElement owner)                             
+        //{
+        //    if (string.IsNullOrWhiteSpace(titleOwner?.Title) || owner is null)
+        //        return;
 
-            foreach (uint id in ids)
-                owner.Append(new C.AxisId { Val = id });
-        }
-        private static void addValueAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
-        {
-            if (chartDefinition is null || plotArea is null)
-                return;
+        //    TitleDefinition titleDefinition = titleOwner.Title;
 
-            AxisPositionValues axisPos = position ?? AxisPositionValues.Left;
+        //    A.Text      text      = new(titleDefinition.Text);
+        //    A.Run       run       = new(text);
+        //    A.Paragraph paragraph = new(run);
+        //    C.RichText  richText  = new(new A.BodyProperties(), new A.ListStyle(), paragraph);
+        //    C.ChartText charText  = new(richText);
+        //    C.Title     title     = new(charText);
+        //    Overlay     overlay   = new Overlay() { Val = false };
 
-            ValueAxis valAx = new(
-                new C.AxisId() { Val = valueAxisId },
-                new Scaling(new Orientation() { Val = C.OrientationValues.MinMax }),
-                new AxisPosition() { Val = axisPos },
-                new C.MajorTickMark() { Val = chartDefinition.Type == ChartType.Radar ? C.TickMarkValues.Cross : C.TickMarkValues.Outside },
-                new C.MinorTickMark() { Val = C.TickMarkValues.None },
-                new C.NumberingFormat() { FormatCode = "General", SourceLinked = true },
-                new TickLabelPosition() { Val = TickLabelPositionValues.NextTo },
-                new CrossingAxis() { Val = categoryAxisId },
-                new Crosses() { Val = CrossesValues.AutoZero },
-                new CrossBetween() { Val = CrossBetweenValues.Between }
-            );
+        //    title.Append(overlay);
+        //    owner.Append(title);
 
-            AxisDefinition targetAxisDefinition = chartDefinition.ValueAxis;
-            bool showAxis = chartDefinition.ShowValueAxis;
-            bool addMajorGridLines;
-            FormatDefinition targetMajorGridlinesFormat = null;
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
-                    break;
-                case ChartType.Column:
-                case ChartType.Line:
-                case ChartType.Area:
-                case ChartType.Radar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
-                    break;
-                case ChartType.Bubble:
-                case ChartType.Scatter:
-                    if (position.HasValue && (position.Value == AxisPositionValues.Left || position.Value == AxisPositionValues.Right))
-                    {
-                        addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
-                        targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
-                    }
-                    else
-                    {
-                        addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
-                        targetAxisDefinition = chartDefinition.CategoryAxis;
-                        showAxis = chartDefinition.ShowCategoryAxis;
-                        targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
-                    }
-                    break;
-                case ChartType.Pie:
-                case ChartType.Doughnut:
-                default:
-                    addMajorGridLines = false;
-                    break;
-            }
-
-            applyAxisDefinition(valAx, targetAxisDefinition);
-
-            XElement? valueAxisNode = chartNode.Element("value-axis");
-
-            if (valueAxisNode != null)
-            {
-                chartDefinition.ValueAxis.Title = new TitleDefinition();
-                string? valueAxisTitleAttr = valueAxisNode.Attribute("title")?.Value;
-                XElement? valueAxisTitleNode = valueAxisNode.Element("title");
-
-                if (valueAxisTitleNode != null)
-                {
-                    XElement? titleFormatNode = valueAxisTitleNode.Element("text-format");
-                    if (titleFormatNode != null)
-                    {
-                        chartDefinition.ValueAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
-                    }
-                }
-
-                string? valueAxisTitleText = null;
-
-                if (valueAxisTitleNode is not null)
-                {
-                    valueAxisTitleText = valueAxisTitleNode.Attribute("text")?.Value;
-
-                    if (string.IsNullOrWhiteSpace(valueAxisTitleText))
-                        valueAxisTitleText = valueAxisTitleNode.Value;
-                }
-
-                if (!string.IsNullOrWhiteSpace(valueAxisTitleText))
-                {
-                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleText;
-                }
-                else if (!string.IsNullOrWhiteSpace(valueAxisTitleAttr))
-                {
-                    chartDefinition.ValueAxis.Title.Text = valueAxisTitleAttr;
-                }
-
-                A.Text text = new A.Text(chartDefinition.ValueAxis.Title.Text);
-                A.Run run = new A.Run(text);
-                A.Paragraph paragraph = new A.Paragraph(run);
-                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
-                C.ChartText chartText = new C.ChartText(richText);
-                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
-
-                valAx.Append(title);
-            }
-
-            if (addMajorGridLines)
-                addMajorGridlines(valAx, targetMajorGridlinesFormat);
-
-            valAx.InsertAt(new Delete() { Val = !showAxis }, 2);
-
-            plotArea.Append(valAx);
-        }
-        private static void addMajorGridlines(OpenXmlCompositeElement owner, FormatDefinition gridFormatDefinition)
-        {
-            if (owner is null)
-                return;
-
-            MajorGridlines majorGridlines = new();
-
-            if (gridFormatDefinition is not null)
-                applyFormat(majorGridlines, gridFormatDefinition);
-
-            owner.Append(majorGridlines);
-        }
-        private static void addCategoryAxis(ChartDefinition chartDefinition, XElement chartNode, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null)
-        {
-            if (chartDefinition is null || plotArea is null)
-                return;
-
-            AxisPositionValues axisPos = position ?? AxisPositionValues.Bottom;
-
-            CategoryAxis catAxis = new CategoryAxis(
-                new C.AxisId() { Val = categoryAxisId },
-                new Delete() { Val = !chartDefinition.ShowCategoryAxis },
-                new Scaling(new Orientation() { Val = C.OrientationValues.MinMax }),
-                new AxisPosition() { Val = axisPos },
-                new TickLabelPosition() { Val = TickLabelPositionValues.NextTo },
-                new CrossingAxis() { Val = valueAxisId },
-                new Crosses() { Val = CrossesValues.AutoZero },
-                new AutoLabeled() { Val = true },
-                new LabelAlignment() { Val = LabelAlignmentValues.Center },
-                new LabelOffset() { Val = 100 },
-                new C.TickLabelSkip() { Val = 1 },
-                new C.TickMarkSkip() { Val = 1 },
-                new C.NoMultiLevelLabels() { Val = true }
-            );
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                case ChartType.Column:
-                case ChartType.Line:
-                case ChartType.Area:
-                case ChartType.Radar:
-                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None }, 3);
-                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.Outside }, 4);
-                    break;
-                case ChartType.Scatter:
-                case ChartType.Bubble:
-                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.Outside }, 3);
-                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None }, 4);
-                    break;
-                case ChartType.Pie:
-                case ChartType.Doughnut:
-                default:
-                    catAxis.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None }, 3);
-                    catAxis.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None }, 4);
-                    break;
-            }
-
-            applyAxisDefinition(catAxis, chartDefinition.CategoryAxis);
-
-
-            XElement? catAxisNode = chartNode.Element("category-axis");
-
-            if (catAxisNode != null)
-            {
-                chartDefinition.CategoryAxis.Title = new TitleDefinition();
-                string? catAxisNodeAttr = catAxisNode.Attribute("title")?.Value;
-                XElement? titleNode = catAxisNode.Element("title");
-
-                if (titleNode != null)
-                {
-                    XElement? titleFormatNode = titleNode.Element("text-format");
-                    if (titleFormatNode != null)
-                    {
-                        chartDefinition.CategoryAxis.Title.TextFormat = XElementAttributeGetter.ParseTextFormat(titleFormatNode);
-                    }
-                }
-
-                string? titleText = null;
-
-                if (titleNode is not null)
-                {
-                    titleText = titleNode.Attribute("text")?.Value;
-
-                    if (string.IsNullOrWhiteSpace(titleText))
-                        titleText = titleNode.Value;
-                }
-
-                if (!string.IsNullOrWhiteSpace(titleText))
-                {
-                    chartDefinition.CategoryAxis.Title.Text = titleText;
-                }
-                else if (!string.IsNullOrWhiteSpace(catAxisNodeAttr))
-                {
-                    chartDefinition.CategoryAxis.Title.Text = catAxisNodeAttr;
-                }
-                else
-                {
-                    chartDefinition.CategoryAxis.Title.Text = string.Empty;
-                }
-
-
-                A.Text text = new A.Text(chartDefinition.CategoryAxis.Title.Text);
-                A.Run run = new A.Run(text);
-                A.Paragraph paragraph = new A.Paragraph(run);
-                C.RichText richText = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
-                C.ChartText chartText = new C.ChartText(richText);
-                C.Title title = new C.Title(chartText, new Overlay() { Val = false });
-
-                catAxis.Append(title);
-            }
-
-            bool addMajorGridLines;
-            FormatDefinition targetMajorGridlinesFormat = null;
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Bar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
-                    break;
-                case ChartType.Column:
-                case ChartType.Line:
-                case ChartType.Area:
-                case ChartType.Radar:
-                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
-                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
-                    break;
-                case ChartType.Pie:
-                case ChartType.Doughnut:
-                case ChartType.Bubble:
-                case ChartType.Scatter:
-                default:
-                    addMajorGridLines = false;
-                    break;
-            }
-
-            if (addMajorGridLines)
-                addMajorGridlines(catAxis, targetMajorGridlinesFormat);
-
-            plotArea.Append(catAxis);
-        }
-        private static void addDataLabels(OpenXmlCompositeElement owner, IValueLabelsContainer valueLabelsContainer)
-        {
-            if (owner is null || valueLabelsContainer is null)
-                return;
-
-            ChartDefinition chartDefinition = valueLabelsContainer.GetChartDefinition();
-
-            if (chartDefinition is null)
-                return;
-
-            ValueLabelDefinition valueLabelsDefinition = valueLabelsContainer.ValueLabels;
-
-            if (valueLabelsDefinition is null || !valueLabelsDefinition.Show)
-                return;
-
-            C.DataLabels dataLabels = new();
-
-            dataLabels.Append(new C.ShowValue() { Val = true });
-
-            DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
-
-            if (position is not null)
-            {
-                C.DataLabelPosition dataLabelPosition = new C.DataLabelPosition() { Val = position.Value };
-                dataLabels.Append(dataLabelPosition);
-            }
-
-            bool showPercent = false;
-            bool showBubbleSize = false;
-            bool showLeaderLines = false;
-
-            switch (chartDefinition.Type)
-            {
-                case ChartType.Pie:
-                    showPercent = valueLabelsDefinition.ShowPercent;
-                    showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
-                    break;
-                case ChartType.Doughnut:
-                    showPercent = valueLabelsDefinition.ShowPercent;
-                    showLeaderLines = true;
-                    break;
-                case ChartType.Scatter:
-                    break;
-                case ChartType.Bubble:
-                    showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
-                    break;
-                case ChartType.Radar:
-                    break;
-                default:
-                    break;
-            }
-
-            dataLabels.Append(new C.ShowLegendKey() { Val = valueLabelsDefinition.ShowLegendKey });
-            dataLabels.Append(new C.ShowCategoryName() { Val = valueLabelsDefinition.ShowCategoryName });
-            dataLabels.Append(new C.ShowSeriesName() { Val = valueLabelsDefinition.ShowSeriesName });
-            dataLabels.Append(new C.ShowPercent() { Val = showPercent });
-            dataLabels.Append(new C.ShowBubbleSize() { Val = showBubbleSize });
-            dataLabels.Append(new C.ShowLeaderLines() { Val = showLeaderLines });
-
-            if (valueLabelsDefinition.TextFormat is not null)
-            {
-                C.TextProperties textProperties = new();
-
-                if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
-                    dataLabels.Append(textProperties);
-            }
-
-            if (valueLabelsContainer is SeriesDefinition seriesDefinition && seriesDefinition.Points.Any(x => x.ValueLabels is not null))
-            {
-                uint pointIndex = 0;
-
-                foreach (PointDefinition pointDefinition in seriesDefinition.Points)
-                {
-                    if (pointDefinition.ValueLabels is ValueLabelDefinition pointValueLabelDefinition)
-                    {
-                        C.DataLabel pointDataLabel = new(
-                            new C.Index() { Val = pointIndex },
-                            new C.ShowValue() { Val = true },
-                            new C.ShowLegendKey() { Val = pointValueLabelDefinition.ShowLegendKey },
-                            new C.ShowCategoryName() { Val = pointValueLabelDefinition.ShowCategoryName },
-                            new C.ShowSeriesName() { Val = pointValueLabelDefinition.ShowSeriesName },
-                            new C.ShowPercent() { Val = pointValueLabelDefinition.ShowPercent && (chartDefinition.Type == ChartType.Pie || chartDefinition.Type == ChartType.Doughnut) },
-                            new C.ShowBubbleSize() { Val = pointValueLabelDefinition.ShowBubbleSize && chartDefinition.Type == ChartType.Bubble }
-                        );
-
-                        if (pointValueLabelDefinition.Position is not null)
-                        {
-                            DataLabelPositionValues? pointLabelPosition = mapDataLabelPosition(pointValueLabelDefinition.Position.Value, chartDefinition);
-
-                            if (pointLabelPosition is not null)
-                            {
-                                C.DataLabelPosition dataLabelPosition = new() { Val = pointLabelPosition.Value };
-                                pointDataLabel.Append(dataLabelPosition);
-                            }
-                        }
-
-                        if (pointValueLabelDefinition.TextFormat is not null)
-                        {
-                            C.TextProperties textProperties = new();
-
-                            if (applyTextFormat(textProperties, pointValueLabelDefinition.TextFormat))
-                                pointDataLabel.Append(textProperties);
-                        }
-
-                        dataLabels.Append(pointDataLabel);
-                    }
-
-                    pointIndex++;
-                }
-
-            }
-
-            owner.Append(dataLabels);
-        }
-        private static void addLayout(ChartLayoutDefinition layoutDefinition, C.PlotArea plotArea)
+        //    if (titleDefinition.TextFormat is not null)
+        //        applyTextFormat(richText, titleDefinition.TextFormat);
+        //}
+        private     static  void                        addLayout               (ChartLayoutDefinition layoutDefinition, C.PlotArea plotArea)                       
         {
             if (plotArea is null)
                 return;
@@ -2543,207 +2146,310 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                             : LayoutTargetValues.Outer
                     });
 
-                layout = new(manualLayout);
+                layout = new (manualLayout);
             }
 
             plotArea.InsertAt(layout, 0);
             //plotArea.Append(layout);
         }
-        private static void applyFormat3D(C.ChartShapeProperties shapeProperties, Format3DDefinition format3d)
+        private     static  void                        addCategoryAxis         (ChartDefinition chartDefinition, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null) 
         {
-            if (shapeProperties is null || format3d is null)
+            if (chartDefinition is null || plotArea is null)
                 return;
 
-            LightingDefinition light = format3d.LightingDefinition;
+			AxisPositionValues axisPos = position ?? AxisPositionValues.Bottom;
 
-            //Önce Scene3DType, Sonra Shape3DType !!!
+			CategoryAxis catAx = new(
+                new C.AxisId            () { Val = categoryAxisId },
+                new Delete              () { Val = !chartDefinition.ShowCategoryAxis },
+                new Scaling             (new Orientation() { Val = C.OrientationValues.MinMax }),
+                new AxisPosition        () { Val = axisPos },
+                new TickLabelPosition   () { Val = TickLabelPositionValues.NextTo },
+                new CrossingAxis        () { Val = valueAxisId },
+                new Crosses             () { Val = CrossesValues.AutoZero },
+                new AutoLabeled         () { Val = true },
+                new LabelAlignment      () { Val = LabelAlignmentValues.Center },
+                new LabelOffset         () { Val = 100 },
+                new C.TickLabelSkip     () { Val = 1 },
+                new C.TickMarkSkip      () { Val = 1 },
+                new C.NoMultiLevelLabels() { Val = true }
+            );
 
-            // a:scene3d (camera + lightRig)
-            shapeProperties.RemoveAllChildren<A.Scene3DType>();
-            A.Scene3DType scene = shapeProperties.AppendChild(new A.Scene3DType());
-
-            // Camera (basit preset)
-            scene.Camera = new A.Camera { Preset = A.PresetCameraValues.OrthographicFront };
-
-            // LightRig
-            A.LightRig lr = new()
+            switch (chartDefinition.Type)
             {
-                Rig = light?.Preset is null ? A.LightRigValues.ThreePoints : mapLightPreset(light.Preset.Value),
-                Direction = light?.Direction is null ? A.LightRigDirectionValues.Top : mapLightDir(light.Direction.Value)
-            };
+                case ChartType.Bar     :
+                case ChartType.Column  :
+                case ChartType.Line    :
+                case ChartType.Area    :
+                case ChartType.Radar   :
+                    catAx.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None    }, 3);
+                    catAx.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.Outside }, 4);
+                    break;
+                case ChartType.Scatter :
+                case ChartType.Bubble  :
+                    catAx.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.Outside }, 3);
+                    catAx.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None    }, 4);
+                    break;
+                case ChartType.Pie     :
+                case ChartType.Doughnut:
+                default                :
+                    catAx.InsertAt(new C.MajorTickMark() { Val = C.TickMarkValues.None }, 3);
+                    catAx.InsertAt(new C.MinorTickMark() { Val = C.TickMarkValues.None }, 4);
+                    break;
+            }
 
-            if (light?.Angle is not null)
-                lr.Append(new A.Rotation { Latitude = 0, Longitude = 0, Revolution = light.Angle.Value * 60000 });
+            applyAxisDefinition(catAx, chartDefinition.CategoryAxis);
 
-            scene.LightRig = lr;
+            bool addMajorGridLines;
+            FormatDefinition targetMajorGridlinesFormat = null;
 
-            // a:sp3d (malzeme + bevel)
-            shapeProperties.RemoveAllChildren<A.Shape3DType>();
-            A.Shape3DType sp3d = shapeProperties.AppendChild(new A.Shape3DType());
-
-            if (format3d.Material is not null)
-                sp3d.PresetMaterial = mapMaterial(format3d.Material.Value); // A.PresetMaterialTypeValues
-
-            if (format3d.BevelDefinition is BevelDefinition bevelDefinition && bevelDefinition.HasData)
+            switch (chartDefinition.Type)
             {
-                if (bevelDefinition.TopWidth is not null || bevelDefinition.TopHeight is not null || bevelDefinition.TopPreset is not null)
-                    sp3d.BevelTop = new A.BevelTop
+                case ChartType.Bar     :
+                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
+                    break;
+                case ChartType.Column  :
+                case ChartType.Line    :
+                case ChartType.Area    :
+                case ChartType.Radar   :
+                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
+                    break;
+                case ChartType.Pie     :
+                case ChartType.Doughnut:
+                case ChartType.Bubble  :
+                case ChartType.Scatter :
+                default                :
+                    addMajorGridLines = false;
+                    break;
+            }
+
+            if (addMajorGridLines)
+                addMajorGridlines(catAx, targetMajorGridlinesFormat);
+
+            plotArea.Append(catAx);
+        }
+        private     static  void                        addValueAxis            (ChartDefinition chartDefinition, C.PlotArea plotArea, uint categoryAxisId, uint valueAxisId, AxisPositionValues? position = null) 
+        {
+            if (chartDefinition is null || plotArea is null)
+                return;
+
+			AxisPositionValues axisPos = position ?? AxisPositionValues.Left;
+
+			ValueAxis    valAx = new (
+                new C.AxisId         () { Val = valueAxisId },
+                new Scaling          (new Orientation() { Val = C.OrientationValues.MinMax }),
+                new AxisPosition     () { Val = axisPos },
+                new C.MajorTickMark  () { Val = chartDefinition.Type == ChartType.Radar ? C.TickMarkValues.Cross : C.TickMarkValues.Outside },
+                new C.MinorTickMark  () { Val = C.TickMarkValues.None },
+                new C.NumberingFormat() { FormatCode = "General", SourceLinked = true },
+                new TickLabelPosition() { Val = TickLabelPositionValues.NextTo },
+                new CrossingAxis     () { Val = categoryAxisId },
+                new Crosses          () { Val = CrossesValues.AutoZero },
+                new CrossBetween     () { Val = CrossBetweenValues.Between }
+            );
+
+            AxisDefinition targetAxisDefinition = chartDefinition.ValueAxis;
+            bool           showAxis             = chartDefinition.ShowValueAxis;
+            bool           addMajorGridLines;
+            FormatDefinition targetMajorGridlinesFormat = null;
+
+            switch (chartDefinition.Type)
+            {
+                case ChartType.Bar     :
+                    addMajorGridLines = chartDefinition.Grid?.ShowVertical == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
+                    break;
+                case ChartType.Column  :
+                case ChartType.Line    :
+                case ChartType.Area    :
+                case ChartType.Radar   :
+                    addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
+                    targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
+                    break;
+                case ChartType.Bubble  :
+                case ChartType.Scatter :
+                    if (position.HasValue && (position.Value == AxisPositionValues.Left || position.Value == AxisPositionValues.Right))
                     {
-                        Width = bevelDefinition.TopWidth?.ToEmu(),
-                        Height = bevelDefinition.TopHeight?.ToEmu(),
-                        Preset = bevelDefinition.TopPreset is null ? null : mapBevel(bevelDefinition.TopPreset.Value)
-                    };
-                if (bevelDefinition.BottomWidth is not null || bevelDefinition.BottomHeight is not null || bevelDefinition.BottomPreset is not null)
-                    sp3d.BevelBottom = new A.BevelBottom
+                        addMajorGridLines = chartDefinition.Grid?.ShowHorizontal == true;
+                        targetMajorGridlinesFormat = chartDefinition.Grid?.HorizontalFormat;
+                    }
+                    else
                     {
-                        Width = bevelDefinition.BottomWidth?.ToEmu(),
-                        Height = bevelDefinition.BottomHeight?.ToEmu(),
-                        Preset = bevelDefinition.BottomPreset is null ? null : mapBevel(bevelDefinition.BottomPreset.Value)
-                    };
+                        addMajorGridLines    = chartDefinition.Grid?.ShowVertical == true;
+                        targetAxisDefinition = chartDefinition.CategoryAxis;
+                        showAxis             = chartDefinition.ShowCategoryAxis;
+                        targetMajorGridlinesFormat = chartDefinition.Grid?.VerticalFormat;
+                    }
+                    break;
+                case ChartType.Pie     :
+                case ChartType.Doughnut:
+                default                :
+                    addMajorGridLines = false;
+                    break;
             }
-        }
-        private static void applySeriesFormat(ChartDefinition chartDefinition, SeriesDefinition seriesDefinition, OpenXmlCompositeElement series, bool toOutline = false)
+
+            applyAxisDefinition(valAx, targetAxisDefinition);
+
+            if (addMajorGridLines)
+                addMajorGridlines(valAx, targetMajorGridlinesFormat);
+
+            valAx.InsertAt(new Delete() { Val = !showAxis }, 2);
+
+            plotArea.Append(valAx);
+        }        
+        private     static  void                        addDataLabels           (OpenXmlCompositeElement owner, IValueLabelsContainer valueLabelsContainer)         
         {
-            if (chartDefinition is null || seriesDefinition is null || series is null || seriesDefinition.Format is null /*|| chartDefinition.VaryColors == true*/)
+            if (owner is null || valueLabelsContainer is null)
                 return;
 
-            applyFormat(series, seriesDefinition.Format, chartDefinition.SeriesDefaultFormat);
-        }
-        private static void applyPointLevelStyling(SeriesDefinition seriesDefinition, OpenXmlCompositeElement series, bool useMarker)
-        {
-            // useMarker == true  -> dPt/marker/spPr altında uygula (Line/Scatter)
-            // useMarker == false -> dPt/spPr altında uygula (Bar/Column/Area/…)
+            ChartDefinition chartDefinition = valueLabelsContainer.GetChartDefinition();
 
-            if (series is null || seriesDefinition?.Points is null)
+            if (chartDefinition is null)
                 return;
 
-            if (!seriesDefinition.Points.Any(p => p.HasStyle))
+            ValueLabelDefinition valueLabelsDefinition = valueLabelsContainer.ValueLabels;
+
+            if (valueLabelsDefinition is null || !valueLabelsDefinition.Show)
                 return;
 
-            // dPt’leri cat/val’den ÖNCE yazabilmek için InsertAt kullanacağız,
-            // o yüzden burada sadece dPt’yi üretelim:
-            for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                series.Append(buildDataPoint(i, seriesDefinition.Points[i], useMarker));
-        }
-        private static C.DataPoint buildDataPoint(int index, PointDefinition pointDefinition, bool useMarker)
-        {
-            C.DataPoint dpt = new(new C.Index() { Val = (uint)index });
+            C.DataLabels dataLabels = new ();
 
-            if (useMarker)
+            dataLabels.Append(new C.ShowValue() { Val = true });
+
+            DataLabelPositionValues? position = mapDataLabelPosition(valueLabelsDefinition.Position, chartDefinition);
+
+            if (position is not null)
             {
-                C.Marker marker = new();
-
-                if (pointDefinition.MarkerType is not null)
-                    marker.Symbol = new C.Symbol() { Val = mapMarker(pointDefinition.MarkerType.Value) };
-
-                if (pointDefinition.MarkerSize is not null)
-                    marker.Size = new C.Size { Val = new ByteValue((byte)clamp(pointDefinition.MarkerSize.Value, 2, 72)) };
-
-                if (pointDefinition.PointFormat is FormatDefinition fd)
-                    applyFormat(marker, fd);
-
-                dpt.Append(marker);
-            }
-            else
-            {
-                if (pointDefinition.PointFormat is FormatDefinition fd)
-                    applyFormat(dpt, fd);
+                C.DataLabelPosition dataLabelPosition = new C.DataLabelPosition() { Val = position.Value };
+                dataLabels.Append(dataLabelPosition);
             }
 
-            return dpt;
-        }
-        private static void buildCategoryAndValues(SeriesDefinition s, out CategoryAxisData catAxisData, out C.Values values)
-        {
-            catAxisData = new CategoryAxisData();
-            values = new C.Values();
+            bool showPercent     = false;
+            bool showBubbleSize  = false;
+            bool showLeaderLines = false;
 
-            bool hasCategoryRange = !string.IsNullOrEmpty(s.CategoryRange);
-            bool hasDataRange = !string.IsNullOrEmpty(s.DataRange);
-
-            if (hasCategoryRange || hasDataRange)
+            switch (chartDefinition.Type)
             {
-                    StringReference stringReference = new StringReference();
-                    stringReference.Append(new C.Formula(s.CategoryRange!));
-                    catAxisData.Append(stringReference);
-
-                    NumberReference numberReference = new NumberReference();
-                    numberReference.Append(new C.Formula(s.DataRange!));
-                    values.Append(numberReference);
+                case ChartType.Pie     :
+                    showPercent     = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = position == DataLabelPositionValues.OutsideEnd || position == DataLabelPositionValues.BestFit;
+                    break;
+                case ChartType.Doughnut:
+                    showPercent     = valueLabelsDefinition.ShowPercent;
+                    showLeaderLines = true;
+                    break;
+                case ChartType.Scatter :
+                    break;
+                case ChartType.Bubble  :
+                    showBubbleSize = valueLabelsDefinition.ShowBubbleSize;
+                    break;
+                case ChartType.Radar   :
+                    break;
+                default                :
+                    break;
             }
-            else
+
+            dataLabels.Append(new C.ShowLegendKey    () { Val = valueLabelsDefinition.ShowLegendKey   });
+            dataLabels.Append(new C.ShowCategoryName () { Val = valueLabelsDefinition.ShowCategoryName});
+            dataLabels.Append(new C.ShowSeriesName   () { Val = valueLabelsDefinition.ShowSeriesName  });
+            dataLabels.Append(new C.ShowPercent      () { Val = showPercent                           });
+            dataLabels.Append(new C.ShowBubbleSize   () { Val = showBubbleSize                        });
+            dataLabels.Append(new C.ShowLeaderLines  () { Val = showLeaderLines                       });
+
+            if (valueLabelsDefinition.TextFormat is not null)
             {
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
+                C.TextProperties textProperties = new();
 
-                stringLiteral.Append(new PointCount() { Val = (uint)s.Points.Count });
+                if (applyTextFormat(textProperties, valueLabelsDefinition.TextFormat))
+                    dataLabels.Append(textProperties);
+            }
 
-                for (int i = 0; i < s.Points.Count; i++)
+            if (valueLabelsContainer is SeriesDefinition seriesDefinition && seriesDefinition.Points.Any(x => x.ValueLabels is not null))
+            {
+                uint pointIndex = 0;
+
+                foreach (PointDefinition pointDefinition in seriesDefinition.Points)
                 {
-                    stringLiteral.Append(new StringPoint()
+                    if (pointDefinition.ValueLabels is ValueLabelDefinition pointValueLabelDefinition)
                     {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(s.Points[i].Category)
-                    });
-                    numberLiteral.Append(new NumericPoint()
-                    {
-                        Index = (uint)i,
-                        NumericValue = new C.NumericValue(s.Points[i].Value?.ToString(CultureInfo.InvariantCulture))
-                    });
+                        C.DataLabel pointDataLabel = new (
+                            new C.Index           () { Val = pointIndex                                 },
+                            new C.ShowValue       () { Val = true                                       },
+                            new C.ShowLegendKey   () { Val = pointValueLabelDefinition.ShowLegendKey    },
+                            new C.ShowCategoryName() { Val = pointValueLabelDefinition.ShowCategoryName },
+                            new C.ShowSeriesName  () { Val = pointValueLabelDefinition.ShowSeriesName   },
+                            new C.ShowPercent     () { Val = pointValueLabelDefinition.ShowPercent && (chartDefinition.Type == ChartType.Pie || chartDefinition.Type == ChartType.Doughnut) },
+                            new C.ShowBubbleSize  () { Val = pointValueLabelDefinition.ShowBubbleSize && chartDefinition.Type == ChartType.Bubble }
+                        );
+
+                        if (pointValueLabelDefinition.Position is not null)
+                        {
+                            DataLabelPositionValues? pointLabelPosition = mapDataLabelPosition(pointValueLabelDefinition.Position.Value, chartDefinition);
+
+                            if (pointLabelPosition is not null)
+                            {
+                                C.DataLabelPosition dataLabelPosition = new () { Val = pointLabelPosition.Value };
+                                pointDataLabel.Append(dataLabelPosition);
+                            }
+                        }
+
+                        if (pointValueLabelDefinition.TextFormat is not null)
+                        {
+                            C.TextProperties textProperties = new ();
+
+                            if (applyTextFormat(textProperties, pointValueLabelDefinition.TextFormat))
+                                pointDataLabel.Append(textProperties);
+                        }
+
+                        dataLabels.Append(pointDataLabel);
+                    }
+
+                    pointIndex++;
                 }
 
-                catAxisData.Append(stringLiteral);
-                values.Append(numberLiteral);
             }
+
+            owner.Append(dataLabels);
         }
-        private static void applyAxisDefinition(OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)
+        private     static  void                        addMajorGridlines       (OpenXmlCompositeElement owner, FormatDefinition gridFormatDefinition)              
         {
-            if (axisDefinition is null || axisNode is null)
+            if (owner is null)
                 return;
 
-            Scaling scaling = axisNode.Elements<Scaling>().FirstOrDefault();
-            if (scaling is null)
-            {
-                scaling = new Scaling();
-                axisNode.PrependChild(scaling);
-            }
+            MajorGridlines majorGridlines = new();
 
-            if (axisDefinition.Min.HasValue)
-                scaling.Append(new C.MinAxisValue() { Val = axisDefinition.Min.Value });
+            if (gridFormatDefinition is not null)
+                applyFormat(majorGridlines, gridFormatDefinition);
 
-            if (axisDefinition.Max.HasValue && (!axisDefinition.Min.HasValue || axisDefinition.Min.Value <= axisDefinition.Max.Value))
-                scaling.Append(new C.MaxAxisValue() { Val = axisDefinition.Max.Value });
-
-            if (axisDefinition.MajorUnit.HasValue && axisNode is ValueAxis)
-                axisNode.Append(new MajorUnit() { Val = axisDefinition.MajorUnit.Value });
-
-            if (axisDefinition.AxisLineFormat is not null)
-            {
-                applyFormat(axisNode, axisDefinition.AxisLineFormat);
-            }
-
-            if (axisDefinition.TickLabelTextFormat is not null)
-            {
-                C.TextProperties textProperties = getOrAddTextProperties(axisNode);
-                applyTextFormat(textProperties, axisDefinition.TickLabelTextFormat);
-            }
+            owner.Append(majorGridlines);
         }
-        private static void add3DView(C.Chart chart, ChartDefinition chartDefinition)
+        private     static  void                        addAxisIds              (OpenXmlCompositeElement owner, params uint[] ids)                                  
+        {
+            if (owner is null || ids is null) 
+                return;
+
+            foreach (uint id in ids)
+                owner.Append(new C.AxisId { Val = id });
+        }
+        private     static  void                        add3DView               (C.Chart chart, ChartDefinition chartDefinition)                                    
         {
 
-            if (chart is null || chartDefinition?.ThreeDView is not ThreeDViewDefinition viewDefinition)
+            if (chart is null || chartDefinition?.ThreeDView is not ThreeDViewDefinition viewDefinition) 
                 return;
 
 
-            bool addView3D = viewDefinition.RotationX.HasValue
-                          || viewDefinition.RotationY.HasValue
-                          || viewDefinition.DepthPercent.HasValue
-                          || viewDefinition.HeightPercent.HasValue
-                          || viewDefinition.RightAngleAxes.HasValue
+            bool addView3D = viewDefinition.RotationX.HasValue                               
+                          || viewDefinition.RotationY.HasValue                               
+                          || viewDefinition.DepthPercent.HasValue                            
+                          || viewDefinition.HeightPercent.HasValue                           
+                          || viewDefinition.RightAngleAxes.HasValue                          
                           || (viewDefinition.Perspective.HasValue && viewDefinition.RightAngleAxes != true);
 
             if (addView3D)
             {
-                C.View3D view3D = new();
+                C.View3D view3D = new ();
 
                 // rotX: SByteValue, -90..90
                 if (viewDefinition.RotationX.HasValue)
@@ -2780,22 +2486,22 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             switch (chartDefinition.Type)
             {
-                case ChartType.Bar:
+                case ChartType.Bar   :
                 case ChartType.Column:
-                case ChartType.Line:
-                case ChartType.Area:
+                case ChartType.Line  :
+                case ChartType.Area  :
                     add3DFloorAndWalls(chart, viewDefinition);
                     break;
                 default:
                     break;
             }
         }
-        private static void add3DFloorAndWalls(C.Chart chart, ThreeDViewDefinition viewDefinition)
+        private     static  void                        add3DFloorAndWalls      (C.Chart chart, ThreeDViewDefinition viewDefinition)                                
         {
-            if (chart is null || viewDefinition is null)
+            if (chart is null || viewDefinition is null) 
                 return;
 
-            static T getWallOrFloor<T>(bool show, FormatDefinition formatDefinition, FormatDefinition defaultFormatDefinition) where T : OpenXmlCompositeElement, new()
+            static  T getWallOrFloor<T> (bool show, FormatDefinition formatDefinition, FormatDefinition defaultFormatDefinition) where T : OpenXmlCompositeElement, new()
             {
                 T elem = new T();
 
@@ -2824,25 +2530,26 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (viewDefinition.ShowSideWall.HasValue)
                 chart.Append(getWallOrFloor<C.SideWall>(viewDefinition.ShowSideWall.Value, viewDefinition.SideWallFormat, viewDefinition.DefaultFormat));
         }
-        private static void applyFormat(OpenXmlCompositeElement node, params FormatDefinition[] formats)
+
+        private     static  void                        applyFormat             (OpenXmlCompositeElement node, params FormatDefinition[] formats)                   
         {
             if (node is null || formats is null)
                 return;
 
             C.ChartShapeProperties charShapeProperties = getOrAddChartShapeProps(node);
 
-            if (charShapeProperties is null)
+            if (charShapeProperties is null) 
                 return;
 
-            FillDefinition getFillDefinition()
+            FillDefinition    getFillDefinition  ()
             {
-                for (int i = 0; i < formats.Length; i++)
+                for (int i = 0; i < formats.Length; i++) 
                     if (formats[i]?.FillDefinition is FillDefinition fd)
                         return fd;
 
                 return null;
             }
-            LineDefinition getLineDefinition()
+            LineDefinition    getLineDefinition  ()
             {
                 for (int i = 0; i < formats.Length; i++)
                     if (formats[i]?.LineDefinition is LineDefinition ld)
@@ -2878,7 +2585,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                         fillApplied = true;
                     }
                 }
-
+                
                 if (!fillApplied && fillDefinition.PatternFillDefinition is not null)
                 {
                     A.PatternFill patternFill = buildPatternFill(fillDefinition.PatternFillDefinition);
@@ -2948,7 +2655,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     }
 
                     // stroke knobs
-                    if (lineDefinition.DashPreset is not null)
+                    if (lineDefinition.DashPreset is not null)       
                         outline.Append(new A.PresetDash() { Val = mapDash(lineDefinition.DashPreset.Value) });
 
                     if (lineDefinition.CompoundPreset is not null)
@@ -2962,18 +2669,16 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                     // ends
                     if (lineDefinition.Begin_Arrow_Type is not null)
-                        outline.Append(new A.HeadEnd
-                        {
-                            Type = mapLineEndType(lineDefinition.Begin_Arrow_Type.Value),
-                            Width = mapLineEndWidth(lineDefinition.Begin_Arrow_Width ?? LineEndWidthPreset.Medium),
+                        outline.Append(new A.HeadEnd{
+                            Type   = mapLineEndType(lineDefinition.Begin_Arrow_Type.Value),
+                            Width  = mapLineEndWidth(lineDefinition.Begin_Arrow_Width ?? LineEndWidthPreset.Medium),
                             Length = mapLineEndLength(lineDefinition.Begin_Arrow_Length ?? LineEndLengthPreset.Medium)
                         });
 
                     if (lineDefinition.End_Arrow_Type is not null)
-                        outline.Append(new A.TailEnd
-                        {
-                            Type = mapLineEndType(lineDefinition.End_Arrow_Type.Value),
-                            Width = mapLineEndWidth(lineDefinition.End_Arrow_Width ?? LineEndWidthPreset.Medium),
+                        outline.Append(new A.TailEnd{
+                            Type   = mapLineEndType(lineDefinition.End_Arrow_Type.Value),
+                            Width  = mapLineEndWidth(lineDefinition.End_Arrow_Width ?? LineEndWidthPreset.Medium),
                             Length = mapLineEndLength(lineDefinition.End_Arrow_Length ?? LineEndLengthPreset.Medium)
                         });
                 }
@@ -2983,7 +2688,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (getEffectsDefintion() is EffectsDefinition effectsDefinition)
                 applyEffects(node, effectsDefinition);
         }
-        private static void applyEffects(OpenXmlCompositeElement node, EffectsDefinition effectsDefinition)
+        private     static  void                        applyEffects            (OpenXmlCompositeElement node, EffectsDefinition effectsDefinition)                 
         {
             if (node is null || effectsDefinition is null)
                 return;
@@ -2993,8 +2698,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (chartShapeProperties is null)
                 return;
 
-            A.EffectList effectList = new();
-            Dimension placeHolderDimension = new(4, UnitType.Pt);
+            A.EffectList effectList           = new();
+            Dimension    placeHolderDimension = new (4, UnitType.Pt);
 
             // Önce Glow, Sonra Shadow, aksi halde file corrupt !!!
 
@@ -3021,82 +2726,60 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 chartShapeProperties.Append(effectList);
             }
         }
-        private static void applyShadow(A.EffectList effectList, ShadowDefinition shadowDefinition, Dimension placeHolderDimension, ShadowType defaultShadowType)
+        private     static  void                        applyFormat3D           (C.ChartShapeProperties shapeProperties, Format3DDefinition format3d)               
         {
-            if (effectList is null || shadowDefinition is null || placeHolderDimension is null)
+            if (shapeProperties is null || format3d is null) 
                 return;
 
-            ShadowType shadowType = shadowDefinition.Type ?? defaultShadowType;
+            LightingDefinition light = format3d.LightingDefinition;
 
-            effectList.RemoveAllChildren<A.OuterShadow>();
-            effectList.RemoveAllChildren<A.InnerShadow>();
-            effectList.RemoveAllChildren<A.PresetShadow>();
+            //Önce Scene3DType, Sonra Shape3DType !!!
 
-            A.RgbColorModelHex shadowHex = toHexFill(shadowDefinition?.Color, "000000");
-            Int64Value blurRadius = (shadowDefinition.BlurRadius ?? placeHolderDimension).ToEmu();
-            Int64Value distance = (shadowDefinition.Distance ?? placeHolderDimension).ToEmu();
-            Int32Value direction = (shadowDefinition.Angle ?? 45) * 60000;
-            A.PresetShadowValues preset = mapShadowPreset(shadowDefinition.Preset);
+            // a:scene3d (camera + lightRig)
+            shapeProperties.RemoveAllChildren<A.Scene3DType>();
+            A.Scene3DType scene = shapeProperties.AppendChild(new A.Scene3DType());
 
-            if (shadowHex is not null)
+            // Camera (basit preset)
+            scene.Camera = new A.Camera { Preset = A.PresetCameraValues.OrthographicFront };
+
+            // LightRig
+            A.LightRig lr = new ()
             {
-                switch (shadowType)
-                {
-                    case ShadowType.Preset:
-                        effectList.Append(new A.PresetShadow(shadowHex) { Distance = distance, Direction = direction, Preset = preset });
-                        break;
-                    case ShadowType.Outer:
-                        effectList.Append(new A.OuterShadow(shadowHex) { BlurRadius = blurRadius, Distance = distance, Direction = direction });
-                        break;
-                    case ShadowType.Inner:
-                    default:
-                        effectList.Append(new A.InnerShadow(shadowHex) { BlurRadius = blurRadius, Distance = distance, Direction = direction });
-                        break;
-                }
-            }
-        }
-        private static void applyGlow(A.EffectList effectList, GlowDefinition glowDefinition, Dimension placeHolderDimension)
-        {
-            if (effectList is null || glowDefinition is null || placeHolderDimension is null)
-                return;
-
-            effectList.RemoveAllChildren<A.Glow>();
-
-            A.Glow glow = new()
-            {
-                RgbColorModelHex = toHexFill(glowDefinition.Color, "000000"),
-                Radius = (glowDefinition.Size ?? placeHolderDimension).ToEmu(),
+                Rig = light?.Preset is null ? A.LightRigValues.ThreePoints : mapLightPreset(light.Preset.Value),
+                Direction = light?.Direction is null ? A.LightRigDirectionValues.Top : mapLightDir(light.Direction.Value)
             };
 
-            effectList.Append(glow);
+            if (light?.Angle is not null)
+                lr.Append(new A.Rotation { Latitude = 0, Longitude = 0, Revolution = light.Angle.Value * 60000 });
+
+            scene.LightRig = lr;
+
+            // a:sp3d (malzeme + bevel)
+            shapeProperties.RemoveAllChildren<A.Shape3DType>();
+            A.Shape3DType sp3d = shapeProperties.AppendChild(new A.Shape3DType());
+
+            if (format3d.Material is not null)
+                sp3d.PresetMaterial = mapMaterial(format3d.Material.Value); // A.PresetMaterialTypeValues
+
+            if (format3d.BevelDefinition is BevelDefinition bevelDefinition && bevelDefinition.HasData)
+            {
+                if (bevelDefinition.TopWidth is not null || bevelDefinition.TopHeight is not null || bevelDefinition.TopPreset is not null)
+                    sp3d.BevelTop = new A.BevelTop
+                    {
+                        Width  = bevelDefinition.TopWidth?.ToEmu(),
+                        Height = bevelDefinition.TopHeight?.ToEmu(),
+                        Preset = bevelDefinition.TopPreset is null ? null : mapBevel(bevelDefinition.TopPreset.Value)
+                    };
+                if (bevelDefinition.BottomWidth is not null || bevelDefinition.BottomHeight is not null || bevelDefinition.BottomPreset is not null)
+                    sp3d.BevelBottom = new A.BevelBottom
+                    {
+                        Width  = bevelDefinition.BottomWidth?.ToEmu(),
+                        Height = bevelDefinition.BottomHeight?.ToEmu(),
+                        Preset = bevelDefinition.BottomPreset is null ? null : mapBevel(bevelDefinition.BottomPreset.Value)
+                    };
+            }
         }
-        private static void applySoftEdges(A.EffectList effectList, SoftEdgesDefinition softEdgesDefinition, Dimension placeHolderDimension)
-        {
-            if (effectList is null || softEdgesDefinition is null || placeHolderDimension is null)
-                return;
-
-            effectList.RemoveAllChildren<A.SoftEdge>();
-            effectList.Append(new A.SoftEdge() { Radius = (softEdgesDefinition.Size ?? placeHolderDimension).ToEmu() });
-        }
-        private static void applyReflection(A.EffectList effectList, ReflectionDefinition reflectionDefinition)
-        {
-            if (effectList is null || reflectionDefinition is null || !reflectionDefinition.HasData)
-                return;
-
-            effectList.RemoveAllChildren<A.Reflection>();
-
-            A.Reflection reflection = new();
-
-            if (reflectionDefinition.Blur is not null) reflection.BlurRadius = reflectionDefinition.Blur.ToEmu();
-            if (reflectionDefinition.Distance is not null) reflection.Distance = reflectionDefinition.Distance.ToEmu();
-            if (reflectionDefinition.StartTransparency is int st) reflection.StartOpacity = transparencyToAlpha(st);
-            if (reflectionDefinition.EndTransparency is int et) reflection.EndAlpha = transparencyToAlpha(et);
-            if (reflectionDefinition.StartPosition is int sp) reflection.StartPosition = sp * 1000;
-            if (reflectionDefinition.EndPosition is int ep) reflection.EndPosition = ep * 1000;
-
-            effectList.Append(reflection);
-        }
-        private static void applyFormatJoin(A.Outline outline, LineDefinition lineDefinition)
+        private     static  void                        applyFormatJoin         (A.Outline outline, LineDefinition lineDefinition)                                  
         {
             if (outline is null)
                 return;
@@ -3117,15 +2800,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     outline.Append(new A.Bevel());
                     break;
                 case LineJoinPreset.Miter:
-                    outline.Append(new A.Miter() { Limit = (lineDefinition.JoinMiterLimit ?? 800000) });
+                    outline.Append(new A.Miter(){ Limit = (lineDefinition.JoinMiterLimit ?? 800000) });
                     break;
                 default:
                     break;
             }
         }
-        private static bool applyTextFormat(OpenXmlCompositeElement txPrOwner, TextFormatDefinition textFormatDefinition)
+        private     static  bool                        applyTextFormat         (OpenXmlCompositeElement txPrOwner, TextFormatDefinition textFormatDefinition)      
         {
-            if (txPrOwner is null || textFormatDefinition is null)
+            if (txPrOwner is null || textFormatDefinition is null) 
                 return false;
 
             OpenXmlCompositeElement txPr = txPrOwner;
@@ -3150,34 +2833,34 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (textFormatDefinition.Wrap is not null)
                 bodyPr.Wrap = mapTextWrap(textFormatDefinition.Wrap.Value);
 
-            if (textFormatDefinition.MarginLeft is not null)
-                bodyPr.LeftInset = textFormatDefinition.MarginLeft.ToEmu();
+            if (textFormatDefinition.MarginLeft   is not null) 
+                bodyPr.LeftInset   = textFormatDefinition.MarginLeft.ToEmu();
 
-            if (textFormatDefinition.MarginRight is not null)
-                bodyPr.RightInset = textFormatDefinition.MarginRight.ToEmu();
+            if (textFormatDefinition.MarginRight  is not null) 
+                bodyPr.RightInset  = textFormatDefinition.MarginRight.ToEmu();
 
-            if (textFormatDefinition.MarginTop is not null)
-                bodyPr.TopInset = textFormatDefinition.MarginTop.ToEmu();
+            if (textFormatDefinition.MarginTop    is not null) 
+                bodyPr.TopInset    = textFormatDefinition.MarginTop.ToEmu();
 
-            if (textFormatDefinition.MarginBottom is not null)
+            if (textFormatDefinition.MarginBottom is not null) 
                 bodyPr.BottomInset = textFormatDefinition.MarginBottom.ToEmu();
 
             if (textFormatDefinition.Rotate is not null)
                 bodyPr.Rotation = textFormatDefinition.Rotate.Value * 60000;
 
             applyTextOutline(defRPr, textFormatDefinition.TextOutlineDefinition);
-            applyTextFill(defRPr, textFormatDefinition.TextFillDefinition);
+            applyTextFill   (defRPr, textFormatDefinition.TextFillDefinition);
             applyTextEffects(defRPr, textFormatDefinition.EffectsDefinition);
-            applyFont(defRPr, textFormatDefinition.FontDefinition);
+            applyFont       (defRPr, textFormatDefinition.FontDefinition);
 
             if (p.GetFirstChild<A.Run>() is null)
                 p.Append(new A.Run(new A.RunProperties(), new A.Text() { Text = string.Empty }));
 
             return true;
         }
-        private static void applyFont(A.TextCharacterPropertiesType runProperties, FontDefinition fontDefinition)
+        private     static  void                        applyFont               (A.TextCharacterPropertiesType runProperties, FontDefinition fontDefinition)        
         {
-            if (runProperties is null || fontDefinition is null)
+            if (runProperties is null || fontDefinition is null) 
                 return;
 
             if (!string.IsNullOrWhiteSpace(fontDefinition.Family))
@@ -3189,10 +2872,10 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (fontDefinition.Size is not null)
                 runProperties.FontSize = (int)Math.Round(fontDefinition.Size.Value * 100.0);
 
-            if (fontDefinition.Bold is not null)
+            if (fontDefinition.Bold is not null) 
                 runProperties.Bold = fontDefinition.Bold;
 
-            if (fontDefinition.Italic is not null)
+            if (fontDefinition.Italic is not null) 
                 runProperties.Italic = fontDefinition.Italic;
 
             if (fontDefinition.Underline is not null)
@@ -3210,29 +2893,29 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (fontDefinition.Spacing is not null)
                 runProperties.Spacing = (int)Math.Round(fontDefinition.Spacing.Value); // DrawingML spacing: ±EMUs değil; text char spacing (1/1000 em). İstersen burada 1/1000 em dönüşümü kurala bağlayabilirsin.
         }
-        private static void applyTextFill(A.TextCharacterPropertiesType runProperties, FillDefinition fillDefinition)
+        private     static  void                        applyTextFill           (A.TextCharacterPropertiesType runProperties, FillDefinition fillDefinition)        
         {
-            if (runProperties is null)
+            if (runProperties is null) 
                 return;
 
-            runProperties.RemoveAllChildren<A.NoFill>();
-            runProperties.RemoveAllChildren<A.SolidFill>();
+            runProperties.RemoveAllChildren<A.NoFill      >();
+            runProperties.RemoveAllChildren<A.SolidFill   >();
             runProperties.RemoveAllChildren<A.GradientFill>();
-            runProperties.RemoveAllChildren<A.PatternFill>();
-            runProperties.RemoveAllChildren<A.BlipFill>();
-            runProperties.RemoveAllChildren<A.GroupFill>();
+            runProperties.RemoveAllChildren<A.PatternFill >();
+            runProperties.RemoveAllChildren<A.BlipFill    >();
+            runProperties.RemoveAllChildren<A.GroupFill   >();
 
-            if (fillDefinition is null)
+            if (fillDefinition is null) 
                 return;
 
             if (fillDefinition.GradientFillDefinition is not null)
             {
                 A.GradientFill gf = buildGradientFill(fillDefinition.GradientFillDefinition);
 
-                if (gf is not null)
-                {
-                    runProperties.Append(gf);
-                    return;
+                if (gf is not null) 
+                { 
+                    runProperties.Append(gf); 
+                    return; 
                 }
             }
 
@@ -3240,36 +2923,36 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             {
                 A.PatternFill pf = buildPatternFill(fillDefinition.PatternFillDefinition);
 
-                if (pf is not null)
-                {
-                    runProperties.Append(pf);
-                    return;
+                if (pf is not null) 
+                { 
+                    runProperties.Append(pf); 
+                    return; 
                 }
             }
 
-            if (fillDefinition.SolidFillDefinition?.Color is not null)
+            if ( fillDefinition.SolidFillDefinition?.Color is not null)
             {
-                A.SolidFill sf = new(toHexFill(fillDefinition.SolidFillDefinition.Color, "000000"));
+                A.SolidFill sf = new (toHexFill(fillDefinition.SolidFillDefinition.Color, "000000"));
 
                 if (sf is not null)
                     runProperties.Append(sf);
             }
-        }
-        private static void applyTextOutline(A.TextCharacterPropertiesType runProperties, LineDefinition lineDefinition)
+        }        
+        private     static  void                        applyTextOutline        (A.TextCharacterPropertiesType runProperties, LineDefinition lineDefinition)        
         {
-            if (runProperties is null || lineDefinition is null)
+            if (runProperties is null || lineDefinition is null) 
                 return;
 
             A.Outline outline = getOrAddOutline(runProperties);
 
-            outline.RemoveAllChildren<A.NoFill>();
-            outline.RemoveAllChildren<A.SolidFill>();
+            outline.RemoveAllChildren<A.NoFill      >();
+            outline.RemoveAllChildren<A.SolidFill   >();
             outline.RemoveAllChildren<A.GradientFill>();
-            outline.RemoveAllChildren<A.PatternFill>();
-            outline.RemoveAllChildren<A.BlipFill>();
-            outline.RemoveAllChildren<A.GroupFill>();
+            outline.RemoveAllChildren<A.PatternFill >();
+            outline.RemoveAllChildren<A.BlipFill    >();
+            outline.RemoveAllChildren<A.GroupFill   >();
 
-            if (lineDefinition.Width is not null)
+            if (lineDefinition.Width is not null) 
                 outline.Width = lineDefinition.Width.ToEmu();
 
             bool fillApplied = false;
@@ -3284,11 +2967,11 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                     fillApplied = true;
                 }
             }
-
+            
             if (!fillApplied && lineDefinition.SolidLineDefinition is not null)
             {
                 A.SolidFill solidFill = buildSolidFill(lineDefinition.SolidLineDefinition.Color, "000000");
-
+                
                 if (solidFill is not null)
                 {
                     outline.Append(solidFill);
@@ -3299,16 +2982,16 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (!fillApplied && !lineDefinition.Visible)
                 outline.Append(new A.NoFill());
 
-            if (lineDefinition.DashPreset is not null)
-            {
-                outline.RemoveAllChildren<A.PresetDash>();
-                outline.Append(new A.PresetDash { Val = mapDash(lineDefinition.DashPreset.Value) });
+            if (lineDefinition.DashPreset is not null) 
+            { 
+                outline.RemoveAllChildren<A.PresetDash>(); 
+                outline.Append(new A.PresetDash { Val = mapDash(lineDefinition.DashPreset.Value) }); 
             }
 
-            if (lineDefinition.CompoundPreset is not null)
+            if (lineDefinition.CompoundPreset is not null) 
                 outline.CompoundLineType = mapCompound(lineDefinition.CompoundPreset.Value);
 
-            if (lineDefinition.CapPreset is not null)
+            if (lineDefinition.CapPreset is not null) 
                 outline.CapType = mapLineCap(lineDefinition.CapPreset.Value);
 
             applyFormatJoin(outline, lineDefinition);
@@ -3316,10 +2999,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (lineDefinition.Begin_Arrow_Type is not null || lineDefinition.Begin_Arrow_Width is not null || lineDefinition.Begin_Arrow_Length is not null)
             {
                 outline.RemoveAllChildren<A.HeadEnd>();
-                outline.Append(new A.HeadEnd
-                {
-                    Type = lineDefinition.Begin_Arrow_Type is null ? null : mapLineEndType(lineDefinition.Begin_Arrow_Type.Value),
-                    Width = lineDefinition.Begin_Arrow_Width is null ? null : mapLineEndWidth(lineDefinition.Begin_Arrow_Width.Value),
+                outline.Append(new A.HeadEnd {
+                    Type   = lineDefinition.Begin_Arrow_Type   is null ? null : mapLineEndType  (lineDefinition.Begin_Arrow_Type.Value),
+                    Width  = lineDefinition.Begin_Arrow_Width  is null ? null : mapLineEndWidth (lineDefinition.Begin_Arrow_Width.Value),
                     Length = lineDefinition.Begin_Arrow_Length is null ? null : mapLineEndLength(lineDefinition.Begin_Arrow_Length.Value),
                 });
             }
@@ -3327,21 +3009,20 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (lineDefinition.End_Arrow_Type is not null || lineDefinition.End_Arrow_Width is not null || lineDefinition.End_Arrow_Length is not null)
             {
                 outline.RemoveAllChildren<A.TailEnd>();
-                outline.Append(new A.TailEnd
-                {
-                    Type = lineDefinition.End_Arrow_Type is null ? null : mapLineEndType(lineDefinition.End_Arrow_Type.Value),
-                    Width = lineDefinition.End_Arrow_Width is null ? null : mapLineEndWidth(lineDefinition.End_Arrow_Width.Value),
+                outline.Append(new A.TailEnd {
+                    Type   = lineDefinition.End_Arrow_Type   is null ? null : mapLineEndType  (lineDefinition.End_Arrow_Type.Value),
+                    Width  = lineDefinition.End_Arrow_Width  is null ? null : mapLineEndWidth (lineDefinition.End_Arrow_Width.Value),
                     Length = lineDefinition.End_Arrow_Length is null ? null : mapLineEndLength(lineDefinition.End_Arrow_Length.Value),
                 });
             }
         }
-        private static void applyTextEffects(A.TextCharacterPropertiesType runProperties, EffectsDefinition effectsDefinition)
+        private     static  void                        applyTextEffects        (A.TextCharacterPropertiesType runProperties, EffectsDefinition effectsDefinition)  
         {
-            if (runProperties is null || effectsDefinition is null)
+            if (runProperties is null || effectsDefinition is null) 
                 return;
 
-            A.EffectList effectList = new();
-            Dimension placeHolderDimension = new(1, UnitType.Pt);
+            A.EffectList effectList           = new();
+            Dimension    placeHolderDimension = new(1, UnitType.Pt);
 
             // Önce Glow, Sonra Shadow, aksi halde file corrupt !!!
 
@@ -3362,8 +3043,156 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 runProperties.RemoveAllChildren<A.EffectList>();
                 runProperties.Append(effectList);
             }
+        }       
+        private     static  void                        applyAxisDefinition     (OpenXmlCompositeElement axisNode, AxisDefinition axisDefinition)                   
+        {
+            if (axisDefinition is null || axisNode is null)
+                return;
+
+            addTitle(axisDefinition, axisNode);
+
+            Scaling scaling = axisNode.Elements<Scaling>().FirstOrDefault();
+            if (scaling is null)
+            {
+                scaling = new Scaling();
+                axisNode.PrependChild(scaling); // scaling child'ı başa alıyoruz, genelde ilk sırada olur
+            }
+
+            if (axisDefinition.Min.HasValue)
+                scaling.Append(new C.MinAxisValue() { Val = axisDefinition.Min.Value });
+
+            if (axisDefinition.Max.HasValue && (!axisDefinition.Min.HasValue || axisDefinition.Min.Value <= axisDefinition.Max.Value))
+                scaling.Append(new C.MaxAxisValue() { Val = axisDefinition.Max.Value });
+
+            if (axisDefinition.MajorUnit.HasValue && axisNode is ValueAxis)
+                axisNode.Append(new MajorUnit() { Val = axisDefinition.MajorUnit.Value });
+
+            if (axisDefinition.AxisLineFormat is not null)
+            {
+                applyFormat(axisNode, axisDefinition.AxisLineFormat);
+            }
+
+            if (axisDefinition.TickLabelTextFormat is not null)
+            {
+                C.TextProperties textProperties = getOrAddTextProperties(axisNode);
+                applyTextFormat(textProperties, axisDefinition.TickLabelTextFormat);
+            }
+
         }
-        private static A.SolidFill buildSolidFill(ColorA colorA, string fallbackColor = null)
+        private     static  void                        applyBar3DOptions       (C.Bar3DChart bar3DChart, ThreeDViewDefinition viewDefinition)                      
+        {
+            if (bar3DChart is null || viewDefinition is null) 
+                return;
+
+            // gapWidth: 0..500
+            bar3DChart.Append(new C.GapWidth() { Val = (UInt16Value)(ushort)clamp(viewDefinition.GapWidth ?? 150, 0, 500) });
+
+            // gapDepth: 0..500
+            bar3DChart.Append(new C.GapDepth() { Val = (UInt16Value)(ushort)clamp(viewDefinition.GapDepth ?? 150, 0, 500) });
+
+            // shape: box / cone / coneToMax / cylinder / pyramid / pyramidToMaximum
+            bar3DChart.Append(new C.Shape() { Val = mapShapeValues(viewDefinition.Shape) });
+        }
+        private     static  void                        applyPointLevelStyling  (SeriesDefinition seriesDefinition, OpenXmlCompositeElement series, bool useMarker)                                             
+        {
+            // useMarker == true  -> dPt/marker/spPr altında uygula (Line/Scatter)
+            // useMarker == false -> dPt/spPr altında uygula (Bar/Column/Area/…)
+
+            if (series is null || seriesDefinition?.Points is null) 
+                return;
+
+            if (!seriesDefinition.Points.Any(p => p.HasStyle))
+                return;
+
+            // dPt’leri cat/val’den ÖNCE yazabilmek için InsertAt kullanacağız,
+            // o yüzden burada sadece dPt’yi üretelim:
+            for (int i = 0; i < seriesDefinition.Points.Count; i++)
+                series.Append(buildDataPoint(i, seriesDefinition.Points[i], useMarker));
+        }                
+        private     static  void                        applySeriesFormat       (ChartDefinition chartDefinition, SeriesDefinition seriesDefinition, OpenXmlCompositeElement series, bool toOutline = false)    
+        {
+            if (chartDefinition is null || seriesDefinition is null || series is null || seriesDefinition.Format is null /*|| chartDefinition.VaryColors == true*/)
+                return;
+
+            applyFormat(series, seriesDefinition.Format, chartDefinition.SeriesDefaultFormat);
+        }
+        private     static  void                        applyShadow             (A.EffectList effectList, ShadowDefinition shadowDefinition, Dimension placeHolderDimension, ShadowType defaultShadowType)      
+        {
+            if (effectList is null || shadowDefinition is null || placeHolderDimension is null)
+                return;
+
+            ShadowType shadowType = shadowDefinition.Type ?? defaultShadowType;
+
+            effectList.RemoveAllChildren<A.OuterShadow>();
+            effectList.RemoveAllChildren<A.InnerShadow>();
+            effectList.RemoveAllChildren<A.PresetShadow>();
+
+            A.RgbColorModelHex   shadowHex   = toHexFill(shadowDefinition?.Color, "000000");
+            Int64Value           blurRadius  = (shadowDefinition.BlurRadius ?? placeHolderDimension).ToEmu();
+            Int64Value           distance    = (shadowDefinition.Distance   ?? placeHolderDimension).ToEmu();
+            Int32Value           direction   = (shadowDefinition.Angle ?? 45) * 60000;
+            A.PresetShadowValues preset      = mapShadowPreset(shadowDefinition.Preset);
+
+            if (shadowHex is not null)
+            {
+                switch (shadowType)
+                {
+                    case ShadowType.Preset:
+                        effectList.Append(new A.PresetShadow(shadowHex) { Distance = distance, Direction = direction, Preset = preset });
+                        break;
+                    case ShadowType.Outer:
+                        effectList.Append(new A.OuterShadow(shadowHex) { BlurRadius = blurRadius, Distance = distance, Direction = direction });
+                        break;
+                    case ShadowType.Inner:
+                    default:
+                        effectList.Append(new A.InnerShadow(shadowHex) { BlurRadius = blurRadius, Distance = distance, Direction = direction });
+                        break;
+                }
+            }
+        }
+        private     static  void                        applyGlow               (A.EffectList effectList, GlowDefinition glowDefinition, Dimension placeHolderDimension)                                        
+        {
+            if (effectList is null || glowDefinition is null || placeHolderDimension is null)
+                return;
+
+            effectList.RemoveAllChildren<A.Glow>();
+
+            A.Glow glow = new()
+            {
+                RgbColorModelHex = toHexFill(glowDefinition.Color, "000000"),
+                Radius           = (glowDefinition.Size ?? placeHolderDimension).ToEmu(),
+            };
+
+            effectList.Append(glow);
+        }
+        private     static  void                        applySoftEdges          (A.EffectList effectList, SoftEdgesDefinition softEdgesDefinition, Dimension placeHolderDimension)                              
+        {
+            if (effectList is null || softEdgesDefinition is null || placeHolderDimension is null)
+                return;
+
+            effectList.RemoveAllChildren<A.SoftEdge>();
+            effectList.Append(new A.SoftEdge() { Radius = (softEdgesDefinition.Size ?? placeHolderDimension).ToEmu() });
+        }
+        private     static  void                        applyReflection         (A.EffectList effectList, ReflectionDefinition reflectionDefinition)                                                            
+        {
+            if (effectList is null || reflectionDefinition is null || !reflectionDefinition.HasData)
+                return;
+
+            effectList.RemoveAllChildren<A.Reflection>();
+
+            A.Reflection reflection = new ();
+
+            if (reflectionDefinition.Blur              is not null) reflection.BlurRadius    = reflectionDefinition.Blur.ToEmu();
+            if (reflectionDefinition.Distance          is not null) reflection.Distance      = reflectionDefinition.Distance.ToEmu();
+            if (reflectionDefinition.StartTransparency is int st  ) reflection.StartOpacity  = transparencyToAlpha(st);
+            if (reflectionDefinition.EndTransparency   is int et  ) reflection.EndAlpha      = transparencyToAlpha(et);
+            if (reflectionDefinition.StartPosition     is int sp  ) reflection.StartPosition = sp * 1000;
+            if (reflectionDefinition.EndPosition       is int ep  ) reflection.EndPosition   = ep * 1000;
+
+            effectList.Append(reflection);
+        }        
+        
+        private     static  A.SolidFill                 buildSolidFill          (ColorA colorA, string fallbackColor=null)                                          
         {
             if (colorA is null && string.IsNullOrWhiteSpace(fallbackColor))
                 return null;
@@ -3375,145 +3204,138 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             return new A.SolidFill(rgb);
         }
-        private static A.PatternFill buildPatternFill(PatternDefinition patternDefinition)
+        private     static  A.PatternFill               buildPatternFill        (PatternDefinition patternDefinition)                                               
         {
-            if (patternDefinition is null)
+            if (patternDefinition is null) 
                 return null;
 
-            A.PatternFill patternFill = new()
-            {
-                Preset = mapPatternPreset(patternDefinition.Preset),
+            A.PatternFill patternFill = new () 
+            { 
+                Preset          = mapPatternPreset(patternDefinition.Preset),
                 ForegroundColor = new A.ForegroundColor(toHexFill(patternDefinition.ForegroundColor, "000000")),
                 BackgroundColor = new A.BackgroundColor(toHexFill(patternDefinition.BackgroundColor, "FFFFFF")),
             };
 
             return patternFill;
         }
-        private static A.GradientFill buildGradientFill(GradientDefinition gradientDefinition)
+        private     static  A.GradientFill              buildGradientFill       (GradientDefinition gradientDefinition)                                             
         {
             if (gradientDefinition is null)
                 return null;
-            bool scaled = gradientDefinition.Scaled ?? true;
-            A.GradientFill gradientFill = new() { RotateWithShape = new BooleanValue(!scaled) };
-            A.GradientStopList gradientStopList = new();
-            List<GradientStopDefinition> gradientStops = gradientDefinition.Stops;
+            bool                         scaled           = gradientDefinition.Scaled ?? true;
+            A.GradientFill               gradientFill     = new () { RotateWithShape = new BooleanValue(!scaled) };
+            A.GradientStopList           gradientStopList = new ();
+            List<GradientStopDefinition> gradientStops    = gradientDefinition.Stops;
 
-            if (gradientStops == null || gradientStops.Count == 0)
+			if (gradientStops == null || gradientStops.Count == 0)
+			{
+				gradientStops = new List<GradientStopDefinition>();
+
+				gradientStops.Add(new GradientStopDefinition()
+				{
+					Position = 0,
+					Color    = new ColorA("#000000", null),
+				});
+
+				gradientStops.Add(new GradientStopDefinition()
+				{
+					Position = 100,
+					Color    = new ColorA("#ffffff", null),
+				});
+			}
+
+			foreach (GradientStopDefinition stopDefinition in gradientStops)
             {
-                gradientStops = new List<GradientStopDefinition>();
-
-                gradientStops.Add(new GradientStopDefinition()
-                {
-                    Position = 0,
-                    Color = new ColorA("#000000", null),
-                });
-
-                gradientStops.Add(new GradientStopDefinition()
-                {
-                    Position = 100,
-                    Color = new ColorA("#ffffff", null),
-                });
-            }
-
-            foreach (GradientStopDefinition stopDefinition in gradientStops)
-            {
-                A.GradientStop gradientStop = new()
-                {
-                    Position = stopDefinition.Position * 1000, // 0..100000
+                A.GradientStop gradientStop = new () 
+                { 
+                    Position         = stopDefinition.Position * 1000, // 0..100000
                     RgbColorModelHex = toHexFill(stopDefinition.Color, "000000"),
-                };
+                }; 
 
                 gradientStopList.Append(gradientStop);
             }
 
             gradientFill.Append(gradientStopList);
-            gradientFill.Append(new A.LinearGradientFill()
-            {
-                Angle = new Int32Value((gradientDefinition.Angle ?? 45) * 60000),
+            gradientFill.Append(new A.LinearGradientFill() 
+            { 
+                Angle  = new Int32Value((gradientDefinition.Angle ?? 45) * 60000), 
                 Scaled = scaled
             });
 
             return gradientFill;
-        }
-        private static string ToHexColorCode(string colorOrName)
+        }        
+        private     static  void                        buildCategoryAndValues  (SeriesDefinition s, out CategoryAxisData catAxisData, out C.Values values)         
         {
-            if (string.IsNullOrWhiteSpace(colorOrName))
-                return null;
+			catAxisData = new CategoryAxisData();
+			values      = new C.Values();
 
-            colorOrName = colorOrName.Trim();
+			bool hasCategoryRange = !string.IsNullOrEmpty(s.CategoryRange);
+			bool hasDataRange     = !string.IsNullOrEmpty(s.DataRange);
 
-            if (colorOrName.StartsWith("#"))
-                colorOrName = colorOrName.Substring(1);
+			if (hasCategoryRange || hasDataRange)
+			{
+				StringReference stringReference = new StringReference();
+				stringReference.Append(new C.Formula(s.CategoryRange!));
+				catAxisData.Append(stringReference);
 
-            if (Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
-                return colorOrName.ToUpper();
+				NumberReference numberReference = new NumberReference();
+				numberReference.Append(new C.Formula(s.DataRange!));
+				values.Append(numberReference);
+			}
+			else
+			{
+				StringLiteral stringLiteral = new StringLiteral();
+				NumberLiteral numberLiteral = new NumberLiteral();
 
-            return null;
-        }
-        private static A.RgbColorModelHex toHexFill(string hexOrNamed, string fallback = null, int? transparency = null)
+				stringLiteral.Append(new PointCount() { Val = (uint)s.Points.Count });
+
+				for (int i = 0; i < s.Points.Count; i++)
+				{
+					stringLiteral.Append(new StringPoint()
+					{
+						Index        = (uint)i,
+						NumericValue = new C.NumericValue(s.Points[i].Category)
+					});
+					numberLiteral.Append(new NumericPoint()
+					{
+						Index        = (uint)i,
+						NumericValue = new C.NumericValue(s.Points[i].Value?.ToString(CultureInfo.InvariantCulture))
+					});
+				}
+
+				catAxisData.Append(stringLiteral);
+				values.Append(numberLiteral);
+			}
+		}       
+        private     static  C.DataPoint                 buildDataPoint          (int index, PointDefinition pointDefinition, bool useMarker)                        
         {
-            string hexColor = ToHexColorCode(string.IsNullOrWhiteSpace(hexOrNamed) ? fallback : hexOrNamed);
+            C.DataPoint dpt = new (new C.Index() { Val = (uint)index });
 
-            if (string.IsNullOrWhiteSpace(hexColor))
-                return null;
-
-            A.RgbColorModelHex hex = new A.RgbColorModelHex() { Val = hexColor };
-
-            if (transparency is not null)
-                hex.Append(new A.Alpha { Val = transparencyToAlpha(transparency.Value) });
-
-            return hex;
-        }
-        private static A.RgbColorModelHex toHexFill(ColorA colorA, string fallback = null)
-        {
-            return toHexFill(colorA?.Color, fallback, colorA?.Transparency);
-        }
-        private static int transparencyToAlpha(int transparencyPercent)
-        {
-            int t = clamp(transparencyPercent, 0, 100);  // % şeffaflık
-            int alphaVal = (int)Math.Round((100 - t) * 1000.0); // %opaklık → 0..100000
-
-            return clamp(alphaVal, 0, 100000);
-        }
-        private static int clamp(int v, int min, int max)
-        {
-            if (v < min) return min;
-            if (v > max) return max;
-
-            return v;
-        }
-        private static C.ChartShapeProperties getOrAddChartShapeProps(OpenXmlCompositeElement node)
-        {
-            return getOrAdd<C.ChartShapeProperties>(node);
-        }
-        private static C.TextProperties getOrAddTextProperties(OpenXmlCompositeElement node)
-        {
-            return getOrAdd<C.TextProperties>(node);
-        }
-        private static A.Outline getOrAddOutline(OpenXmlCompositeElement node)
-        {
-            return getOrAdd<A.Outline>(node);
-        }
-        private static C.Marker getOrAddMarker(OpenXmlCompositeElement node)
-        {
-            return getOrAdd<C.Marker>(node);
-        }
-        private static T getOrAdd<T>(OpenXmlCompositeElement node) where T : OpenXmlCompositeElement, new()
-        {
-            if (node is null)
-                return null;
-
-            T elem = node.GetFirstChild<T>();
-
-            if (elem is null)
+            if (useMarker)
             {
-                elem = new T();
-                node.Append(elem);
+                C.Marker marker = new();
+
+                if (pointDefinition.MarkerType is not null)
+                    marker.Symbol = new C.Symbol() { Val = mapMarker(pointDefinition.MarkerType.Value) };
+
+                if (pointDefinition.MarkerSize is not null)
+                    marker.Size = new C.Size { Val = new ByteValue((byte)clamp(pointDefinition.MarkerSize.Value, 2, 72)) };
+
+                if (pointDefinition.PointFormat is FormatDefinition fd)
+                    applyFormat(marker, fd);
+
+                dpt.Append(marker);
+            }
+            else
+            {
+                if (pointDefinition.PointFormat is FormatDefinition fd)
+                    applyFormat(dpt, fd);
             }
 
-            return elem;
+            return dpt;
         }
-        private static void ensureMarker(OpenXmlCompositeElement series, ChartDefinition chartDefinition, SeriesDefinition seriesDefinition)
+        
+        private     static  void                        ensureMarker            (OpenXmlCompositeElement series, ChartDefinition chartDefinition, SeriesDefinition seriesDefinition)    
         {
             if (series is null || chartDefinition is null || seriesDefinition is null)
                 return;
@@ -3524,10 +3346,10 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return;
 
             MarkerType? markerType = seriesDefinition.Marker?.Type ?? chartDefinition.Marker?.Type;
-            int? markerSize = seriesDefinition.Marker?.Size ?? chartDefinition.Marker?.Size;
+            int?        markerSize = seriesDefinition.Marker?.Size ?? chartDefinition.Marker?.Size;
 
             if (markerType is not null)
-                marker.Symbol = new C.Symbol() { Val = mapMarker(markerType.Value) };
+                marker.Symbol = new C.Symbol(){ Val = mapMarker(markerType.Value) };
 
             if (markerSize is not null)
                 marker.Size = new C.Size { Val = new ByteValue((byte)clamp(markerSize.Value, 2, 72)) };
@@ -3544,8 +3366,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 if (!string.IsNullOrWhiteSpace(seriesSolidColor?.Color))
                 {
-                    string seriesColor = seriesSolidColor.Color;
-                    bool applyMarkerFillAlpha = chartDefinition.Type == ChartType.Scatter && chartDefinition.ScatterStyle == ScatterStyle.Marker;
+                    string seriesColor          = seriesSolidColor.Color;
+                    bool   applyMarkerFillAlpha = chartDefinition.Type == ChartType.Scatter && chartDefinition.ScatterStyle == ScatterStyle.Marker;
 
                     ColorA markerFillColor = applyMarkerFillAlpha ? seriesSolidColor : new(seriesColor, 0);
 
@@ -3574,9 +3396,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 }
             }
         }
-        private static void ensureNoMarker(OpenXmlCompositeElement series)
+        private     static  void                        ensureNoMarker          (OpenXmlCompositeElement series)                                                    
         {
-            if (series is null)
+            if (series is null) 
                 return;
 
             // Seri seviyesi: marker yok
@@ -3589,9 +3411,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 // spPr varsa hemen sonrasına, yoksa sona eklemek güvenli
                 C.ChartShapeProperties spPr = series.GetFirstChild<C.ChartShapeProperties>();
 
-                if (spPr is null)
+                if (spPr is null) 
                     series.Append(seriesMarker);
-                else
+                else 
                     series.InsertAfter(seriesMarker, spPr);
             }
 
@@ -3601,7 +3423,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             foreach (C.DataPoint dpt in series.Elements<C.DataPoint>())
                 dpt.GetFirstChild<C.Marker>()?.Remove();
         }
-        private static void ensureShapeLineVisible(OpenXmlCompositeElement node)
+        private     static  void                        ensureShapeLineVisible  (OpenXmlCompositeElement node)                                                      
         {
             if (node is null)
                 return;
@@ -3611,61 +3433,132 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (spPr?.GetFirstChild<A.Outline>()?.GetFirstChild<A.NoFill>() is A.NoFill nf)
                 nf.Remove();
         }
-        private static void ensureShapeLineHidden(OpenXmlCompositeElement node)
+        private     static  void                        ensureShapeLineHidden   (OpenXmlCompositeElement node)                                                      
         {
             if (node is null)
                 return;
 
-            C.ChartShapeProperties spPr = getOrAddChartShapeProps(node);
-            A.Outline outline = getOrAddOutline(spPr);
+            C.ChartShapeProperties  spPr    = getOrAddChartShapeProps(node);
+            A.Outline               outline = getOrAddOutline(spPr);
 
             if (outline.GetFirstChild<A.NoFill>() is null)
                 outline.Append(new A.NoFill());
-        }
-        private static A.GradientFill buildLinearGradientFill(string color1, string color2, int? angleDegrees)
+        }       
+        
+        private     static  C.ChartShapeProperties      getOrAddChartShapeProps (OpenXmlCompositeElement node)                                                      
         {
-            A.GradientFill gradientFill = new A.GradientFill() { RotateWithShape = new BooleanValue(true) };
-            A.LinearGradientFill linearGradientFill = new A.LinearGradientFill() { Angle = new Int32Value((angleDegrees ?? 45) * 60000) };
-            A.GradientStopList gradientStopList = new A.GradientStopList();
-            A.GradientStop gradientStop1 = new A.GradientStop(toHexFill(color1, "000000")) { Position = new Int32Value(0) };
-            A.GradientStop gradientStop2 = new A.GradientStop(toHexFill(color2, "FFFFFF")) { Position = new Int32Value(100000) }; // 0..100000
-
-            gradientStopList.Append(gradientStop1);
-            gradientStopList.Append(gradientStop2);
-            gradientFill.Append(gradientStopList);
-            gradientFill.Append(linearGradientFill);
-
-            return gradientFill;
+            return getOrAdd<C.ChartShapeProperties>(node);
+        } 
+        private     static  C.TextProperties            getOrAddTextProperties  (OpenXmlCompositeElement node)                                                      
+        {
+            return getOrAdd<C.TextProperties>(node);
+        } 
+        private     static  A.Outline                   getOrAddOutline         (OpenXmlCompositeElement node)                                                      
+        {
+            return getOrAdd<A.Outline>(node);
+        } 
+        private     static  C.Marker                    getOrAddMarker          (OpenXmlCompositeElement node)                                                      
+        {
+            return getOrAdd<C.Marker>(node);
         }
-        private static C.Floor ensureFloor(OpenXmlCompositeElement plotArea)
+        private     static  T                           getOrAdd<T>             (OpenXmlCompositeElement node)                                                      where T : OpenXmlCompositeElement, new()
+        {
+            if (node is null)
+                return null;
+
+            T elem = node.GetFirstChild<T>();
+
+            if (elem is null)
+            {
+                elem = new T();
+                node.Append(elem);
+            }
+
+            return elem;
+        }        
+       
+        private     static  uint                        getSafeId               ()                                                                                  
+        {
+            byte[] guidBytes = Guid.NewGuid().ToByteArray();
+            return BitConverter.ToUInt32(guidBytes, 0) & 0x7FFFFFFF; // Pozitif uint
+        }
+        private     static  A.RgbColorModelHex          toHexFill               (ColorA colorA, string fallback = null)                                             
+        {
+            return toHexFill(colorA?.Color, fallback, colorA?.Transparency);
+        }
+        private     static  int                         transparencyToAlpha     (int transparencyPercent)                                                           
+        {
+            int t        = clamp(transparencyPercent, 0, 100);  // % şeffaflık
+            int alphaVal = (int)Math.Round((100 - t) * 1000.0); // %opaklık → 0..100000
+
+            return clamp(alphaVal, 0, 100000);            
+        }
+        private     static  int                         clamp                   (int v, int min, int max)                                                           
+        {
+            if (v < min) return min;
+            if (v > max) return max;
+
+            return v;
+        }        
+        private     static  string                      ToHexColorCode          (string colorOrName)                                                                
+        {
+            if (string.IsNullOrWhiteSpace(colorOrName))
+                return null;
+
+            colorOrName = colorOrName.Trim();
+
+            if (colorOrName.StartsWith("#"))
+                colorOrName = colorOrName.Substring(1);
+
+            if (Regex.IsMatch(colorOrName, @"^[0-9a-fA-F]{6,8}$"))
+                return colorOrName.ToUpper();
+
+            return null;
+        }
+        private     static  A.RgbColorModelHex          toHexFill               (string hexOrNamed, string fallback = null, int? transparency = null)               
+        {
+            string hexColor = ToHexColorCode(string.IsNullOrWhiteSpace(hexOrNamed) ? fallback : hexOrNamed);
+
+            if (string.IsNullOrWhiteSpace(hexColor))
+                return null;
+
+            A.RgbColorModelHex hex = new A.RgbColorModelHex() { Val = hexColor };
+
+            if (transparency is not null)
+                hex.Append(new A.Alpha { Val = transparencyToAlpha(transparency.Value) });
+
+            return hex;
+        }
+
+        private     static  C.Floor                     ensureFloor             (OpenXmlCompositeElement plotArea)                                                  
         {
             C.Floor floor = plotArea.GetFirstChild<C.Floor>();
 
-            if (floor is null)
-            {
-                floor = new C.Floor();
-                plotArea.Append(floor);
+            if (floor is null) 
+            { 
+                floor = new C.Floor(); 
+                plotArea.Append(floor); 
             }
 
             getOrAddChartShapeProps(floor);
 
             return floor;
         }
-        private static C.SideWall ensureSideWall(OpenXmlCompositeElement plotArea)
+        private     static  C.SideWall                  ensureSideWall          (OpenXmlCompositeElement plotArea)                                                  
         {
             C.SideWall sideWall = plotArea.GetFirstChild<C.SideWall>();
 
-            if (sideWall is null)
-            {
+            if (sideWall is null) 
+            { 
                 sideWall = new C.SideWall();
-                plotArea.Append(sideWall);
+                plotArea.Append(sideWall); 
             }
 
             getOrAddChartShapeProps(sideWall);
 
             return sideWall;
         }
-        private static C.BackWall ensureBackWall(OpenXmlCompositeElement plotArea)
+        private     static  C.BackWall                  ensureBackWall          (OpenXmlCompositeElement plotArea)                                                  
         {
             C.BackWall backWall = plotArea.GetFirstChild<C.BackWall>();
 
@@ -3678,8 +3571,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             getOrAddChartShapeProps(backWall);
 
             return backWall;
-        }
-        private static C.DataLabels ensureDataLabels(OpenXmlCompositeElement node)
+        }      
+        private     static  C.DataLabels                ensureDataLabels        (OpenXmlCompositeElement node)                                                      
         {
             C.DataLabels dataLabels = node.GetFirstChild<C.DataLabels>();
 
@@ -3687,7 +3580,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             return dataLabels;
         }
-        private static A.Outline buildBorder(string color, Dimension width)
+
+        private     static  A.Outline                   buildBorder             (string color, Dimension width)
         {
             A.Outline outline = new A.Outline(new A.SolidFill(toHexFill(color, "000000")));
 
@@ -3696,11 +3590,11 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             return outline;
         }
-        private static A.SolidFill buildSolidFill(string color)
+        private     static  A.SolidFill                 buildSolidFill          (string color)                                                                      
         {
             return new A.SolidFill(toHexFill(color, "dedede"));
         }
-        private static A.PatternFill buildPatternFill(PatternFillPreset patternFillPreset, string foreGround, string backGround)
+        private     static  A.PatternFill               buildPatternFill        (PatternFillPreset patternFillPreset, string foreGround, string backGround)         
         {
             A.PatternFill p = new A.PatternFill() { Preset = mapPatternPreset(patternFillPreset) };
 
@@ -3709,13 +3603,28 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             return p;
         }
-        private static void applyTickLabelRotation(OpenXmlCompositeElement axisNode, int? rotation)
+        private     static  A.GradientFill              buildLinearGradientFill (string color1, string color2, int? angleDegrees)                                   
         {
-            if (!rotation.HasValue)
+            A.GradientFill       gradientFill       = new A.GradientFill() { RotateWithShape = new BooleanValue(true) };
+            A.LinearGradientFill linearGradientFill = new A.LinearGradientFill() { Angle = new Int32Value((angleDegrees ?? 45) * 60000) };
+            A.GradientStopList   gradientStopList   = new A.GradientStopList();
+            A.GradientStop       gradientStop1      = new A.GradientStop(toHexFill(color1, "000000")) { Position = new Int32Value(0) };
+            A.GradientStop       gradientStop2      = new A.GradientStop(toHexFill(color2, "FFFFFF")) { Position = new Int32Value(100000) }; // 0..100000
+
+            gradientStopList.Append(gradientStop1);
+            gradientStopList.Append(gradientStop2);
+            gradientFill    .Append(gradientStopList);
+            gradientFill    .Append(linearGradientFill);
+
+            return gradientFill;
+        }
+        private     static  void                        applyTickLabelRotation  (OpenXmlCompositeElement axisNode, int? rotation)                                   
+        {
+            if (!rotation.HasValue) 
                 return;
             // OpenXML rot = derece * 60000, saat yönünün tersine
             C.TextProperties txPr = axisNode.GetFirstChild<C.TextProperties>();
-            if (txPr is null)
+            if (txPr is null) 
             {
                 txPr = new C.TextProperties(
                     new A.BodyProperties(),
@@ -3727,6 +3636,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             txPr.BodyProperties ??= new A.BodyProperties();
             txPr.BodyProperties.Rotation = rotation.Value * 60000;
         }
+
         private     static  GroupingValues              mapGrouping             (GroupingType value)                                                                
         {
             // GroupingType.Clustered not supported here !
@@ -4187,422 +4097,459 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         }
 
     }
-    class ChartDefinition : IValueLabelsContainer
+    class   ChartDefinition         : IValueLabelsContainer
     {
-        public bool IsAreaBased
-        {
-            get
+        public          bool                    IsAreaBased                 
+        { 
+            get 
             {
                 switch (Type)
                 {
-                    case ChartType.Area:
-                    case ChartType.Bar:
-                    case ChartType.Column:
-                    case ChartType.Pie:
-                    case ChartType.Doughnut:
-                    case ChartType.Bubble:
+                    case ChartType.Area     :
+                    case ChartType.Bar      :
+                    case ChartType.Column   :
+                    case ChartType.Pie      :
+                    case ChartType.Doughnut :
+                    case ChartType.Bubble   :
                         return true;
-                    case ChartType.Radar:
+                    case ChartType.Radar    :
                         return RadarStyle == RadarStyle.Filled;
-                    default:
+                    default                 :
                         return false;
                 }
-            }
+            } 
         }
-        public bool IsLineBased
-        {
-            get
+        public          bool                    IsLineBased                 
+        { 
+            get 
             {
                 switch (Type)
                 {
-                    case ChartType.Line:
+                    case ChartType.Line   :
                         return true;
                     case ChartType.Scatter:
                         return ScatterStyle is ScatterStyle.Line
                                             or ScatterStyle.LineMarker
                                             or ScatterStyle.Smooth
                                             or ScatterStyle.SmoothMarker;
-                    case ChartType.Radar:
+                    case ChartType.Radar  :
                         return RadarStyle is RadarStyle.Standard or RadarStyle.Marker;
-                    default:
+                    default               :
                         return false;
                 }
-            }
+            } 
         }
-        public ChartType Type { get; set; }
-        public TitleDefinition Title { get; set; }
-        public Dimension Width { get; set; }
-        public Dimension Height { get; set; }
-        public int? GapWidth { get; set; }   // Bar, Column only
-        public int? Overlap { get; set; }   // Bar, Column only
-        public ScatterStyle ScatterStyle { get; set; }
-        public RadarStyle RadarStyle { get; set; }
-        public MarkerDefinition Marker { get; set; }   // Line, Scatter, Radar only
-        public List<SeriesDefinition> Series { get; set; } = [];
-        public AxisDefinition CategoryAxis { get; set; }
-        public AxisDefinition ValueAxis { get; set; }
-        public LegendDefinition Legend { get; set; }
-        public GridDefinition Grid { get; set; }
-        public ValueLabelDefinition ValueLabels { get; set; }
-        public ChartLayoutDefinition Layout { get; set; }
-        public ThreeDViewDefinition ThreeDView { get; set; }
-        public DataTableDefinition DataTable { get; set; }
-        public FormatDefinition PlotAreaFormat { get; set; }
-        public FormatDefinition ChartAreaFormat { get; set; }
-        public TextFormatDefinition TextFormat { get; set; }
-        public FormatDefinition SeriesDefaultFormat { get; set; }
+        public          ChartType               Type                        { get; set; }
+        public          TitleDefinition         Title                       { get; set; }
+        public          Dimension               Width                       { get; set; }
+        public          Dimension               Height                      { get; set; }
+        public          int?                    GapWidth                    { get; set; }   // Bar, Column only
+        public          int?                    Overlap                     { get; set; }   // Bar, Column only
+        public          ScatterStyle            ScatterStyle                { get; set; }
+        public          RadarStyle              RadarStyle                  { get; set; }
+        public          MarkerDefinition        Marker                      { get; set; }   // Line, Scatter, Radar only
+        public          List<SeriesDefinition>  Series                      { get; set; } = [];
+        public          AxisDefinition          CategoryAxis                { get; set; }   // Not used for Pie/Doughnut
+        public          AxisDefinition          ValueAxis                   { get; set; }   // Not used for Pie/Doughnut
+        public          LegendDefinition        Legend                      { get; set; }
+        public          GridDefinition          Grid                        { get; set; }
+        public          ValueLabelDefinition    ValueLabels                 { get; set; }
+        public          ChartLayoutDefinition   Layout                      { get; set; }
+        public          ThreeDViewDefinition    ThreeDView                  { get; set; }
+        public          DataTableDefinition     DataTable                   { get; set; }
+        public          FormatDefinition        PlotAreaFormat              { get; set; }
+        public          FormatDefinition        ChartAreaFormat             { get; set; }
+        public          TextFormatDefinition    TextFormat                  { get; set; }
+        public          FormatDefinition        SeriesDefaultFormat         { get; set; }
 
-        public bool? AutoTitle { get; set; } //default: false
-        public BlanksDisplayedAs? BlanksDisplayedAs { get; set; }
-        public bool? PlotVisibleOnly { get; set; }
-        public bool? RoundedCorners { get; set; }
-        public GroupingType? GroupingType { get; set; }
-        public bool? VaryColors { get; set; }
-        public bool? ShowDataLabelsOverMaximum { get; set; }
-        public bool CreateNewParagraph { get; set; } //default true
-        public bool ShowCategoryAxis { get; set; } //default true
-        public bool ShowValueAxis { get; set; } //default true
-        public int? FirstSliceAngle { get; set; } // Pie/Doughnut: 0..360
-        public int? DoughnutHoleSize { get; set; } // Doughnut: 10..90
-        public int? BubbleScale { get; set; } // Bubble: 0..300 (yüzde)
-        public bool? Bubble3D { get; set; } // Bubble: true/false
-        public ChartDefinition GetChartDefinition()
+        public          bool?                   AutoTitle                   { get; set; } //default: false
+        public          BlanksDisplayedAs?      BlanksDisplayedAs           { get; set; }
+        public          bool?                   PlotVisibleOnly             { get; set; }
+        public          bool?                   RoundedCorners              { get; set; }
+        public          GroupingType?           GroupingType                { get; set; }
+        public          bool?                   VaryColors                  { get; set; }
+        public          bool?                   ShowDataLabelsOverMaximum   { get; set; }
+        public          bool                    CreateNewParagraph          { get; set; } //default true
+        public          bool                    ShowCategoryAxis            { get; set; } //default true
+        public          bool                    ShowValueAxis               { get; set; } //default true
+        public          int?                    FirstSliceAngle             { get; set; } // Pie/Doughnut: 0..360
+        public          int?                    DoughnutHoleSize            { get; set; } // Doughnut: 10..90
+        public          int?                    BubbleScale                 { get; set; } // Bubble: 0..300 (yüzde)
+        public          bool?                   Bubble3D                    { get; set; } // Bubble: true/false
+        public          ChartDefinition         GetChartDefinition          ()
         {
             return this;
         }
     }
 
-    class SeriesDefinition : IValueLabelsContainer
-    {
-        public string? CategoryRange { get; set; }
-        public string? DataRange { get; set; }
-        public TitleDefinition Title { get; set; }
-        public ColorA ColorA { get { return Format?.FillDefinition?.SolidFillDefinition?.Color; } }
-        public string Color { get { return ColorA?.Color; } }
-        public int? ColorTransparency { get { return ColorA?.Transparency; } }
-        public List<PointDefinition> Points { get; set; } = [];
-        public FormatDefinition Format { get; set; }
-        public MarkerDefinition Marker { get; set; }
-        public ValueLabelDefinition ValueLabels { get; set; } //<value-labels>
-        public ChartDefinition ChartDefinition { get; set; }
-        public SeriesDefinition()
+    class   SeriesDefinition        : ITitleOwner, IMarkerOwner, IValueLabelsContainer
+	{
+        public  string?                 CategoryRange       { get; set; }
+        public  string?                 DataRange           { get; set; }
+        public  TitleDefinition         Title               { get; set; }
+        public  ColorA                  ColorA              { get { return Format?.FillDefinition?.SolidFillDefinition?.Color; } }
+        public  string                  Color               { get { return ColorA?.Color; } }
+        public  int?                    ColorTransparency   { get { return ColorA?.Transparency; } }
+        public  List<PointDefinition>   Points              { get; set; } = [];
+        public  FormatDefinition        Format              { get; set; }
+        public  MarkerDefinition        Marker              { get; set; }
+        public  ValueLabelDefinition    ValueLabels         { get; set; } //<value-labels>
+        public  ChartDefinition         ChartDefinition     { get; set; }
+		public  /*Ctor*/                SeriesDefinition    ()                               
         {
 
         }
-        public  /*Ctor*/                SeriesDefinition(ChartDefinition chartDefinition)
+        public  /*Ctor*/                SeriesDefinition    (ChartDefinition chartDefinition)
         {
             ChartDefinition = chartDefinition;
         }
-        public ChartDefinition GetChartDefinition()
+        public  ChartDefinition         GetChartDefinition  ()                               
         {
             return ChartDefinition;
         }
     }
 
-    class PointDefinition : IValueLabelsContainer
+    class   PointDefinition         : IValueLabelsContainer
     {
         // Categorical charts
-        public string Category { get; set; }
-        public double? Value { get; set; }
+        public  string                  Category            { get; set; }
+        public  double?                 Value               { get; set; }
 
         // Scatter / Bubble
-        public double? X { get; set; }
-        public double? Y { get; set; }
+        public  double?                 X                   { get; set; }
+        public  double?                 Y                   { get; set; }
 
         // Bubble only
-        public double? Size { get; set; }
+        public  double?                 Size                { get; set; }
 
         //UI
-        public bool HasStyle { get { return PointFormat is not null || MarkerType is not null || MarkerSize is not null; } }
-        public MarkerType? MarkerType { get; set; } // circle/square/…
-        public int? MarkerSize { get; set; } // 2..72 (pt karşılığı byte range: 2..72) 
-        public FormatDefinition PointFormat { get; set; }
-        public ValueLabelDefinition ValueLabels { get; set; }
-        public SeriesDefinition SeriesDefinition { get; set; }
-        public PointDefinition()
+        public  bool                    HasStyle            { get { return PointFormat is not null || MarkerType is not null || MarkerSize is not null; } }
+        public  MarkerType?             MarkerType          { get; set; } // circle/square/…
+        public  int?                    MarkerSize          { get; set; } // 2..72 (pt karşılığı byte range: 2..72) 
+        public  FormatDefinition        PointFormat         { get; set; }
+        public  ValueLabelDefinition    ValueLabels         { get; set; }
+        public  SeriesDefinition        SeriesDefinition    { get; set; }
+		public  /*Ctor*/                PointDefinition     ()
         {
 
         }
-        public  /*Ctor*/                PointDefinition(SeriesDefinition seriesDefinition)
+        public  /*Ctor*/                PointDefinition     (SeriesDefinition seriesDefinition)
         {
             SeriesDefinition = seriesDefinition;
         }
-        public ChartDefinition GetChartDefinition()
+        public  ChartDefinition         GetChartDefinition  ()
         {
             return SeriesDefinition?.GetChartDefinition();
         }
     }
-    class AxisDefinition
+    class   AxisDefinition          : ITitleOwner
     {
-        public TitleDefinition Title { get; set; } // <title>
-        public FormatDefinition AxisLineFormat { get; set; } // <format>
-        public TextFormatDefinition TickLabelTextFormat { get; set; } // <text-format>
+        public  TitleDefinition         Title               { get; set; } // <title>
+        public  FormatDefinition        AxisLineFormat      { get; set; } // <format>
+        public  TextFormatDefinition    TickLabelTextFormat { get; set; } // <text-format>
 
         // Only valid for numeric axes
-        public double? Min { get; set; }
-        public double? Max { get; set; }
-        public double? MajorUnit { get; set; }
+        public  double?                 Min                 { get; set; }
+        public  double?                 Max                 { get; set; }
+        public  double?                 MajorUnit           { get; set; }
     }
-    class LegendDefinition
+    class   LegendDefinition        
     {
-        public bool Show { get; set; }
-        public LegendPosition Position { get; set; }
-        public FormatDefinition BoxFormat { get; set; }
-        public TextFormatDefinition LegendEntryTextFormat { get; set; }
+        public  bool                 Show                   { get; set; }
+        public  LegendPosition       Position               { get; set; }
+        public  FormatDefinition     BoxFormat              { get; set; }
+        public  TextFormatDefinition LegendEntryTextFormat  { get; set; }
     }
-    class GridDefinition
+    class   GridDefinition          
     {
-        public bool ShowHorizontal { get; set; } = true;
-        public bool ShowVertical { get; set; } = true;
-        public FormatDefinition HorizontalFormat { get; set; }
-        public FormatDefinition VerticalFormat { get; set; }
+        //   <grid show-horizontal="false" show-vertical="true"><horizontal-format /> <vertical-format /></grid>
+
+        public  bool                ShowHorizontal      { get; set; } = true;
+        public  bool                ShowVertical        { get; set; } = true;
+        public  FormatDefinition    HorizontalFormat    { get; set; }
+        public  FormatDefinition    VerticalFormat      { get; set; }
     }
-    class ValueLabelDefinition
+    class   ValueLabelDefinition    
     {
-        public DataLabelPosition? Position { get; set; }
-        public bool Show { get; set; }
-        public bool ShowLegendKey { get; set; }
-        public bool ShowCategoryName { get; set; }
-        public bool ShowSeriesName { get; set; }
-        public bool ShowPercent { get; set; }
-        public bool ShowBubbleSize { get; set; }
-        public TextFormatDefinition TextFormat { get; set; }
+        public  DataLabelPosition?      Position            { get; set; }
+        public  bool                    Show                { get; set; }
+        public  bool                    ShowLegendKey       { get; set; }
+        public  bool                    ShowCategoryName    { get; set; }
+        public  bool                    ShowSeriesName      { get; set; }
+        public  bool                    ShowPercent         { get; set; }
+        public  bool                    ShowBubbleSize      { get; set; }
+        public  TextFormatDefinition    TextFormat          { get; set; }
     }
-    class ChartLayoutDefinition
+    class   ChartLayoutDefinition   
     {
-        public bool HasManualLayout => X.HasValue || Y.HasValue || Width.HasValue || Height.HasValue;
-        public int? X { get; set; }
-        public int? Y { get; set; }
-        public int? Width { get; set; }
-        public int? Height { get; set; }
-        public LayoutMode? XMode { get; set; }
-        public LayoutMode? YMode { get; set; }
-        public LayoutTarget? Target { get; set; }
+        public  bool            HasManualLayout => X.HasValue || Y.HasValue || Width.HasValue || Height.HasValue;
+        public  int?            X               { get; set; }
+        public  int?            Y               { get; set; }
+        public  int?            Width           { get; set; }
+        public  int?            Height          { get; set; }
+        public  LayoutMode?     XMode           { get; set; }
+        public  LayoutMode?     YMode           { get; set; }
+        public  LayoutTarget?   Target          { get; set; }
     }
-    class ThreeDViewDefinition
+    class   ThreeDViewDefinition    
     {
         //  <view-3d > <floor-format /> <back-wall-format /> <side-wall-format /> </view-3d>
         // View3D ortak
-        public int? RotationX { get; set; } // -90..90
-        public int? RotationY { get; set; } // 0..360
-        public bool? RightAngleAxes { get; set; } // true -> Perspective yok sayılır
-        public int? Perspective { get; set; } // 0..240 (RightAngleAxes=false iken)
-        public int? DepthPercent { get; set; } // 20..2000
-        public int? HeightPercent { get; set; } // 5..500
+        public  int?                RotationX                   { get; set; } // -90..90
+        public  int?                RotationY                   { get; set; } // 0..360
+        public  bool?               RightAngleAxes              { get; set; } // true -> Perspective yok sayılır
+        public  int?                Perspective                 { get; set; } // 0..240 (RightAngleAxes=false iken)
+        public  int?                DepthPercent                { get; set; } // 20..2000
+        public  int?                HeightPercent               { get; set; } // 5..500
 
         // Bar/Column 3D özel
-        public int? GapWidth { get; set; } // 0..500
-        public int? GapDepth { get; set; } // 0..500
-        public ThreeDShape? Shape { get; set; } // box, cylinder, cone, cone-to-max, pyramid, pyramid-to-max
+        public  int?                GapWidth                    { get; set; } // 0..500
+        public  int?                GapDepth                    { get; set; } // 0..500
+        public  ThreeDShape?        Shape                       { get; set; } // box, cylinder, cone, cone-to-max, pyramid, pyramid-to-max
 
         // Duvar/zemin (opsiyonel)
-        public bool? ShowFloor { get; set; }
-        public bool? ShowBackWall { get; set; }
-        public bool? ShowSideWall { get; set; }
+        public  bool?               ShowFloor                   { get; set; }
+        public  bool?               ShowBackWall                { get; set; }
+        public  bool?               ShowSideWall                { get; set; }
 
         //Fill & Border
-        public FormatDefinition DefaultFormat { get; set; }
-        public FormatDefinition FloorFormat { get; set; }
-        public FormatDefinition BackWallFormat { get; set; }
-        public FormatDefinition SideWallFormat { get; set; }
+        public  FormatDefinition    DefaultFormat               { get; set; }
+        public  FormatDefinition    FloorFormat                 { get; set; }
+        public  FormatDefinition    BackWallFormat              { get; set; }
+        public  FormatDefinition    SideWallFormat              { get; set; }
     }
-    class MarkerDefinition
+    class   MarkerDefinition        
     {
-        public MarkerType? Type { get; set; } // circle/square/…
-        public int? Size { get; set; } // 2..72 (pt karşılığı byte range: 2..72)
-        public FormatDefinition Format { get; set; } // marker/c:spPr (fill/line/effects)
+        //   <marker type="circle|square|..." size="pt"> ... </marker>
+        public  MarkerType?         Type    { get; set; } // circle/square/…
+        public  int?                Size    { get; set; } // 2..72 (pt karşılığı byte range: 2..72)
+        public  FormatDefinition    Format  { get; set; } // marker/c:spPr (fill/line/effects)
     }
-    class TitleDefinition
+    class   TitleDefinition         
     {
-        public string Text { get; set; }
-        public TextFormatDefinition TextFormat { get; set; }
+        //   <title text="string"> ... </title>
+        public  string               Text       { get; set; }
+        public  TextFormatDefinition TextFormat { get; set; }
 
         public static implicit operator string(TitleDefinition d) => d?.Text;
     }
-    class DataTableDefinition
+    class   DataTableDefinition     
     {
-        public bool Show { get; set; }
-        public bool ShowHorizontalBorder { get; set; }
-        public bool ShowVerticalBorder { get; set; }
-        public bool ShowOutlineBorder { get; set; }
-        public bool ShowLegendKey { get; set; } // legend keys ilk kolonda
-        public FormatDefinition BoxFormat { get; set; } // c:spPr
-        public TextFormatDefinition TextFormat { get; set; } // c:txPr
+        public  bool                    Show                    { get; set; } 
+        public  bool                    ShowHorizontalBorder    { get; set; }
+        public  bool                    ShowVerticalBorder      { get; set; }
+        public  bool                    ShowOutlineBorder             { get; set; }
+        public  bool                    ShowLegendKey          { get; set; } // legend keys ilk kolonda
+        public  FormatDefinition        BoxFormat               { get; set; } // c:spPr
+        public  TextFormatDefinition    TextFormat              { get; set; } // c:txPr
     }
 
-    class FormatDefinition
+    class   FormatDefinition        
     {
-        public FillDefinition FillDefinition { get; set; }
-        public LineDefinition LineDefinition { get; set; }
-        public EffectsDefinition EffectsDefinition { get; set; }
+        //   <format> ... </format>
+        public  FillDefinition      FillDefinition      { get; set; }
+        public  LineDefinition      LineDefinition      { get; set; }
+        public  EffectsDefinition   EffectsDefinition   { get; set; }
     }
-    class TextFormatDefinition
+    class   TextFormatDefinition    
     {
-        public HorizontalAlign? AlignHorizontal { get; set; }
-        public VerticalAlign? AlignVertical { get; set; }
-        public TextWrapPreset? Wrap { get; set; }
-        public Dimension MarginLeft { get; set; }
-        public Dimension MarginRight { get; set; }
-        public Dimension MarginTop { get; set; }
-        public Dimension MarginBottom { get; set; }
-        public int? Rotate { get; set; }
-        public FillDefinition TextFillDefinition { get; set; }
-        public LineDefinition TextOutlineDefinition { get; set; }
-        public EffectsDefinition EffectsDefinition { get; set; }
-        public FontDefinition FontDefinition { get; set; }
+        //   <text-format align-horizontal="left|center|right|justify"
+        //                align-vertical="top|center|bottom" 
+        //                wrap="square|none"
+        //                margin-left="pt" margin-right="pt" margin-top="pt" margin-bottom="pt" rotate="deg">
+        //      ... 
+        //   </text-format>
+
+        public  HorizontalAlign?    AlignHorizontal         { get; set; }
+        public  VerticalAlign?      AlignVertical           { get; set; }
+        public  TextWrapPreset?     Wrap                    { get; set; }
+        public  Dimension           MarginLeft              { get; set; }
+        public  Dimension           MarginRight             { get; set; }
+        public  Dimension           MarginTop               { get; set; }
+        public  Dimension           MarginBottom            { get; set; }
+        public  int?                Rotate                  { get; set; }
+        public  FillDefinition      TextFillDefinition      { get; set; }
+        public  LineDefinition      TextOutlineDefinition   { get; set; }
+        public  EffectsDefinition   EffectsDefinition       { get; set; }
+        public  FontDefinition      FontDefinition          { get; set; }
     }
 
-    class FillDefinition
+    class   FillDefinition          
     {
-        public SolidDefinition SolidFillDefinition { get; set; }
-        public PatternDefinition PatternFillDefinition { get; set; }
-        public GradientDefinition GradientFillDefinition { get; set; }
+        //   <fill> ... </fill>
+
+        public  SolidDefinition     SolidFillDefinition     { get; set; }
+        public  PatternDefinition   PatternFillDefinition   { get; set; }
+        public  GradientDefinition  GradientFillDefinition  { get; set; }
     }
-    class SolidDefinition
+    class   SolidDefinition         
     {
-        public ColorA Color { get; set; }
+        //   <solid color="#RRGGBB" transparency="0..100"/>
+        public  ColorA  Color   {  get; set; }
     }
-    class PatternDefinition
+    class   PatternDefinition       
     {
-        public PatternFillPreset Preset { get; set; }
-        public ColorA ForegroundColor { get; set; }
-        public ColorA BackgroundColor { get; set; }
+        //  <pattern preset="percent5|percent10|cross|diagCross|…" foreground-color="#RRGGBB" background-color="#RRGGBB" foreground-transparency="0..100" background-transparency="0..100"/>
+
+        public  PatternFillPreset   Preset          { get; set; }
+        public  ColorA              ForegroundColor { get; set; }
+        public  ColorA              BackgroundColor { get; set; }
     }
-    class GradientDefinition
+    class   GradientDefinition      
     {
-        public int? Angle { get; set; }
-        public bool? Scaled { get; set; }
-        public List<GradientStopDefinition> Stops { get; set; } = [];
+        // Fixed to Lienar Gradient Type !
+
+        /*
+  <gradient angle="0..360" scaled="true|false">
+    <stop position="0..100"  color="#RRGGBB" transparency="0..100"/>
+    <stop position="…"       color="#RRGGBB" transparency="…"/>
+  </gradient>         
+         */
+
+        public  int?                            Angle   { get; set; }
+        public  bool?                           Scaled  { get; set; }
+        public  List<GradientStopDefinition>    Stops   { get; set; } = [];
     }
-    class GradientStopDefinition
+    class   GradientStopDefinition  
     {
-        public int Position { get; set; }
-        public ColorA Color { get; set; }
+        //   <stop position="0..100"  color="#RRGGBB" transparency="0..100"/>
+        public  int     Position    { get; set; }
+        public  ColorA  Color       { get; set; }
     }
-    class LineDefinition
+    class   LineDefinition          
     {
-        public bool Visible { get; set; }
-        public Dimension Width { get; set; }
-        public SolidDefinition SolidLineDefinition { get; set; }
-        public GradientDefinition GradientLineDefinition { get; set; }
-        public DashPreset? DashPreset { get; set; }
-        public CompoundLinePreset? CompoundPreset { get; set; }
-        public LineCapPreset? CapPreset { get; set; }
-        public LineJoinPreset? JoinPreset { get; set; }
-        public int? JoinMiterLimit { get; set; }
-        public LineEndPreset? Begin_Arrow_Type { get; set; }
-        public LineEndWidthPreset? Begin_Arrow_Width { get; set; }
-        public LineEndLengthPreset? Begin_Arrow_Length { get; set; }
-        public LineEndPreset? End_Arrow_Type { get; set; }
-        public LineEndWidthPreset? End_Arrow_Width { get; set; }
-        public LineEndLengthPreset? End_Arrow_Length { get; set; }
+        //   <line width="pt" visible="true|false"
+        //         dash="solid|dash|sysDash|dot|lgDash|lgDashDot|…" 
+        //         compound="single|double|thickThin|thinThick|tri" 
+        //         cap="flat|round|square" 
+        //         join="miter|round|bevel" join-miter-limit="1..500"
+        //         begin-arrow-type="none|triangle|arrow|..."  begin-arrow-width="small|medium|large"  begin-arrow-length="small|medium|large"
+        //         end-arrow-type="none|triangle|arrow|..."  end-arrow-width="small|medium|large"  end-arrow-length="small|medium|large"
+        //         > 
+        //... 
+        //   </line>
+        public  bool                    Visible                 { get; set; }
+        public  Dimension               Width                   { get; set; }
+        public  SolidDefinition         SolidLineDefinition     { get; set; }
+        public  GradientDefinition      GradientLineDefinition  { get; set; }
+        public  DashPreset?             DashPreset              { get; set; }
+        public  CompoundLinePreset?     CompoundPreset          { get; set; }
+        public  LineCapPreset?          CapPreset               { get; set; }
+        public  LineJoinPreset?         JoinPreset              { get; set; }
+        public  int?                    JoinMiterLimit          { get; set; }
+        public  LineEndPreset?          Begin_Arrow_Type        { get; set; }
+        public  LineEndWidthPreset?     Begin_Arrow_Width       { get; set; }
+        public  LineEndLengthPreset?    Begin_Arrow_Length      { get; set; }
+        public  LineEndPreset?          End_Arrow_Type          { get; set; }
+        public  LineEndWidthPreset?     End_Arrow_Width         { get; set; }
+        public  LineEndLengthPreset?    End_Arrow_Length        { get; set; }
     }
 
-    class EffectsDefinition
+    class   EffectsDefinition       
     {
         //   <effects> ...</effects>      
-        public ShadowDefinition ShadowDefinition { get; set; }
-        public GlowDefinition GlowDefinition { get; set; }
-        public SoftEdgesDefinition SoftEdgesDefinition { get; set; }
-        public Format3DDefinition Format3dDefinition { get; set; }
-        public ReflectionDefinition ReflectionDefinition { get; set; }
+        public  ShadowDefinition        ShadowDefinition        { get; set; }
+        public  GlowDefinition          GlowDefinition          { get; set; }
+        public  SoftEdgesDefinition     SoftEdgesDefinition     { get; set; }
+        public  Format3DDefinition      Format3dDefinition      { get; set; }
+        public  ReflectionDefinition    ReflectionDefinition    { get; set; }
     }
-    class ShadowDefinition
+    class   ShadowDefinition        
     {
         //   <shadow type="inner/outer/perspective/preset" preset="A.PresetShadowValues.*" color="#dedede" transparency="80" blur-radius="5pt" angle="45" distance="4pt" />
 
-        public ShadowType? Type { get; set; }
-        public ShadowPreset? Preset { get; set; }
-        public ColorA Color { get; set; }
-        public Dimension BlurRadius { get; set; }
-        public Dimension Distance { get; set; }
-        public int? Angle { get; set; }
+        public  ShadowType?     Type            { get; set; }
+        public  ShadowPreset?   Preset          { get; set; }
+        public  ColorA          Color           { get; set; }
+        public  Dimension       BlurRadius      { get; set; }
+        public  Dimension       Distance        { get; set; }
+        public  int?            Angle           { get; set; }
     }
-    class GlowDefinition
+    class   GlowDefinition          
     {
         //   <glow color="#RRGGBB" transparency="0..100" size="pt"/>
-        public ColorA Color { get; set; }
-        public Dimension Size { get; set; }
+        public  ColorA          Color           { get; set; }
+        public  Dimension       Size            { get; set; }
     }
-    class SoftEdgesDefinition
+    class   SoftEdgesDefinition     
     {
         //   <soft-edges size="pt"/>
 
-        public Dimension Size { get; set; }
+        public  Dimension       Size            { get; set; }
     }
-    class ReflectionDefinition
+    class   ReflectionDefinition    
     {
         //    <reflection blur-radius="pt" distance="pt" start-transparency="0..100" end-transparency="0..100" start-position="0..100" end-position="0..100"/>
-        public bool HasData
-        {
-            get
-            {
-                return Blur is not null
-                       || Distance is not null
-                       || StartTransparency is int
-                       || EndTransparency is int
-                       || StartPosition is int
-                       || EndPosition is int;
-            }
+        public  bool        HasData             
+        { 
+            get 
+            {  
+                return    Blur              is not null
+                       || Distance          is not null
+                       || StartTransparency is int  
+                       || EndTransparency   is int  
+                       || StartPosition     is int  
+                       || EndPosition       is int;
+            } 
         }
-        public Dimension Blur { get; set; }
-        public Dimension Distance { get; set; }
-        public int? StartTransparency { get; set; }
-        public int? EndTransparency { get; set; }
-        public int? StartPosition { get; set; }
-        public int? EndPosition { get; set; }
+        public  Dimension   Blur                { get; set; }
+        public  Dimension   Distance            { get; set; }
+        public  int?        StartTransparency   { get; set; }
+        public  int?        EndTransparency     { get; set; }
+        public  int?        StartPosition       { get; set; }
+        public  int?        EndPosition         { get; set; }
     }
-    class Format3DDefinition
+    class   Format3DDefinition      
     {
         //   <format-3d material="plastic|metal|..."> ...</format3d>         
 
-        public MaterialPreset? Material { get; set; }
-        public BevelDefinition BevelDefinition { get; set; }
-        public LightingDefinition LightingDefinition { get; set; }
+        public  MaterialPreset?     Material            { get; set; }
+        public  BevelDefinition     BevelDefinition     { get; set; }
+        public  LightingDefinition  LightingDefinition  { get; set; }
     }
-    class BevelDefinition
+    class   BevelDefinition         
     {
         //   <bevel top-width="pt" top-height="pt" bottom-width="pt" bottom-height="pt" top-preset="relaxedInset|circle|…" bottom-preset="relaxedInset|circle|…"/>
-        public bool HasData { get { return TopPreset is not null || BottomPreset is not null; } }
-        public Dimension TopWidth { get; set; }
-        public Dimension TopHeight { get; set; }
-        public Dimension BottomWidth { get; set; }
-        public Dimension BottomHeight { get; set; }
-        public BevelPreset? TopPreset { get; set; }
-        public BevelPreset? BottomPreset { get; set; }
+        public  bool            HasData         { get { return TopPreset is not null || BottomPreset is not null; } }
+        public  Dimension       TopWidth        { get; set; }
+        public  Dimension       TopHeight       { get; set; }
+        public  Dimension       BottomWidth     { get; set; }
+        public  Dimension       BottomHeight    { get; set; }
+        public  BevelPreset?    TopPreset       { get; set; }
+        public  BevelPreset?    BottomPreset    { get; set; }
     }
-    class LightingDefinition
+    class   LightingDefinition      
     {
         // <lighting preset="threePt|soft|harsh|…"  angle="deg"  direction="top|left|..."/>
-        public LightingPreset? Preset { get; set; }
-        public LightingDirection? Direction { get; set; }
-        public int? Angle { get; set; }
+        public  LightingPreset?     Preset      { get; set; }
+        public  LightingDirection?  Direction   { get; set; }
+        public  int?                Angle       { get; set; }
     }
 
-    class FontDefinition
+    class   FontDefinition          
     {
         //   <font family="Segoe UI" size="pt" bold="true|false" italic="true|false" underline="none|single|double" strike="none|single|double" caps="none|small|all" kerning="pt" spacing="pt"/>
-        public string Family { get; set; }
-        public Dimension Size { get; set; }
-        public bool? Bold { get; set; }
-        public bool? Italic { get; set; }
-        public TextUnderlineStyle? Underline { get; set; }
-        public TextStrikeStyle? Strike { get; set; }
-        public TextCapsStyle? Caps { get; set; }
-        public Dimension Kerning { get; set; }
-        public Dimension Spacing { get; set; }
+        public  string                  Family      { get; set; }
+        public  Dimension               Size        { get; set; }
+        public  bool?                   Bold        { get; set; }
+        public  bool?                   Italic      { get; set; }
+        public  TextUnderlineStyle?     Underline   { get; set; }
+        public  TextStrikeStyle?        Strike      { get; set; }
+        public  TextCapsStyle?          Caps        { get; set; }
+        public  Dimension               Kerning     { get; set; }
+        public  Dimension               Spacing     { get; set; }
     }
 
-    class Dimension
+    class   Dimension               
     {
-        public double Value { get; set; }
-        public UnitType Unit { get; set; }
-        public              /*Ctor*/    Dimension(double value, UnitType unit)
+        public              double      Value       { get; set; }
+        public              UnitType    Unit        { get; set; }
+        public              /*Ctor*/    Dimension   (double value, UnitType unit)   
         {
             Value = value;
             Unit = unit;
         }
-        public int ToEmu()
+        public              int         ToEmu       ()                              
         {
             return Unit switch
             {
@@ -4613,8 +4560,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 _ => throw new InvalidOperationException("Unknown unit")
             };
         }
-        public override string ToString() => $"{Value}{Unit.ToString().ToLower()}";
-        public static Dimension Parse(string input, bool allowNegative = false)
+        public  override    string      ToString    () => $"{Value}{Unit.ToString().ToLower()}";
+        public  static      Dimension   Parse       (string input, bool allowNegative = false)                  
         {
             if (string.IsNullOrWhiteSpace(input))
                 return null;
@@ -4624,7 +4571,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (!match.Success)
                 return null;
 
-            double value = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            double value   = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
             string unitStr = match.Groups[2].Success ? match.Groups[2].Value.ToLower() : "px";
 
             if (value < 0 && !allowNegative)
@@ -4642,18 +4589,18 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             return new Dimension(value, unit);
         }
     }
-    class ColorA
+    class   ColorA                  
     {
-        public string Color { get; set; }
-        public int? Transparency { get; set; }
+        public string       Color        { get; set; }
+        public int?         Transparency { get; set; }
 
-        public  /*Ctor*/    ColorA(string color, int? transparency)
+        public  /*Ctor*/    ColorA       (string color, int? transparency)
         {
-            Color = color;
+            Color        = color;
             Transparency = transparency;
         }
 
-        public static ColorA Parse(XElement element, string colorAttr, string transparencyAttr)
+        public static       ColorA  Parse(XElement element, string colorAttr, string transparencyAttr)
         {
             if (element is null)
                 return null;
@@ -4663,7 +4610,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (string.IsNullOrWhiteSpace(color))
                 return null;
 
-            int? transparency = null;
+            int?    transparency    = null;
             string? transparencyStr = element?.Attribute(transparencyAttr)?.Value;
 
 
@@ -4682,87 +4629,87 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
     }
 
-    public enum ChartType
-    {
-        Bar,
-        Column,
-        Line,
-        Area,
-        Pie,
-        Doughnut,
-        Scatter,
-        Bubble,
-        Radar,
-    }
 
-    enum MarkerType
+    public enum    ChartType        
     {
-        Circle,
-        Square,
-        Diamond,
-        Triangle,
-        X,
+        Bar     ,
+        Column  ,
+        Line    ,
+        Area    ,
+        Pie     ,
+        Doughnut,
+        Scatter ,
+        Bubble  ,
+        Radar   ,
     }
-    enum LegendPosition
+    enum    MarkerType              
     {
-        Top,
-        Bottom,
-        Left,
-        Right,
+        Circle  ,
+        Square  ,
+        Diamond ,
+        Triangle,
+        X       ,
+    }
+    enum    LegendPosition          
+    {
+        Top     ,
+        Bottom  ,
+        Left    ,
+        Right   ,
         TopRight,
     }
-    enum DataLabelPosition
+    enum    DataLabelPosition       
     {
-        BestFit,
-        Bottom,
-        Center,
+        BestFit   ,
+        Bottom    ,
+        Center    ,
         InsideBase,
-        InsideEnd,
-        Left,
+        InsideEnd ,
+        Left      ,
         OutsideEnd,
-        Right,
-        Top,
+        Right     ,
+        Top       ,
     }
-    enum UnitType
+    enum    UnitType                
     {
         Px,
         Cm,
         Pt,
         In,
     }
-    enum BlanksDisplayedAs
+    enum    BlanksDisplayedAs       
     {
         Span,
         Gap,
         Zero
     }
-    enum GroupingType
+    enum    GroupingType            
     {
         Standard,
         Clustered,
         Stacked,
         PercentStacked
     }
-    enum LayoutMode
-    {
-        Edge,
+    enum    LayoutMode              
+    { 
+        Edge  , 
         Factor,
     }
-    enum LayoutTarget
-    {
-        Inner,
+    enum    LayoutTarget            
+    { 
+        Inner, 
         Outer,
     }
-    enum ThreeDShape
+    enum    ThreeDShape             
     {
-        Cone,
-        ConeToMax,
-        Box,
-        Cylinder,
-        Pyramid,
+        Cone            ,
+        ConeToMax       ,
+        Box             ,
+        Cylinder        ,
+        Pyramid         ,
         PyramidToMaximum,
     }
-    enum PatternFillPreset
+    enum    PatternFillPreset       
     {
         Percent5,
         Percent10,
@@ -4819,227 +4766,235 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         Trellis,
         ZigZag,
     }
-    enum FillStyle
+    enum    FillStyle               
     {
-        Auto, // (Varsayılan) öncelik: Gradient > Pattern > Solid
-        Solid,
-        Pattern,
+        Auto    , // (Varsayılan) öncelik: Gradient > Pattern > Solid
+        Solid   ,
+        Pattern ,
         Gradient,
         None      // Hiç dolgu yok (NoFill)
     }
-    enum ScatterStyle
+    enum    ScatterStyle            
     {
-        Line,
-        LineMarker,
-        Marker,
-        Smooth,
+        Line        ,
+        LineMarker  ,
+        Marker      ,
+        Smooth      ,
         SmoothMarker,
     }
-    enum RadarStyle
+    enum    RadarStyle              
     {
         Standard,   // sadece çizgi
-        Marker,   // çizgi + marker
-        Filled,   // dolu alan (area gibi)
+        Marker  ,   // çizgi + marker
+        Filled  ,   // dolu alan (area gibi)
     }
-    enum ShadowType
+    enum    ShadowType              
     {
-        Inner,
-        Outer,
-        Preset,
+        Inner      ,
+        Outer      ,
+        Preset     ,
     }
-    enum ShadowPreset
+    enum    ShadowPreset            
     {
-        TopLeftDropShadow,
-        TopRightDropShadow,
-        BackLeftPerspectiveShadow,
-        BackRightPerspectiveShadow,
-        BottomLeftDropShadow,
-        BottomRightDropShadow,
-        FrontLeftPerspectiveShadow,
-        FrontRightPerspectiveShadow,
-        TopLeftSmallDropShadow,
-        TopLeftLargeDropShadow,
-        BackLeftLongPerspectiveShadow,
-        BackRightLongPerspectiveShadow,
-        TopLeftDoubleDropShadow,
-        BottomRightSmallDropShadow,
-        FrontLeftLongPerspectiveShadow,
+        TopLeftDropShadow              ,
+        TopRightDropShadow             ,
+        BackLeftPerspectiveShadow      ,
+        BackRightPerspectiveShadow     ,
+        BottomLeftDropShadow           ,
+        BottomRightDropShadow          ,
+        FrontLeftPerspectiveShadow     ,
+        FrontRightPerspectiveShadow    ,
+        TopLeftSmallDropShadow         ,
+        TopLeftLargeDropShadow         ,
+        BackLeftLongPerspectiveShadow  ,
+        BackRightLongPerspectiveShadow ,
+        TopLeftDoubleDropShadow        ,
+        BottomRightSmallDropShadow     ,
+        FrontLeftLongPerspectiveShadow ,
         FrontRightLongPerspectiveShadow,
-        ThreeDimensionalOuterBoxShadow,
-        ThreeDimensionalInnerBoxShadow,
-        BackCenterPerspectiveShadow,
-        FrontBottomShadow,
+        ThreeDimensionalOuterBoxShadow ,
+        ThreeDimensionalInnerBoxShadow ,
+        BackCenterPerspectiveShadow    ,
+        FrontBottomShadow              ,
     }
-    enum BevelPreset
+    enum    BevelPreset             
     {
         RelaxedInset,
-        Circle,
-        Slope,
-        Cross,
-        Angle,
-        SoftRound,
-        Convex,
-        CoolSlant,
-        Divot,
-        Riblet,
-        HardEdge,
-        ArtDeco,
+        Circle      ,
+        Slope       ,
+        Cross       ,
+        Angle       ,
+        SoftRound   ,
+        Convex      ,
+        CoolSlant   ,
+        Divot       ,
+        Riblet      ,
+        HardEdge    ,
+        ArtDeco     ,
     }
-    enum MaterialPreset
+    enum    MaterialPreset          
     {
-        LegacyMatte,
-        LegacyPlastic,
-        LegacyMetal,
-        LegacyWireframe,
-        Matte,
-        Plastic,
-        Metal,
-        WarmMatte,
+        LegacyMatte      ,
+        LegacyPlastic    ,
+        LegacyMetal      ,
+        LegacyWireframe  ,
+        Matte            ,
+        Plastic          ,
+        Metal            ,
+        WarmMatte        ,
         TranslucentPowder,
-        Powder,
-        DarkEdge,
-        SoftEdge,
-        Clear,
-        Flat,
-        SoftMetal,
+        Powder           ,
+        DarkEdge         ,
+        SoftEdge         ,
+        Clear            ,
+        Flat             ,
+        SoftMetal        ,
     }
-    enum LightingPreset
+    enum    LightingPreset          
     {
-        LegacyFlat1,
-        LegacyFlat2,
-        LegacyFlat3,
-        LegacyFlat4,
+        LegacyFlat1  ,
+        LegacyFlat2  ,
+        LegacyFlat3  ,
+        LegacyFlat4  ,
         LegacyNormal1,
         LegacyNormal2,
         LegacyNormal3,
         LegacyNormal4,
-        LegacyHarsh1,
-        LegacyHarsh2,
-        LegacyHarsh3,
-        LegacyHarsh4,
-        ThreePoints,
-        Balanced,
-        Soft,
-        Harsh,
-        Flood,
-        Contrasting,
-        Morning,
-        Sunrise,
-        Sunset,
-        Chilly,
-        Freezing,
-        Flat,
-        TwoPoints,
-        Glow,
-        BrightRoom,
+        LegacyHarsh1 ,
+        LegacyHarsh2 ,
+        LegacyHarsh3 ,
+        LegacyHarsh4 ,
+        ThreePoints  ,
+        Balanced     ,
+        Soft         ,
+        Harsh        ,
+        Flood        ,
+        Contrasting  ,
+        Morning      ,
+        Sunrise      ,
+        Sunset       ,
+        Chilly       ,
+        Freezing     ,
+        Flat         ,
+        TwoPoints    ,
+        Glow         ,
+        BrightRoom   ,
     }
-    enum LightingDirection
+    enum    LightingDirection       
     {
-        TopLeft,
-        Top,
-        TopRight,
-        Left,
-        Right,
-        BottomLeft,
-        Bottom,
+        TopLeft    ,
+        Top        ,
+        TopRight   ,
+        Left       ,
+        Right      ,
+        BottomLeft ,
+        Bottom     ,
         BottomRight,
     }
-    enum DashPreset
+    enum    DashPreset              
     {
-        Solid,
-        Dot,
-        Dash,
-        LargeDash,
-        DashDot,
-        LargeDashDot,
-        LargeDashDotDot,
-        SystemDash,
-        SystemDot,
-        SystemDashDot,
+        Solid           ,
+        Dot             ,
+        Dash            ,
+        LargeDash       ,
+        DashDot         ,
+        LargeDashDot    ,
+        LargeDashDotDot ,
+        SystemDash      ,
+        SystemDot       ,
+        SystemDashDot   ,
         SystemDashDotDot,
     }
-    enum CompoundLinePreset
+    enum    CompoundLinePreset      
     {
-        Single,
-        Double,
+        Single   ,
+        Double   ,
         ThickThin,
         ThinThick,
-        Triple,
+        Triple   ,
     }
-    enum LineCapPreset
+    enum    LineCapPreset           
     {
-        Round,
+        Round ,
         Square,
-        Flat,
+        Flat  ,
     }
-    enum LineJoinPreset
+    enum    LineJoinPreset          
     {
         Round,
         Bevel,
         Miter,
     }
-    enum LineEndPreset
+    enum    LineEndPreset           
     {
-        None,
+        None    ,
         Triangle,
-        Stealth,
-        Diamond,
-        Oval,
-        Arrow,
+        Stealth ,
+        Diamond ,
+        Oval    ,
+        Arrow   ,
     }
-    enum LineEndWidthPreset
+    enum    LineEndWidthPreset      
     {
-        Small,
+        Small ,
         Medium,
-        Large,
+        Large ,
     }
-    enum LineEndLengthPreset
+    enum    LineEndLengthPreset     
     {
-        Small,
+        Small ,
         Medium,
-        Large,
+        Large ,
     }
-    enum TextUnderlineStyle
+    enum    TextUnderlineStyle      
     {
-        None,
+        None  ,
         Single,
         Double,
     }
-    enum TextStrikeStyle
+    enum    TextStrikeStyle         
     {
-        None,
+        None  ,
         Single,
         Double,
     }
-    enum TextCapsStyle
+    enum    TextCapsStyle           
     {
-        None,
+        None ,
         Small,
-        All,
+        All  ,
     }
-    enum HorizontalAlign
+    enum    HorizontalAlign         
     {
-        Left,
-        Center,
-        Right,
+        Left   ,
+        Center ,
+        Right  ,
         Justify,
     }
-    enum VerticalAlign
+    enum    VerticalAlign           
     {
-        Top,
-        Center,
-        Bottom,
+        Top     ,
+        Center  ,
+        Bottom  ,
     }
-    enum TextWrapPreset
+    enum    TextWrapPreset          
     {
-        None,
+        None  ,
         Square,
     }
 
-    internal interface IValueLabelsContainer
+    internal interface  ITitleOwner             
     {
-        ValueLabelDefinition ValueLabels { get; }
-        ChartDefinition GetChartDefinition();
+        TitleDefinition Title { get; set; }
+    }
+    internal interface  IMarkerOwner            
+    {
+        MarkerDefinition Marker { get; set; }
+    }
+    internal interface  IValueLabelsContainer   
+    {
+        ValueLabelDefinition    ValueLabels         { get; }
+        ChartDefinition         GetChartDefinition  ();
     }
 }
 
