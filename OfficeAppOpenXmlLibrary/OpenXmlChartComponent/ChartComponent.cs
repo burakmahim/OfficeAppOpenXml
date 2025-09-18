@@ -1670,11 +1670,25 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (plotArea is null)
                 return null;
 
-           C.Chart chart = new ();
+            C.Chart chart = new ();
 
-            addTitle(chartDefinition, chart);
+			//addTitle(chartDefinition, chart);
 
-            if (allowView3D && chartDefinition.ThreeDView is not null)
+			A.Text text = new(chartDefinition.Title.Text);
+			A.Run run = new(text);
+			A.Paragraph paragraph = new(run);
+			C.RichText richText = new(new A.BodyProperties(), new A.ListStyle(), paragraph);
+			C.ChartText charText = new(richText);
+			C.Title title = new(charText);
+			Overlay overlay = new Overlay() { Val = false };
+
+			title.Append(overlay);
+			chart.Append(title);
+
+			if (chartDefinition.Title.TextFormat is not null)
+				applyTextFormat(richText, chartDefinition.Title.TextFormat);
+
+			if (allowView3D && chartDefinition.ThreeDView is not null)
             {
                 add3DView(chart, chartDefinition);
 
@@ -3049,7 +3063,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (axisDefinition is null || axisNode is null)
                 return;
 
-            addTitle(axisDefinition, axisNode);
+            //addTitle(axisDefinition, axisNode);
 
             Scaling scaling = axisNode.Elements<Scaling>().FirstOrDefault();
             if (scaling is null)
