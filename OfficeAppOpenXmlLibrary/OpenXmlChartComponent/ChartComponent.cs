@@ -1684,7 +1684,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             chart.Append(title);
 
             if (chartDefinition.Title.TextFormat is not null)
-                applyTextFormat(richText, chartDefinition.Title.TextFormat);
+				applyTextFormat(richText, chartDefinition.Title.TextFormat);
 
             if (allowView3D && chartDefinition.ThreeDView is not null)
             {
@@ -2101,30 +2101,30 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 idx++;
             }
+        }     
+      
+        private     static  void                        addTitle                (ITitleOwner titleOwner, OpenXmlCompositeElement owner)                             
+        {
+            if (string.IsNullOrWhiteSpace(titleOwner?.Title) || owner is null)
+                return;
+
+            TitleDefinition titleDefinition = titleOwner.Title;
+
+            A.Text      text      = new(titleDefinition.Text);
+            A.Run       run       = new(text);
+            A.Paragraph paragraph = new(run);
+            C.RichText  richText  = new(new A.BodyProperties(), new A.ListStyle(), paragraph);
+            C.ChartText charText  = new(richText);
+            C.Title     title     = new(charText);
+            Overlay     overlay   = new Overlay() { Val = false };
+
+            title.Append(overlay);
+            owner.Append(title);
+
+            if (titleDefinition.TextFormat is not null)
+                applyTextFormat(richText, titleDefinition.TextFormat);
         }
-
-                                   //private     static  void                        addTitle                (ITitleOwner titleOwner, OpenXmlCompositeElement owner)                             
-        //{
-        //    if (string.IsNullOrWhiteSpace(titleOwner?.Title) || owner is null)
-        //        return;
-
-        //    TitleDefinition titleDefinition = titleOwner.Title;
-
-        //    A.Text      text      = new(titleDefinition.Text);
-        //    A.Run       run       = new(text);
-        //    A.Paragraph paragraph = new(run);
-        //    C.RichText  richText  = new(new A.BodyProperties(), new A.ListStyle(), paragraph);
-        //    C.ChartText charText  = new(richText);
-        //    C.Title     title     = new(charText);
-        //    Overlay     overlay   = new Overlay() { Val = false };
-
-        //    title.Append(overlay);
-        //    owner.Append(title);
-
-        //    if (titleDefinition.TextFormat is not null)
-        //        applyTextFormat(richText, titleDefinition.TextFormat);
-        //}
-        private static      void                           addLayout                        (ChartLayoutDefinition layoutDefinition, C.PlotArea plotArea)
+        private     static  void                        addLayout               (ChartLayoutDefinition layoutDefinition, C.PlotArea plotArea)                       
         {
             if (plotArea is null)
                 return;
@@ -2204,7 +2204,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 new C.NoMultiLevelLabels() { Val = true }
             );
 
-            switch (chartDefinition.Type)
+
+			switch (chartDefinition.Type)
             {
                 case ChartType.Bar:
                 case ChartType.Column:
@@ -2279,9 +2280,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 new CrossBetween() { Val = CrossBetweenValues.Between }
             );
 
-            AxisDefinition targetAxisDefinition = chartDefinition.ValueAxis;
-            bool showAxis = chartDefinition.ShowValueAxis;
-            bool addMajorGridLines;
+			AxisDefinition targetAxisDefinition = chartDefinition.ValueAxis;
+            bool           showAxis             = chartDefinition.ShowValueAxis;
+            bool           addMajorGridLines;
             FormatDefinition targetMajorGridlinesFormat = null;
 
             switch (chartDefinition.Type)

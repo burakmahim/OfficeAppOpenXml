@@ -1,0 +1,196 @@
+﻿<workbook>
+	<!-- Data Sheet -->
+	<worksheet name="Data">
+		<table>
+			<row>
+				<cell>Month</cell>
+				<cell>Sales</cell>
+				<cell>Target</cell>
+				<cell>Profit</cell>
+			</row>
+			<row>
+				<cell>Jan</cell>
+				<cell>100</cell>
+				<cell>120</cell>
+				<cell>30</cell>
+			</row>
+			<row>
+				<cell>Feb</cell>
+				<cell>150</cell>
+				<cell>140</cell>
+				<cell>50</cell>
+			</row>
+			<row>
+				<cell>Mar</cell>
+				<cell>200</cell>
+				<cell>180</cell>
+				<cell>70</cell>
+			</row>
+			<row>
+				<cell>Apr</cell>
+				<cell>180</cell>
+				<cell>160</cell>
+				<cell>60</cell>
+			</row>
+			<row>
+				<cell>May</cell>
+				<cell>220</cell>
+				<cell>200</cell>
+				<cell>80</cell>
+			</row>
+			<row>
+				<cell>Jun</cell>
+				<cell>250</cell>
+				<cell>230</cell>
+				<cell>90</cell>
+			</row>
+			<row>
+				<cell>Jul</cell>
+				<cell>300</cell>
+				<cell>260</cell>
+				<cell>120</cell>
+			</row>
+			<row>
+				<cell>Aug</cell>
+				<cell>280</cell>
+				<cell>270</cell>
+				<cell>110</cell>
+			</row>
+			<row>
+				<cell>Sep</cell>
+				<cell>320</cell>
+				<cell>300</cell>
+				<cell>130</cell>
+			</row>
+			<row>
+				<cell>Oct</cell>
+				<cell>330</cell>
+				<cell>310</cell>
+				<cell>140</cell>
+			</row>
+			<row>
+				<cell>Nov</cell>
+				<cell>360</cell>
+				<cell>340</cell>
+				<cell>150</cell>
+			</row>
+			<row>
+				<cell>Dec</cell>
+				<cell>400</cell>
+				<cell>380</cell>
+				<cell>170</cell>
+			</row>
+		</table>
+	</worksheet>
+
+	<!-- Column Chart -->
+	<worksheet name="ColumnChart">
+		<chart type="column" width="500px" height="350px" title="Aylık Satış Hedefler">
+			<category-axis title="Aylar">
+				<format>
+					<fill>
+						<solid color="#E6F2FF"/>
+					</fill>
+					<line visible="true" width="1pt" dash="solid">
+						<solid color="#2C3E50"/>
+					</line>
+					<effects>
+						<shadow type="outer" color="#888888" blur-radius="3pt" distance="2pt"/>
+					</effects>
+				</format>
+			</category-axis>
+			<value-axis title="Miktar" min="0" max="500">
+				<format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="#D3D3D3"/>
+					</line>
+				</format>
+			</value-axis>
+			<legend show="true" position="top"/>
+			<value-labels show="true" position="outsideend"/>
+			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline="true" show-keys="true"/>
+			<series title="Sales" data-range="Data!B2:B13" category-range="Data!A2:A13" color="#4472C4"/>
+			<series title="Target" data-range="Data!C2:C13" category-range="Data!A2:A13" color="#E7A03A"/>
+			<series title="Profit" data-range="Data!D2:D13" category-range="Data!A2:A13" color="#2ECC71"/>
+		</chart>
+	</worksheet>
+
+	<!-- Pie Chart -->
+	<worksheet name="PieChart">
+		<chart type="pie" width="350px" height="350px" title="Satış Dağılımı"
+			   first-slice-angle="90" vary-colors="true">
+			<legend show="true" position="right"/>
+			<value-labels show="true" position="outsideend" show-percent="true"/>
+			<series title="Sales">
+				<point category="Jan" value="100">
+					<format>
+						<fill>
+							<solid color="#FF6B6B"/>
+						</fill>
+					</format>
+				</point>
+				<point category="Feb" value="150">
+					<format>
+						<fill>
+							<solid color="#4ECDC4"/>
+						</fill>
+					</format>
+				</point>
+				<point category="Mar" value="200">
+					<format>
+						<fill>
+							<solid color="#45B7D1"/>
+						</fill>
+					</format>
+				</point>
+			</series>
+		</chart>
+	</worksheet>
+
+	<!-- Line Chart -->
+	<worksheet name="LineChart">
+		<chart type="line" width="500px" height="300px" title="Satış ve Hedef Trend"
+			   marker-type="circle" marker-size="6">
+			<category-axis title="Aylar"/>
+			<value-axis title="Miktar" min="0" max="500"/>
+			<legend show="true" position="bottom"/>
+			<grid show-horizontal="true" show-vertical="false">
+				<horizontal-format>
+					<line visible="true" width="1pt" dash="dot">
+						<solid color="#D3D3D3"/>
+					</line>
+				</horizontal-format>
+			</grid>
+			<series title="Sales" data-range="Data!B2:B13" category-range="Data!A2:A13" color="#FF4444"/>
+			<series title="Target" data-range="Data!C2:C13" category-range="Data!A2:A13" color="#44AA44"/>
+			<series title="Profit" data-range="Data!D2:D13" category-range="Data!A2:A13" color="#2980B9"/>
+		</chart>
+	</worksheet>
+
+	<!-- Bubble Chart -->
+	<worksheet name="BubbleChart">
+		<chart type="bubble" width="450px" height="350px" title="Satış-Kâr İlişkisi"
+			   bubble-scale="80">
+			<category-axis title="Satış"/>
+			<value-axis title="Kâr"/>
+			<legend show="true" position="top"/>
+			<series title="Bubble Data" color="#9B59B6">
+				<point x="100" y="30" size="40" category="Jan"/>
+				<point x="150" y="50" size="60" category="Feb"/>
+				<point x="200" y="70" size="80" category="Mar"/>
+				<point x="300" y="120" size="120" category="Jul"/>
+				<point x="400" y="170" size="150" category="Dec"/>
+			</series>
+		</chart>
+	</worksheet>
+
+	<!-- Radar Chart -->
+	<worksheet name="RadarChart">
+		<chart type="radar" width="400px" height="300px" title="Performans Karşılaştırma">
+			<legend show="true" position="bottom"/>
+			<series title="Sales" data-range="Data!B2:B13" category-range="Data!A2:A13" color="#E74C3C"/>
+			<series title="Target" data-range="Data!C2:C13" category-range="Data!A2:A13" color="#3498DB"/>
+			<series title="Profit" data-range="Data!D2:D13" category-range="Data!A2:A13" color="#2ECC71"/>
+		</chart>
+	</worksheet>
+</workbook>

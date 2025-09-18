@@ -26,7 +26,7 @@ namespace OfficeAppOpenXmlLibrary
                     XDocument doc = XDocument.Parse(xmlContent);
                     int sheetCounter = 1;
 
-                    foreach (XElement sheetElement in doc.Root.Elements("sheet"))
+                    foreach (XElement sheetElement in doc.Root.Elements("worksheet"))
                     {
                         string sheetName = sheetElement.Attribute("name")?.Value ?? $"Sayfa {sheetCounter}";
 
