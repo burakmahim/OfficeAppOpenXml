@@ -1806,26 +1806,37 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 CategoryAxisData catAxisData = new CategoryAxisData();
                 C.Values values              = new C.Values();
 
-                StringLiteral stringLiteral = new StringLiteral();
-                NumberLiteral numberLiteral = new NumberLiteral();
+				bool hasCategoryRange   = !string.IsNullOrEmpty(seriesDefinition.CategoryRange);
+				bool hasDataRange       = !string.IsNullOrEmpty(seriesDefinition.DataRange);
 
-                stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
+				if (hasCategoryRange || hasDataRange)
+				{
+					StringReference stringReference = new StringReference();
+					stringReference.Append(new C.Formula(seriesDefinition.CategoryRange!));
+					catAxisData.Append(stringReference);
 
-                for (int i = 0; i < seriesDefinition.Points.Count; i++)
-                {
-                    stringLiteral.Append(new StringPoint () { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
-                    numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
-                }
+					NumberReference numberReference = new NumberReference();
+					numberReference.Append(new C.Formula(seriesDefinition.DataRange!));
+					values.Append(numberReference);
+				}
+				else
+				{
+					StringLiteral stringLiteral = new StringLiteral();
+					NumberLiteral numberLiteral = new NumberLiteral();
 
-                catAxisData.Append(stringLiteral);
-                values     .Append(numberLiteral);
+					stringLiteral.Append(new PointCount() { Val = (uint)seriesDefinition.Points.Count });
 
-                applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+					for (int i = 0; i < seriesDefinition.Points.Count; i++)
+					{
+						stringLiteral.Append(new StringPoint () { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Category) });
+						numberLiteral.Append(new NumericPoint() { Index = (uint)i, NumericValue = new C.NumericValue(seriesDefinition.Points[i].Value?.ToString(CultureInfo.InvariantCulture)) });
+					}
 
-                series.Append(catAxisData);
-                series.Append(values);
+					catAxisData.Append(stringLiteral);
+					values.Append(numberLiteral);
+				}
 
-                applySeriesFormat(chartDefinition, seriesDefinition, series);
+				applySeriesFormat(chartDefinition, seriesDefinition, series);
                 addDataLabels(series, seriesDefinition);
 
                 barChart.Append(series);
