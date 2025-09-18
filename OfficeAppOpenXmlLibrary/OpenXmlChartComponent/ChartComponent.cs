@@ -1674,15 +1674,13 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
 			//addTitle(chartDefinition, chart);
 
-			A.Text text = new(chartDefinition.Title.Text);
-			A.Run run = new(text);
-			A.Paragraph paragraph = new(run);
-			C.RichText richText = new(new A.BodyProperties(), new A.ListStyle(), paragraph);
-			C.ChartText charText = new(richText);
-			C.Title title = new(charText);
-			Overlay overlay = new Overlay() { Val = false };
+			A.Text text             = new A.Text(chartDefinition.Title.Text);
+			A.Run run               = new A.Run(text);
+			A.Paragraph paragraph   = new A.Paragraph(run);
+			C.RichText richText     = new C.RichText(new A.BodyProperties(), new A.ListStyle(), paragraph);
+			C.ChartText chartText   = new C.ChartText(richText);
+			C.Title title           = new C.Title(chartText, new Overlay() { Val = false });
 
-			title.Append(overlay);
 			chart.Append(title);
 
 			if (chartDefinition.Title.TextFormat is not null)
@@ -1795,16 +1793,16 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         {
             uint seriesIndex = 0;
 
-            foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
-            {
-                BarChartSeries series = new BarChartSeries(
-                    new C.Index() { Val = seriesIndex },
-                    new Order  () { Val = seriesIndex },
-                    new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
-                );
-                
-                CategoryAxisData catAxisData = new CategoryAxisData();
-                C.Values values              = new C.Values();
+			foreach (SeriesDefinition seriesDefinition in chartDefinition.Series)
+			{
+				BarChartSeries series = new BarChartSeries(
+					new C.Index () { Val = seriesIndex },
+					new Order   () { Val = seriesIndex },
+					new SeriesText(new C.NumericValue() { Text = seriesDefinition.Title })
+				);
+
+				CategoryAxisData catAxisData    = new CategoryAxisData();
+				C.Values values                 = new C.Values();
 
 				bool hasCategoryRange   = !string.IsNullOrEmpty(seriesDefinition.CategoryRange);
 				bool hasDataRange       = !string.IsNullOrEmpty(seriesDefinition.DataRange);
@@ -1836,15 +1834,21 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 					values.Append(numberLiteral);
 				}
 
+				applyPointLevelStyling(seriesDefinition, series, useMarker: false);
+
+				series.Append(catAxisData);
+				series.Append(values);
+
 				applySeriesFormat(chartDefinition, seriesDefinition, series);
-                addDataLabels(series, seriesDefinition);
+				addDataLabels(series, seriesDefinition);
 
-                barChart.Append(series);
+				barChart.Append(series);
 
-                seriesIndex++;
-            }
-        }
-        private     static  void                        addLineSeries           (ChartDefinition chartDefinition, OpenXmlCompositeElement lineChart)                
+				seriesIndex++;
+			}
+
+		}
+		private     static  void                        addLineSeries           (ChartDefinition chartDefinition, OpenXmlCompositeElement lineChart)                
         {
             uint idx = 0;
 
