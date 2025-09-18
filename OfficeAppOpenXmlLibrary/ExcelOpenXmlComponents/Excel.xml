@@ -1,6 +1,7 @@
-﻿<excel>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<workbook>
 	<!-- 4. 3D Bar Chart -->
-	<sheet name="Departman Bütçesi">
+	<worksheet name="Departman Bütçesi">
 		<chart type="bar" width="450px" height="300px" title="Departman Bütçesi"
                grouping-type="stacked" gap-width="100">
 			<category-axis title="Departmanlar" />
@@ -21,9 +22,9 @@
 				<point category="Satış" value="500000" />
 			</series>
 		</chart>
-	</sheet>
+	</worksheet>
 	<!-- 6. Stacked Area Chart -->
-	<sheet name="Kaynak Kullanımı">
+	<worksheet name="Kaynak Kullanımı">
 		<chart type="area" width="500px" height="300px" title="Kaynak Kullanımı"
                grouping-type="stacked">
 			<category-axis title="Zaman" />
@@ -51,8 +52,8 @@
 				<point category="13:00" value="25" />
 			</series>
 		</chart>
-	</sheet>
-	<sheet name="Tüm Özellikler">
+	</worksheet>
+	<worksheet name="Tüm Özellikler">
 		<chart type="column" width="600px" height="450px" title="Tüm Özellikler Kombinasyonu"
 			   vary-colors="false" auto-title="false" rounded-corners="true"
 			   overlap="20" gap-width="120">
@@ -182,8 +183,8 @@
 				<point category="D" value="78" />
 			</series>
 		</chart>
-	</sheet>
-	<sheet name="Satış Verileri">
+	</worksheet>
+	<worksheet name="Satış Verileri">
 		<chart type="column" width="600px" height="400px" title="Satış Verileri">
 			<!-- Chart Title -->
 			<title text="Satış Verileri">
@@ -290,8 +291,8 @@
 			</series>
 
 		</chart>
-	</sheet>
-	<sheet>
+	</worksheet>
+	<worksheet>
 		<chart type="line" title="Proper Line Chart Test">
 			<series title="Sales Data">
 				<point category="January" value="10"/>
@@ -330,8 +331,8 @@
 			<legend show="true" position="top"/>
 
 		</chart>
-	</sheet>
-	<sheet name="Advanced Features Demo">
+	</worksheet>
+	<worksheet name="Advanced Features Demo">
 		<chart type="column" title="Advanced Chart Features Demonstration" width="700" height="500">
 			<category-axis title="Business Categories">
 				<text-format>
@@ -416,8 +417,8 @@
 				<point category="Support" value="112"/>
 			</series>
 		</chart>
-	</sheet>
-	<sheet>
+	</worksheet>
+	<worksheet>
 		<chart type="column" title="Satış Verileri" width="15cm" height="12cm" auto-title="false" rounded-corners="false" create-new-paragraph="true" show-category-axis="true" show-value-axis="true">
 			<data-table show="true" show-horizontal-border="true" show-vertical-border="true" show-outline-border="true" show-legend-keys="true">
 				<text-format>
@@ -454,8 +455,8 @@
 				</format>
 			</view-3d>
 		</chart>
-	</sheet>
-	<sheet name="">
+	</worksheet>
+	<worksheet name="">
 		<chart type="bar" title="Satış Raporu" vary-colors="false">
 			<view-3d shape="box"
 					 rotation-x="15"
@@ -485,7 +486,7 @@
 				<point category="Mart" value="140"/>
 			</series>
 		</chart>
-	</sheet>
+	</worksheet>
 	<doc>
 		<chart type="pie" title="Pie Default" vary-colors="true">
 			<view-3d shape="box"
@@ -513,7 +514,7 @@
 			</series>
 		</chart>
 	</doc>
-	<sheet name="Bar Chart">
+	<worksheet name="Bar Chart">
 		<chart title="Sales by Region - Bar Chart" type="bar" overlap ="25" gap-width="15">
 			<series title="Q1 Sales" color="#FF6B35">
 				<point category="Region 1" value="120"/>
@@ -540,10 +541,10 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 3. 3D Column Chart -->
-	<sheet name="3D Column Chart">
+	<worksheet name="3D Column Chart">
 		<chart title="3D Column Sales Analysis" type="column">
 			<series title="North" color="#FF6B35">
 				<point category="Product A" value="300"/>
@@ -568,10 +569,10 @@
 			<legend position="right" show="true"/>
 			<value-labels show="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 4. Line Chart -->
-	<sheet name="Line Chart">
+	<worksheet name="Line Chart">
 		<chart title="Stock Price Trends" type="line">
 			<series title="AAPL" color="#FF6B35">
 				<point category="Week 1" value="150"/>
@@ -597,10 +598,10 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="false"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 5. Pie Chart with Individual Point Colors -->
-	<sheet name="Pie Chart">
+	<worksheet name="Pie Chart">
 		<chart title="Market Share Distribution" type="pie" width="500" height="400"
 			   x="75" y="50">
 			<series title="Browser Share">
@@ -613,10 +614,10 @@
 			<legend position="right" show="true"/>
 			<value-labels show="true" show-percent="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 6. Scatter Chart with X-Y Values -->
-	<sheet name="Scatter Chart">
+	<worksheet name="Scatter Chart">
 		<chart title="Height vs Weight Analysis" type="scatter" scatter-style="marker">
 			<series title="Males" color="#FF6B35">
 				<point x="165" y="65"/>
@@ -637,9 +638,9 @@
 			<grid show-horizontal="true" show-vertical="true"/>
 			<legend position="top" show="true"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
-	<sheet name="Bubble Chart">
+	<worksheet name="Bubble Chart">
 		<chart title="Sales Performance Analysis" type="bubble">
 			<series title="Region Performance" color="#FF6B35">
 				<point x="100" y="15000" size="50"/>
@@ -653,9 +654,9 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="true" show-bubble-size="true"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
-	<sheet name="Radar Chart">
+	<worksheet name="Radar Chart">
 		<chart title="Performance Radar" type="radar" radar-style="standard">
 			<series title="Product A" color="#FF6B35">
 				<point category="Speed" value="85"/>
@@ -676,10 +677,10 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="false"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 9. Doughnut Chart -->
-	<sheet name="Doughnut Chart">
+	<worksheet name="Doughnut Chart">
 		<chart title="Revenue by Department" type="doughnut" width="500" height="400"
 			   x="75" y="50">
 			<series title="Revenue %">
@@ -692,10 +693,10 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="true" show-percent="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 10. Area Chart -->
-	<sheet name="Area Chart">
+	<worksheet name="Area Chart">
 		<chart title="Revenue Growth Areas" type="area" >
 			<series title="Online Sales" color="#FF6B35">
 				<point category="2019" value="50"/>
@@ -716,10 +717,10 @@
 			<grid show-horizontal="true" show-vertical="false"/>
 			<legend position="top" show="true"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 11. 3D Cylinder Chart -->
-	<sheet name="3D Cylinder Chart">
+	<worksheet name="3D Cylinder Chart">
 		<chart title="Production Volume - Cylinder" type="column" >
 			<series title="Production" color="#FF6B35">
 				<point category="Factory A" value="1200"/>
@@ -732,10 +733,10 @@
 			<legend position="top" show="true"/>
 			<value-labels show="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 12. 3D Cone Chart -->
-	<sheet name="3D Cone Chart">
+	<worksheet name="3D Cone Chart">
 		<chart title="Performance Metrics - Cone" type="column" >
 			<series title="Performance" color="#4ECDC4">
 				<point category="Metric 1" value="85"/>
@@ -748,10 +749,10 @@
 			<legend position="bottom" show="true"/>
 			<value-labels show="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 13. 3D Pyramid Chart -->
-	<sheet name="3D Pyramid Chart">
+	<worksheet name="3D Pyramid Chart">
 		<chart title="Hierarchy Analysis - Pyramid" type="column" >
 			<series title="Hierarchy" color="#45B7D1">
 				<point category="Level 1" value="500"/>
@@ -764,10 +765,10 @@
 			<legend position="right" show="true"/>
 			<value-labels show="true" position="outside-end"/>
 		</chart>
-	</sheet>
+	</worksheet>
 
 	<!-- 14. 3D Bubble Chart -->
-	<sheet name="3D Bubble Chart">
+	<worksheet name="3D Bubble Chart">
 		<chart title="3D Market Analysis" type="bubble" bubble-3d="true">
 			<series title="Market Data" color="#4ECDC4">
 				<point x="15" y="120" size="45"/>
@@ -781,8 +782,8 @@
 			<legend position="right" show="true"/>
 			<value-labels show="true" show-bubble-size="true"/>
 		</chart>
-	</sheet>
-	<sheet name="Tüm Özellikler">
+	</worksheet>
+	<worksheet name="Tüm Özellikler">
 		<chart type="column"
 			   vary-colors="false" auto-title="false" rounded-corners="true"
 			   overlap="20" gap-width="120">
@@ -912,8 +913,8 @@
 				<point category="D" value="78" />
 			</series>
 		</chart>
-	</sheet>
-	<sheet>
+	</worksheet>
+	<worksheet>
 		<chart type="column">
 			<view-3d shape="box" rotation-x="15" rotation-y="20" perspective="30"
 					 depth-percent="100" height-percent="100" gap-width="150" gap-depth="100"
@@ -997,8 +998,8 @@
 			</series>
 		</chart>
 
-	</sheet>
-	<sheet>
+	</worksheet>
+	<worksheet>
 		<chart type="column" title="Quarterly Sales Report">
 			<!-- Chart verileri -->
 			<series title="Sales 2023" color="#0066CC">
@@ -1080,8 +1081,8 @@
 				</text-format>
 			</value-labels>
 		</chart>
-	</sheet>
-	<sheet name="ColumnChart">
+	</worksheet>
+	<worksheet name="ColumnChart">
 		<chart type="column" title="Column Chart with Solid Fill">
 			<plot-area>
 				<format>
@@ -1106,9 +1107,9 @@
 				<point category="Mar" value="8"/>
 			</series>
 		</chart>
-	</sheet>
+	</worksheet>
 
-	<sheet name="BarChart">
+	<worksheet name="BarChart">
 		<chart type="bar" title="Bar Chart with Pattern Fill">
 			<plot-area>
 				<format>
@@ -1132,9 +1133,9 @@
 				<point category="Q3" value="18"/>
 			</series>
 		</chart>
-	</sheet>
+	</worksheet>
 
-	<sheet name="LineChart">
+	<worksheet name="LineChart">
 		<chart type="line" title="Line Chart with Simple Fill">
 			<plot-area>
 				<format>
@@ -1150,8 +1151,8 @@
 				<point category="2021" value="6"/>
 			</series>
 		</chart>
-	</sheet>
-	<sheet name="PieChartExample">
+	</worksheet>
+	<worksheet name="PieChartExample">
 		<chart type="pie" title="Satış Dağılımı">
 			<legend show="true" position="topright">
 				<format>
@@ -1182,8 +1183,8 @@
 				<point category="Diğer" value="5"/>
 			</series>
 		</chart>
-	</sheet>
-	<sheet name="SampleChart">
+	</worksheet>
+	<worksheet name="SampleChart">
 		<chart type="column" title="Shadow Glow Example">
 
 			<category-axis>
@@ -1208,8 +1209,8 @@
 			</series>
 
 		</chart>
-	</sheet>
-	<sheet name="Radar Chart Filled">
+	</worksheet>
+	<worksheet name="Radar Chart Filled">
 		<chart type="radar" radar-style="filled" width="600" height="400">
 			<plot-area>
 				<format>
@@ -1227,8 +1228,8 @@
 				<point category="Problem Çözme" value="90"/>
 			</series>
 		</chart>
-	</sheet>
-	<sheet name="Area Chart">
+	</worksheet>
+	<worksheet name="Area Chart">
 		<chart type="area" width="600" height="400">
 			<plot-area>
 				<format>
@@ -1250,10 +1251,10 @@
 				<point category="Q4" value="220"/>
 			</series>
 		</chart>
-	</sheet>
+	</worksheet>
 
 
-	<sheet name="Column Chart">
+	<worksheet name="Column Chart">
 		<chart type="column" width="600" height="400">
 			<plot-area>
 				<format>
@@ -1276,6 +1277,5 @@
 				<point category="Bursa" value="230"/>
 			</series>
 		</chart>
-	</sheet>
-</excel>
-
+	</worksheet>
+</workbook>
