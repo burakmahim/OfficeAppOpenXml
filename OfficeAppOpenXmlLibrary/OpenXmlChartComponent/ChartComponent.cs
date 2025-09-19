@@ -1301,7 +1301,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             P.GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new P.GraphicFrame());
             graphicFrame.NonVisualGraphicFrameProperties = new P.NonVisualGraphicFrameProperties(
-                new P.NonVisualDrawingProperties { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
+                new P.NonVisualDrawingProperties { Id = shapeId++, Name = "Chart" + shapeId },
                 new P.NonVisualGraphicFrameDrawingProperties(),
                 new P.ApplicationNonVisualDrawingProperties()
             );
@@ -4133,7 +4133,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
     }
                 class ChartDefinition               : IValueLabelsContainer
     {
-        public bool IsAreaBased
+        public              bool                             IsAreaBased                        
         {
             get
             {
@@ -4153,7 +4153,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 }
             }
         }
-        public              bool IsLineBased
+        public              bool                             IsLineBased                        
         {
             get
             {
@@ -4210,7 +4210,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         public              int?                             DoughnutHoleSize                   { get; set; } // Doughnut: 10..90
         public              int?                             BubbleScale                        { get; set; } // Bubble: 0..300 (yüzde)
         public              bool?                            Bubble3D                           { get; set; } // Bubble: true/false
-        public ChartDefinition GetChartDefinition()
+        public              ChartDefinition                  GetChartDefinition()               
         {
             return this;
         }
@@ -4236,7 +4236,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         {
             ChartDefinition = chartDefinition;
         }
-        public ChartDefinition GetChartDefinition()
+        public              ChartDefinition                  GetChartDefinition()
         {
             return ChartDefinition;
         }
