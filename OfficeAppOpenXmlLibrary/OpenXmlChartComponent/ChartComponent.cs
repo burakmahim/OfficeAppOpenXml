@@ -55,7 +55,15 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 chartDefinition.Marker.Type = markerType.Value;
             }
 
-            XElementAttributeGetter.AsBool      (chartNode, "vary-colors"                   , out bool varyColorsValue                                      );
+			string? widthStr   = chartNode.Attribute("width")?.Value;
+			if (!string.IsNullOrEmpty(widthStr))
+				chartDefinition.Width  = Dimension.Parse(widthStr);
+
+			string? heightStr  = chartNode.Attribute("height")?.Value;
+			if (!string.IsNullOrEmpty(heightStr))
+				chartDefinition.Height = Dimension.Parse(heightStr);
+
+			XElementAttributeGetter.AsBool      (chartNode, "vary-colors"                   , out bool varyColorsValue                                      );
             chartDefinition.VaryColors          = varyColorsValue;
 
             XElementAttributeGetter.AsBool      (chartNode, "auto-title"                    , out bool autoTitleValue               , defaultValue: false   );
@@ -1202,16 +1210,14 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (chartDefinition is null || chartDefinition.Series.Count == 0)
                 return;
 
-            // DrawingsPart ve WorksheetDrawing’i hazırla
             DrawingsPart drawingsPart = worksheetPart.DrawingsPart ?? worksheetPart.AddNewPart<DrawingsPart>();
             if (drawingsPart.WorksheetDrawing == null)
                 drawingsPart.WorksheetDrawing = new XDR.WorksheetDrawing();
 
-            // ChartPart oluştur
+  
             ChartPart chartPart = drawingsPart.AddNewPart<ChartPart>();
             string relId = drawingsPart.GetIdOfPart(chartPart);
 
-            // ChartSpace ve Chart
             C.ChartSpace chartSpace = new C.ChartSpace();
             chartSpace.Append(new C.EditingLanguage() { Val = "tr-TR" });
 
@@ -1226,24 +1232,22 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             chartPart.ChartSpace = chartSpace;
             chartPart.ChartSpace.Save();
 
-            // --- Dinamik pozisyon hesaplaması (satır aralığına göre) ---
-            int chartHeight = 14; // grafik yüksekliği (satır)
-            int chartSpacing = 2;  // grafikler arası boşluk
+            int chartHeight = 14; 
+            int chartSpacing = 2;  
             int startRow = 1 + (chartIndex * (chartHeight + chartSpacing));
             int endRow = startRow + chartHeight;
 
-            // --- TwoCellAnchor + GraphicFrame (XDR.* kullan) ---
-            TwoCellAnchor twoCellAnchor = new XDR.TwoCellAnchor();
+            XDR.OneCellAnchor oneCellAnchor = new XDR.OneCellAnchor();
 
-            twoCellAnchor.Append(new XDR.FromMarker(
+            oneCellAnchor.Append(new XDR.FromMarker(
                 new XDR.ColumnId("1"), new XDR.ColumnOffset("0"),
                 new XDR.RowId(startRow.ToString()), new XDR.RowOffset("0")
             ));
 
-            twoCellAnchor.Append(new XDR.ToMarker(
-                new XDR.ColumnId("8"), new XDR.ColumnOffset("0"),
-                new XDR.RowId(endRow.ToString()), new XDR.RowOffset("0")
-            ));
+            oneCellAnchor.Append(new XDR.Extent() {
+                Cx = chartDefinition.Width?.ToEmu() ?? 6096000L,
+                Cy = chartDefinition.Height?.ToEmu() ?? 4064000L
+            });
 
             var graphicFrame = new XDR.GraphicFrame(
                 new XDR.NonVisualGraphicFrameProperties(
@@ -1256,7 +1260,10 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 ),
                 new XDR.Transform(
                     new A.Offset() { X = 0, Y = 0 },
-                    new A.Extents() { Cx = 0, Cy = 0 }
+                    new A.Extents() {
+                        Cx = chartDefinition.Width?.ToEmu() ?? 6096000L,
+                        Cy = chartDefinition.Height?.ToEmu() ?? 4064000L
+                    }
                 ),
                 new A.Graphic(
                     new A.GraphicData(
@@ -1266,10 +1273,10 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 )
             );
 
-            twoCellAnchor.Append(graphicFrame);
-            twoCellAnchor.Append(new XDR.ClientData());
+            oneCellAnchor.Append(graphicFrame);
+            oneCellAnchor.Append(new XDR.ClientData());
 
-            drawingsPart.WorksheetDrawing.Append(twoCellAnchor);
+            drawingsPart.WorksheetDrawing.Append(oneCellAnchor);
             drawingsPart.WorksheetDrawing.Save();
 
             // Worksheet <drawing> ilişkisini ekle
@@ -1307,7 +1314,10 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             );
             graphicFrame.Transform = new P.Transform(
                 new A.Offset { X = 1524000L, Y = 1524000L },
-                new A.Extents { Cx = 6096000L, Cy = 4064000L }
+                new A.Extents {
+                    Cx = chartDefinition.Width?.ToEmu() ?? 6096000L,
+                    Cy = chartDefinition.Height?.ToEmu() ?? 4064000L
+                }
             );
             graphicFrame.Graphic = new A.Graphic(
                 new A.GraphicData(
@@ -3079,7 +3089,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             if (axisDefinition is null || axisNode is null)
                 return;
 
-            //addTitle(axisDefinition, axisNode);
+            addTitle(axisDefinition, axisNode);
 
             Scaling scaling = axisNode.Elements<Scaling>().FirstOrDefault();
             if (scaling is null)

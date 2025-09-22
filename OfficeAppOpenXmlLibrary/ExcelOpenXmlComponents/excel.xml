@@ -273,7 +273,7 @@
 			</data-table>
 
 			<!-- Series 1 -->
-			<series name="2023 Satışları" color="#4472C4">
+			<series title="2023 Satışları" color="#4472C4">
 				<point category="Ocak" value="150"/>
 				<point category="Şubat" value="200"/>
 				<point category="Mart" value="175"/>
@@ -282,7 +282,7 @@
 			</series>
 
 			<!-- Series 2 -->
-			<series name="2024 Satışları" color="#E7A03A">
+			<series title="2024 Satışları" color="#E7A03A">
 				<point category="Ocak" value="180"/>
 				<point category="Şubat" value="220"/>
 				<point category="Mart" value="195"/>
@@ -1220,7 +1220,7 @@
 					</fill>
 				</format>
 			</plot-area>
-			<series name="Beceri Analizi">
+			<series title="Beceri Analizi">
 				<point category="İletişim" value="85"/>
 				<point category="Liderlik" value="78"/>
 				<point category="Teknik" value="92"/>
@@ -1238,13 +1238,13 @@
 					</fill>
 				</format>
 			</plot-area>
-			<series name="Gelir">
+			<series title="Gelir">
 				<point category="Q1" value="200"/>
 				<point category="Q2" value="250"/>
 				<point category="Q3" value="180"/>
 				<point category="Q4" value="300"/>
 			</series>
-			<series name="Gider">
+			<series title="Gider">
 				<point category="Q1" value="150"/>
 				<point category="Q2" value="180"/>
 				<point category="Q3" value="160"/>
@@ -1264,13 +1264,13 @@
 					</fill>
 				</format>
 			</plot-area>
-			<series name="2023">
+			<series title="2023">
 				<point category="İstanbul" value="500"/>
 				<point category="Ankara" value="300"/>
 				<point category="İzmir" value="250"/>
 				<point category="Bursa" value="200"/>
 			</series>
-			<series name="2024">
+			<series title="2024">
 				<point category="İstanbul" value="550"/>
 				<point category="Ankara" value="320"/>
 				<point category="İzmir" value="280"/>
