@@ -21,6 +21,26 @@
 				<point category="Satış" value="500000" />
 			</series>
 		</chart>
+		<chart type="column"  title="Departman Bütçesi"
+	   grouping-type="clustered" gap-width="100" width = "15cm" height = "15cm">
+			<category-axis title="Departmanlar" />
+			<value-axis title="Bütçe (TL)" />
+			<legend show="true" position="top" />
+			<view-3d shape="box" rotation-x="15" rotation-y="20" depth-percent="150"
+					 right-angle-axes="true" />
+			<series title="2023 Bütçe" color="#5B9BD5">
+				<point category="IT" value="500000" />
+				<point category="HR" value="200000" />
+				<point category="Pazarlama" value="350000" />
+				<point category="Satış" value="450000" />
+			</series>
+			<series title="2024 Hedef" color="#A5A5A5">
+				<point category="IT" value="600000" />
+				<point category="HR" value="250000" />
+				<point category="Pazarlama" value="400000" />
+				<point category="Satış" value="500000" />
+			</series>
+		</chart>
 	</slide>
 
 	<!-- Slide 2: Stacked Area Chart -->
