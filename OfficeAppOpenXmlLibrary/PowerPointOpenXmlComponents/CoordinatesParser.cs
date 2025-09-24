@@ -13,10 +13,10 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         {
             const long emuConstant = 360000;
 
-            long x = (long)((double.TryParse(element.Attribute("x")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedX) ? parsedX : defX) * emuConstant);
-            long y = (long)((double.TryParse(element.Attribute("y")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedY) ? parsedY : defY) * emuConstant);
-            long width = (long)((double.TryParse(element.Attribute("cx")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedCx) ? parsedCx : defCx) * emuConstant);
-            long height = (long)((double.TryParse(element.Attribute("cy")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedCy) ? parsedCy : defCy) * emuConstant);
+            long x      = (long)((double.TryParse(element.Attribute("x" )?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedX ) ? parsedX : defX ) * emuConstant);
+            long y      = (long)((double.TryParse(element.Attribute("y" )?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedY ) ? parsedY : defY ) * emuConstant);
+            long width  = (long)((double.TryParse(element.Attribute("cx")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedCx) ? parsedCx: defCx) * emuConstant);
+            long height = (long)((double.TryParse(element.Attribute("cy")?.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsedCy) ? parsedCy: defCy) * emuConstant);
 
             return (x, y, width, height);
         }

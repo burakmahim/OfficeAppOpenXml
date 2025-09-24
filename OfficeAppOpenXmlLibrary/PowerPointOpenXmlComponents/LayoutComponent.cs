@@ -33,9 +33,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 slideLayout.CommonSlideData.Name = "Boş İçerik";
             }
 
-            slideLayout.Type = SlideLayoutValues.Blank;
-            slideLayout.Preserve = true;
-            slideLayout.ShowMasterShapes = true;
+            slideLayout.Type                = SlideLayoutValues.Blank;
+            slideLayout.Preserve            = true;
+            slideLayout.ShowMasterShapes    = true;
 
             slideLayoutPart.SlideLayout = slideLayout;
             slideLayoutPart.SlideLayout.Save();
@@ -57,18 +57,11 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             )
                 ;
 
-            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 457200, 7315200, 1000000,
-                fontSize: 32, bold: true
-            ));
+            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 457200, 7315200, 1000000, fontSize: 32, bold: true ));
 
-            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Body, text: "", "Content", 914400, 1600200, 7315200, 4572000
-            ));
+            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Body, text: "", "Content", 914400, 1600200, 7315200, 4572000 ));
 
-            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
-            ));
+            defaultShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E" ));
 
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(defaultShapeTree),
@@ -80,9 +73,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 slideLayout.CommonSlideData.Name = "Başlık ve İçerik";
             }
 
-            slideLayout.Type = SlideLayoutValues.VerticalTitleAndText;
-            slideLayout.Preserve = true;
-            slideLayout.ShowMasterShapes = true;
+            slideLayout.Type                = SlideLayoutValues.VerticalTitleAndText;
+            slideLayout.Preserve            = true;
+            slideLayout.ShowMasterShapes    = true;
 
             slideLayoutPart.SlideLayout = slideLayout;
             slideLayoutPart.SlideLayout.Save();
@@ -103,19 +96,11 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 new GroupShapeProperties()
             );
 
-            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 2286000, 7315200, 1000000,
-                fontSize: 32, bold: true
-            ));
+            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Title, text: "", "Title", 914400, 2286000, 7315200, 1000000, fontSize: 32, bold: true ));
 
-            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.SubTitle, text: "", "Subtitle", 914400, 3429000, 7315200, 2000000,
-                fontSize: 24
-            ));
+            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.SubTitle, text: "", "Subtitle", 914400, 3429000, 7315200, 2000000, fontSize: 24 ));
 
-            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E"
-            ));
+            headerShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E" ));
 
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(headerShapeTree),
@@ -128,9 +113,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             }
 
-            slideLayout.Type = SlideLayoutValues.TitleOnly;
-            slideLayout.Preserve = true;
-            slideLayout.ShowMasterShapes = true;
+            slideLayout.Type                = SlideLayoutValues.TitleOnly;
+            slideLayout.Preserve            = true;
+            slideLayout.ShowMasterShapes    = true;
 
             slideLayoutPart.SlideLayout = slideLayout;
             slideLayoutPart.SlideLayout.Save();
@@ -156,18 +141,11 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 fontSize: 32, bold: true
             ));
 
-            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Body, text: "", "Left Content", 914400, 1810000, 3578400, 4352400
-            ));
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Body,   text: "", "Left Content" , 914400 , 1810000, 3578400, 4352400          ));
 
-            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Body, text: "", "Right Content", 4651200, 1810000, 3578400, 4352400,
-                index: 1
-            ));
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Body,   text: "", "Right Content", 4651200, 1810000, 3578400, 4352400, index: 1));
 
-            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(
-                shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E", ""
-            ));
+            twoContentShapeTree.Append(PlaceHolderShapeBuilder.CreatePlaceholderShape(shapeId++, PlaceholderValues.Footer, text: "", "Footer", 4039200, 6368400, 4114800, 363600, 12, false, false, "", "Calibri", "#7E7E7E", ""));
 
             SlideLayout slideLayout = new SlideLayout(
                 new CommonSlideData(twoContentShapeTree),
@@ -179,9 +157,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 slideLayout.CommonSlideData.Name = "İki İçerik";
             }
 
-            slideLayout.Type = SlideLayoutValues.TwoObjectsAndText;
-            slideLayout.Preserve = true;
-            slideLayout.ShowMasterShapes = true;
+            slideLayout.Type                = SlideLayoutValues.TwoObjectsAndText;
+            slideLayout.Preserve            = true;
+            slideLayout.ShowMasterShapes    = true;
 
             slideLayoutPart.SlideLayout = slideLayout;
             slideLayoutPart.SlideLayout.Save();

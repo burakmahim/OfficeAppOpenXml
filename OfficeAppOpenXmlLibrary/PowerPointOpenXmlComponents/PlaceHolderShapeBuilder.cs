@@ -23,8 +23,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 ),
                 new ShapeProperties(
                     new A.Transform2D(
-                        new A.Offset() { X = x, Y = y },
-                        new A.Extents() { Cx = cx, Cy = cy }
+                        new A.Offset    () { X  = x,  Y  = y },
+                        new A.Extents   () { Cx = cx, Cy = cy }
                     ),
                     new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle }
                 ),
@@ -39,9 +39,9 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                                 new A.LatinFont() { Typeface = fontFamily }
                             )
                             {
-                                FontSize = fontSize,
-                                Bold = bold,
-                                Italic = italic
+                                FontSize    = fontSize,
+                                Bold        = bold,
+                                Italic      = italic
                             },
 
                             new A.Text(text ?? " ")

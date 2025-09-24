@@ -10,16 +10,20 @@
 			<view-3d shape="box" rotation-x="15" rotation-y="20" depth-percent="150"
                      right-angle-axes="true" />
 			<series title="2023 Bütçe" color="#5B9BD5">
-				<point category="IT" value="500000" />
-				<point category="HR" value="200000" />
-				<point category="Pazarlama" value="350000" />
-				<point category="Satış" value="450000" />
+				<points>
+					<point category="IT" value="500000" />
+					<point category="HR" value="200000" />
+					<point category="Pazarlama" value="350000" />
+					<point category="Satış" value="450000" />
+				</points>
 			</series>
 			<series title="2024 Hedef" color="#A5A5A5">
-				<point category="IT" value="600000" />
-				<point category="HR" value="250000" />
-				<point category="Pazarlama" value="400000" />
-				<point category="Satış" value="500000" />
+				<points>
+					<point category="IT" value="600000" />
+					<point category="HR" value="250000" />
+					<point category="Pazarlama" value="400000" />
+					<point category="Satış" value="500000" />
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -31,25 +35,31 @@
 			<value-axis title="Kullanım %" min="0" max="100" />
 			<legend show="true" position="top" />
 			<series title="CPU" color="#FF9999" color-transparency="30">
-				<point category="09:00" value="25" />
-				<point category="10:00" value="35" />
-				<point category="11:00" value="45" />
-				<point category="12:00" value="30" />
-				<point category="13:00" value="20" />
+				<points>
+					<point category="09:00" value="25" />
+					<point category="10:00" value="35" />
+					<point category="11:00" value="45" />
+					<point category="12:00" value="30" />
+					<point category="13:00" value="20" />
+				</points>
 			</series>
 			<series title="Memory" color="#99FF99" color-transparency="30">
-				<point category="09:00" value="40" />
-				<point category="10:00" value="50" />
-				<point category="11:00" value="35" />
-				<point category="12:00" value="45" />
-				<point category="13:00" value="55" />
+				<points>
+					<point category="09:00" value="40" />
+					<point category="10:00" value="50" />
+					<point category="11:00" value="35" />
+					<point category="12:00" value="45" />
+					<point category="13:00" value="55" />
+				</points>
 			</series>
 			<series title="Disk" color="#9999FF" color-transparency="30">
-				<point category="09:00" value="15" />
-				<point category="10:00" value="10" />
-				<point category="11:00" value="20" />
-				<point category="12:00" value="25" />
-				<point category="13:00" value="25" />
+				<points>
+					<point category="09:00" value="15" />
+					<point category="10:00" value="10" />
+					<point category="11:00" value="20" />
+					<point category="12:00" value="25" />
+					<point category="13:00" value="25" />
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -149,21 +159,23 @@
 						<glow color="FFD700" size="4pt" transparency="50" />
 					</effects>
 				</format>
-				<point category="A" value="85">
-					<format>
-						<fill>
-							<solid color="FF1493" />
-						</fill>
-					</format>
-					<value-labels show="true" position="outsideend">
-						<text-format>
-							<font color="FF1493" bold="true" />
-						</text-format>
-					</value-labels>
-				</point>
-				<point category="B" value="95" />
-				<point category="C" value="75" />
-				<point category="D" value="110" />
+				<points>
+					<point category="A" value="85">
+						<format>
+							<fill>
+								<solid color="FF1493" />
+							</fill>
+						</format>
+						<value-labels show="true" position="outsideend">
+							<text-format>
+								<font color="FF1493" bold="true" />
+							</text-format>
+						</value-labels>
+					</point>
+					<point category="B" value="95" />
+					<point category="C" value="75" />
+					<point category="D" value="110" />
+				</points>
 			</series>
 
 			<series title="İkinci Seri" color="3498DB">
@@ -177,10 +189,12 @@
 						<solid color="2874A6" />
 					</line>
 				</format>
-				<point category="A" value="70" />
-				<point category="B" value="88" />
-				<point category="C" value="92" />
-				<point category="D" value="78" />
+				<points>
+					<point category="A" value="70" />
+					<point category="B" value="88" />
+					<point category="C" value="92" />
+					<point category="D" value="78" />
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -274,20 +288,24 @@
 
 			<!-- Series 1 -->
 			<series title="2023 Satışları" color="#4472C4">
-				<point category="Ocak" value="150"/>
-				<point category="Şubat" value="200"/>
-				<point category="Mart" value="175"/>
-				<point category="Nisan" value="300"/>
-				<point category="Mayıs" value="250"/>
+				<points>
+					<point category="Ocak" value="150"/>
+					<point category="Şubat" value="200"/>
+					<point category="Mart" value="175"/>
+					<point category="Nisan" value="300"/>
+					<point category="Mayıs" value="250"/>
+				</points>
 			</series>
 
 			<!-- Series 2 -->
 			<series title="2024 Satışları" color="#E7A03A">
-				<point category="Ocak" value="180"/>
-				<point category="Şubat" value="220"/>
-				<point category="Mart" value="195"/>
-				<point category="Nisan" value="350"/>
-				<point category="Mayıs" value="280"/>
+				<points>
+					<point category="Ocak" value="180"/>
+					<point category="Şubat" value="220"/>
+					<point category="Mart" value="195"/>
+					<point category="Nisan" value="350"/>
+					<point category="Mayıs" value="280"/>
+				</points>
 			</series>
 
 		</chart>
@@ -295,12 +313,14 @@
 	<worksheet>
 		<chart type="line" title="Proper Line Chart Test">
 			<series title="Sales Data">
-				<point category="January" value="10"/>
-				<point category="February" value="15"/>
-				<point category="March" value="12"/>
-				<point category="April" value="18"/>
-				<point category="May" value="22"/>
-				<point category="June" value="25"/>
+				<points>
+					<point category="January" value="10"/>
+					<point category="February" value="15"/>
+					<point category="March" value="12"/>
+					<point category="April" value="18"/>
+					<point category="May" value="22"/>
+					<point category="June" value="25"/>
+				</points>
 				<format>
 					<line visible="true" width="2px" dash="solid">
 						<solid color="#0066CC" transparency="0"/>
@@ -309,19 +329,19 @@
 				<marker type="circle" size="6"/>
 			</series>
 			<series title="Target">
-				<point category="January" value="8"/>
-				<point category="February" value="12"/>
-				<point category="March" value="16"/>
-				<point category="April" value="20"/>
-				<point category="May" value="24"/>
-				<point category="June" value="28"/>
-
+				<points>
+					<point category="January" value="8"/>
+					<point category="February" value="12"/>
+					<point category="March" value="16"/>
+					<point category="April" value="20"/>
+					<point category="May" value="24"/>
+					<point category="June" value="28"/>
+				</points>
 				<format>
 					<line visible="true" width="2px" dash="dash">
 						<solid color="#FF6600" transparency="0"/>
 					</line>
 				</format>
-
 				<marker type="square" size="10"/>
 			</series>
 
@@ -392,10 +412,12 @@
 								blur-radius="3pt" distance="2pt" angle="45"/>
 					</effects>
 				</format>
-				<point category="Sales" value="145"/>
-				<point category="Marketing" value="128"/>
-				<point category="Operations" value="156"/>
-				<point category="Support" value="98"/>
+				<points>
+					<point category="Sales" value="145"/>
+					<point category="Marketing" value="128"/>
+					<point category="Operations" value="156"/>
+					<point category="Support" value="98"/>
+				</points>
 			</series>
 
 			<series title="Q2 Performance" color="#28A745">
@@ -411,10 +433,12 @@
 								blur-radius="3pt" distance="2pt" angle="45"/>
 					</effects>
 				</format>
-				<point category="Sales" value="162"/>
-				<point category="Marketing" value="135"/>
-				<point category="Operations" value="178"/>
-				<point category="Support" value="112"/>
+				<points>
+					<point category="Sales" value="162"/>
+					<point category="Marketing" value="135"/>
+					<point category="Operations" value="178"/>
+					<point category="Support" value="112"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -435,14 +459,18 @@
 			<value-axis title="Ciro">
 			</value-axis>
 			<series title="2024" color="#ff0000" >
-				<point category="Ocak"  value="120" />
-				<point category="Şubat" value="150" />
-				<point category="Mart"  value="90"  />
+				<points>
+					<point category="Ocak"  value="120" />
+					<point category="Şubat" value="150" />
+					<point category="Mart"  value="90"  />
+				</points>
 			</series>
 			<series title="2025" color="#00ff00" >
-				<point category="Ocak"  value="30" />
-				<point category="Şubat" value="40" />
-				<point category="Mart"  value="50"  />
+				<points>
+					<point category="Ocak"  value="30" />
+					<point category="Şubat" value="40" />
+					<point category="Mart"  value="50"  />
+				</points>
 			</series>
 			<view-3d show-floor="true" show-back-wall="true" show-side-wall="true">
 				<format>
@@ -475,15 +503,19 @@
 						show-legend-key="true"/>
 
 			<series title="Q1 Satışlar" color="#4472C4">
-				<point category="Ocak" value="120"/>
-				<point category="Şubat" value="135"/>
-				<point category="Mart" value="150"/>
+				<points>
+					<point category="Ocak" value="120"/>
+					<point category="Şubat" value="135"/>
+					<point category="Mart" value="150"/>
+				</points>
 			</series>
 
 			<series title="Q2 Satışlar" color="#E70000">
-				<point category="Ocak" value="110"/>
-				<point category="Şubat" value="125"/>
-				<point category="Mart" value="140"/>
+				<points>
+					<point category="Ocak" value="110"/>
+					<point category="Şubat" value="125"/>
+					<point category="Mart" value="140"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -499,43 +531,51 @@
 					 right-angle-axes="false"/>
 
 			<series title="Sales">
-				<point category="1st Qtr" value="2.2">
-					<value-labels show="true" position="outsideEnd"/>
-				</point>
-				<point category="2nd Qtr" value="3.2">
-					<value-labels show="true" position="outsideEnd"/>
-				</point>
-				<point category="3rd Qtr" value="1.4">
-					<value-labels show="true" position="outsideEnd"/>
-				</point>
-				<point category="4th Qtr" value="1.2">
-					<value-labels show="true" position="outsideEnd"/>
-				</point>
+				<points>
+					<point category="1st Qtr" value="2.2">
+						<value-labels show="true" position="outsideEnd"/>
+					</point>
+					<point category="2nd Qtr" value="3.2">
+						<value-labels show="true" position="outsideEnd"/>
+					</point>
+					<point category="3rd Qtr" value="1.4">
+						<value-labels show="true" position="outsideEnd"/>
+					</point>
+					<point category="4th Qtr" value="1.2">
+						<value-labels show="true" position="outsideEnd"/>
+					</point>
+				</points>
 			</series>
 		</chart>
 	</doc>
 	<worksheet name="Bar Chart">
 		<chart title="Sales by Region - Bar Chart" type="bar" overlap ="25" gap-width="15">
 			<series title="Q1 Sales" color="#FF6B35">
-				<point category="Region 1" value="120"/>
-				<point category="Region 2" value="150"/>
-				<point category="Region 3" value="130"/>
-				<point category="Region 4" value="180"/>
-				<point category="Region 5" value="200"/>
+				<points>
+					<point category="Region 1" value="120"/>
+					<point category="Region 2" value="150"/>
+					<point category="Region 3" value="130"/>
+					<point category="Region 4" value="180"/>
+					<point category="Region 5" value="200"/>
+				</points>
 			</series>
 			<series title="Q2 Sales" color="#4ECDC4">
-				<point category="Region 1" value="140"/>
-				<point category="Region 2" value="160"/>
-				<point category="Region 3" value="145"/>
-				<point category="Region 4" value="195"/>
-				<point category="Region 5" value="220"/>
+				<points>
+					<point category="Region 1" value="140"/>
+					<point category="Region 2" value="160"/>
+					<point category="Region 3" value="145"/>
+					<point category="Region 4" value="195"/>
+					<point category="Region 5" value="220"/>
+				</points>
 			</series>
 			<series title="Q3 Sales" color="#45B7D1">
-				<point category="Region 1" value="135"/>
-				<point category="Region 2" value="155"/>
-				<point category="Region 3" value="140"/>
-				<point category="Region 4" value="185"/>
-				<point category="Region 5" value="210"/>
+				<points>
+					<point category="Region 1" value="135"/>
+					<point category="Region 2" value="155"/>
+					<point category="Region 3" value="140"/>
+					<point category="Region 4" value="185"/>
+					<point category="Region 5" value="210"/>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="false"/>
 			<legend position="bottom" show="true"/>
@@ -547,22 +587,28 @@
 	<worksheet name="3D Column Chart">
 		<chart title="3D Column Sales Analysis" type="column">
 			<series title="North" color="#FF6B35">
-				<point category="Product A" value="300"/>
-				<point category="Product B" value="250"/>
-				<point category="Product C" value="400"/>
-				<point category="Product D" value="350"/>
+				<points>
+					<point category="Product A" value="300"/>
+					<point category="Product B" value="250"/>
+					<point category="Product C" value="400"/>
+					<point category="Product D" value="350"/>
+				</points>
 			</series>
 			<series title="South" color="#4ECDC4">
-				<point category="Product A" value="320"/>
-				<point category="Product B" value="280"/>
-				<point category="Product C" value="380"/>
-				<point category="Product D" value="360"/>
+				<points>
+					<point category="Product A" value="320"/>
+					<point category="Product B" value="280"/>
+					<point category="Product C" value="380"/>
+					<point category="Product D" value="360"/>
+				</points>
 			</series>
 			<series title="East" color="#45B7D1">
-				<point category="Product A" value="290"/>
-				<point category="Product B" value="270"/>
-				<point category="Product C" value="420"/>
-				<point category="Product D" value="340"/>
+				<points>
+					<point category="Product A" value="290"/>
+					<point category="Product B" value="270"/>
+					<point category="Product C" value="420"/>
+					<point category="Product D" value="340"/>
+				</points>
 			</series>
 			<view-3d shape="box" rotation-x="15" rotation-y="20" perspective="30"/>
 			<grid show-horizontal="true" show-vertical="false"/>
@@ -575,24 +621,28 @@
 	<worksheet name="Line Chart">
 		<chart title="Stock Price Trends" type="line">
 			<series title="AAPL" color="#FF6B35">
-				<point category="Week 1" value="150"/>
-				<point category="Week 2" value="155"/>
-				<point category="Week 3" value="148"/>
-				<point category="Week 4" value="162"/>
-				<point category="Week 5" value="158"/>
-				<point category="Week 6" value="165"/>
-				<point category="Week 7" value="170"/>
-				<point category="Week 8" value="168"/>
+				<points>
+					<point category="Week 1" value="150"/>
+					<point category="Week 2" value="155"/>
+					<point category="Week 3" value="148"/>
+					<point category="Week 4" value="162"/>
+					<point category="Week 5" value="158"/>
+					<point category="Week 6" value="165"/>
+					<point category="Week 7" value="170"/>
+					<point category="Week 8" value="168"/>
+				</points>
 			</series>
 			<series title="GOOGL" color="#4ECDC4">
-				<point category="Week 1" value="2800"/>
-				<point category="Week 2" value="2850"/>
-				<point category="Week 3" value="2820"/>
-				<point category="Week 4" value="2900"/>
-				<point category="Week 5" value="2880"/>
-				<point category="Week 6" value="2950"/>
-				<point category="Week 7" value="2970"/>
-				<point category="Week 8" value="2960"/>
+				<points>
+					<point category="Week 1" value="2800"/>
+					<point category="Week 2" value="2850"/>
+					<point category="Week 3" value="2820"/>
+					<point category="Week 4" value="2900"/>
+					<point category="Week 5" value="2880"/>
+					<point category="Week 6" value="2950"/>
+					<point category="Week 7" value="2970"/>
+					<point category="Week 8" value="2960"/>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="true"/>
 			<legend position="bottom" show="true"/>
@@ -605,11 +655,13 @@
 		<chart title="Market Share Distribution" type="pie" width="500" height="400"
 			   x="75" y="50">
 			<series title="Browser Share">
-				<point category="Chrome" value="65.2" color="#FF6B35"/>
-				<point category="Firefox" value="15.8" color="#4ECDC4"/>
-				<point category="Safari" value="10.1" color="#45B7D1"/>
-				<point category="Edge" value="5.4" color="#96CEB4"/>
-				<point category="Others" value="3.5" color="#FFEAA7"/>
+				<points>
+					<point category="Chrome" value="65.2" color="#FF6B35"/>
+					<point category="Firefox" value="15.8" color="#4ECDC4"/>
+					<point category="Safari" value="10.1" color="#45B7D1"/>
+					<point category="Edge" value="5.4" color="#96CEB4"/>
+					<point category="Others" value="3.5" color="#FFEAA7"/>
+				</points>
 			</series>
 			<legend position="right" show="true"/>
 			<value-labels show="true" show-percent="true" position="outside-end"/>
@@ -620,20 +672,163 @@
 	<worksheet name="Scatter Chart">
 		<chart title="Height vs Weight Analysis" type="scatter" scatter-style="marker">
 			<series title="Males" color="#FF6B35">
-				<point x="165" y="65"/>
-				<point x="170" y="70"/>
-				<point x="175" y="75"/>
-				<point x="180" y="80"/>
-				<point x="185" y="85"/>
-				<point x="160" y="60"/>
+				<points>
+					<point x="165" y="65">
+						<marker type="circle" size="8" color="#FF1493"/>
+						<format>
+							<fill>
+								<solid color="#FF1493" transparency="20"/>
+							</fill>
+							<line visible="true" width="2pt">
+								<solid color="#C71585" transparency="0"/>
+							</line>
+							<effects>
+								<shadow type="outer" color="#000000" transparency="40"
+										blur-radius="3pt" distance="2pt" angle="45"/>
+								<glow color="#FFD700" size="2pt" transparency="30"/>
+							</effects>
+						</format>
+					</point>
+					<point x="170" y="70">
+						<marker type="square" size="10" color="#FF6347"/>
+						<format>
+							<fill>
+								<solid color="#FF6347" transparency="15"/>
+							</fill>
+							<line visible="true" width="1.5pt">
+								<solid color="#DC143C" transparency="0"/>
+							</line>
+						</format>
+					</point>
+					<point x="175" y="75">
+						<marker type="diamond" size="12" color="#FF4500"/>
+						<format>
+							<fill>
+								<pattern preset="lightgrid" foreground-color="#FF4500" background-color="#FFE4E1"/>
+							</fill>
+							<line visible="true" width="2pt" dash="dash">
+								<solid color="#B22222" transparency="0"/>
+							</line>
+						</format>
+					</point>
+					<point x="180" y="80">
+						<marker type="triangle" size="14" color="#FF0000"/>
+						<format>
+							<fill>
+								<solid color="#FF0000" transparency="10"/>
+							</fill>
+							<effects>
+								<shadow type="outer" color="#800000" transparency="50"
+										blur-radius="4pt" distance="3pt" angle="315"/>
+							</effects>
+						</format>
+					</point>
+					<point x="185" y="85">
+						<marker type="star" size="16" color="#DC143C"/>
+						<format>
+							<fill>
+								<solid color="#DC143C" transparency="25"/>
+							</fill>
+							<line visible="true" width="2pt">
+								<solid color="#8B0000" transparency="0"/>
+							</line>
+							<effects>
+								<glow color="#FFA500" size="3pt" transparency="40"/>
+							</effects>
+						</format>
+					</point>
+					<point x="160" y="60">
+						<marker type="x" size="6" color="#CD5C5C"/>
+						<format>
+							<line visible="true" width="3pt">
+								<solid color="#CD5C5C" transparency="0"/>
+							</line>
+						</format>
+					</point>
+				</points>
 			</series>
 			<series title="Females" color="#4ECDC4">
-				<point x="155" y="50"/>
-				<point x="160" y="55"/>
-				<point x="165" y="60"/>
-				<point x="170" y="65"/>
-				<point x="175" y="70"/>
-				<point x="150" y="45"/>
+				<points>
+					<point x="155" y="50">
+						<marker type="circle" size="9" color="#00CED1"/>
+						<format>
+							<fill>
+								<solid color="#00CED1" transparency="20"/>
+							</fill>
+							<line visible="true" width="2pt">
+								<solid color="#008B8B" transparency="0"/>
+							</line>
+							<effects>
+								<shadow type="outer" color="#2F4F4F" transparency="35"
+										blur-radius="2pt" distance="1pt" angle="135"/>
+							</effects>
+						</format>
+					</point>
+					<point x="160" y="55">
+						<marker type="square" size="11" color="#48D1CC"/>
+						<format>
+							<fill>
+								<pattern preset="percent25" foreground-color="#48D1CC" background-color="#E0FFFF"/>
+							</fill>
+							<line visible="true" width="1pt" dash="dot">
+								<solid color="#5F9EA0" transparency="0"/>
+							</line>
+						</format>
+					</point>
+					<point x="165" y="60">
+						<marker type="diamond" size="13" color="#40E0D0"/>
+						<format>
+							<fill>
+								<solid color="#40E0D0" transparency="15"/>
+							</fill>
+							<line visible="true" width="2pt">
+								<solid color="#20B2AA" transparency="0"/>
+							</line>
+							<effects>
+								<glow color="#AFEEEE" size="2pt" transparency="50"/>
+							</effects>
+						</format>
+					</point>
+					<point x="170" y="65">
+						<marker type="triangle" size="15" color="#00FFFF"/>
+						<format>
+							<fill>
+								<solid color="#00FFFF" transparency="30"/>
+							</fill>
+							<effects>
+								<shadow type="inner" color="#008080" transparency="60"
+										blur-radius="3pt" distance="2pt" angle="90"/>
+							</effects>
+						</format>
+					</point>
+					<point x="175" y="70">
+						<marker type="pentagon" size="12" color="#1E90FF"/>
+						<format>
+							<fill>
+								<pattern preset="diagonalcross" foreground-color="#1E90FF" background-color="#B0E0E6"/>
+							</fill>
+							<line visible="true" width="1.5pt" dash="dashdot">
+								<solid color="#0000CD" transparency="0"/>
+							</line>
+						</format>
+					</point>
+					<point x="150" y="45">
+						<marker type="hexagon" size="8" color="#87CEEB"/>
+						<format>
+							<fill>
+								<solid color="#87CEEB" transparency="25"/>
+							</fill>
+							<line visible="true" width="2pt">
+								<solid color="#4682B4" transparency="0"/>
+							</line>
+							<effects>
+								<shadow type="outer" color="#191970" transparency="45"
+										blur-radius="2pt" distance="2pt" angle="225"/>
+								<glow color="#ADD8E6" size="1pt" transparency="35"/>
+							</effects>
+						</format>
+					</point>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="true"/>
 			<legend position="top" show="true"/>
@@ -643,12 +838,14 @@
 	<worksheet name="Bubble Chart">
 		<chart title="Sales Performance Analysis" type="bubble">
 			<series title="Region Performance" color="#FF6B35">
-				<point x="100" y="15000" size="50"/>
-				<point x="200" y="25000" size="75"/>
-				<point x="150" y="18000" size="60"/>
-				<point x="300" y="35000" size="90"/>
-				<point x ="250" y="28000" size="80"/>
-				<point x = "175" y="20000" size="65"/>
+				<points>
+					<point x="100" y="15000" size="50"/>
+					<point x="200" y="25000" size="75"/>
+					<point x="150" y="18000" size="60"/>
+					<point x="300" y="35000" size="90"/>
+					<point x ="250" y="28000" size="80"/>
+					<point x = "175" y="20000" size="65"/>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="true"/>
 			<legend position="bottom" show="true"/>
@@ -659,20 +856,24 @@
 	<worksheet name="Radar Chart">
 		<chart title="Performance Radar" type="radar" radar-style="standard">
 			<series title="Product A" color="#FF6B35">
-				<point category="Speed" value="85"/>
-				<point category="Quality" value="90"/>
-				<point category="Innovation" value="75"/>
-				<point category="Cost" value="70"/>
-				<point category="Service" value="80"/>
-				<point category="Reliability" value="95"/>
+				<points>
+					<point category="Speed" value="85"/>
+					<point category="Quality" value="90"/>
+					<point category="Innovation" value="75"/>
+					<point category="Cost" value="70"/>
+					<point category="Service" value="80"/>
+					<point category="Reliability" value="95"/>
+				</points>
 			</series>
 			<series title="Product B" color="#4ECDC4">
-				<point category="Speed" value="70"/>
-				<point category="Quality" value="85"/>
-				<point category="Innovation" value="90"/>
-				<point category="Cost" value="85"/>
-				<point category="Service" value="75"/>
-				<point category="Reliability" value="80"/>
+				<points>
+					<point category="Speed" value="70"/>
+					<point category="Quality" value="85"/>
+					<point category="Innovation" value="90"/>
+					<point category="Cost" value="85"/>
+					<point category="Service" value="75"/>
+					<point category="Reliability" value="80"/>
+				</points>
 			</series>
 			<legend position="bottom" show="true"/>
 			<value-labels show="false"/>
@@ -684,11 +885,13 @@
 		<chart title="Revenue by Department" type="doughnut" width="500" height="400"
 			   x="75" y="50">
 			<series title="Revenue %">
-				<point category="Sales" value="35" color="#FF6B35"/>
-				<point category="Marketing" value="25" color="#4ECDC4"/>
-				<point category="Development" value="20" color="#45B7D1"/>
-				<point category="Support" value="15" color="#96CEB4"/>
-				<point category="HR" value="5" color="#FFEAA7"/>
+				<points>
+					<point category="Sales" value="35" color="#FF6B35"/>
+					<point category="Marketing" value="25" color="#4ECDC4"/>
+					<point category="Development" value="20" color="#45B7D1"/>
+					<point category="Support" value="15" color="#96CEB4"/>
+					<point category="HR" value="5" color="#FFEAA7"/>
+				</points>
 			</series>
 			<legend position="bottom" show="true"/>
 			<value-labels show="true" show-percent="true" position="outside-end"/>
@@ -699,20 +902,24 @@
 	<worksheet name="Area Chart">
 		<chart title="Revenue Growth Areas" type="area" >
 			<series title="Online Sales" color="#FF6B35">
-				<point category="2019" value="50"/>
-				<point category="2020" value="65"/>
-				<point category="2021" value="85"/>
-				<point category="2022" value="120"/>
-				<point category="2023" value="160"/>
-				<point category="2024" value="200"/>
+				<points>
+					<point category="2019" value="50"/>
+					<point category="2020" value="65"/>
+					<point category="2021" value="85"/>
+					<point category="2022" value="120"/>
+					<point category="2023" value="160"/>
+					<point category="2024" value="200"/>
+				</points>
 			</series>
 			<series title="Retail Sales" color="#4ECDC4">
-				<point category="2019" value="200"/>
-				<point category="2020" value="180"/>
-				<point category="2021" value="160"/>
-				<point category="2022" value="150"/>
-				<point category="2023" value="140"/>
-				<point category="2024" value="135"/>
+				<points>
+					<point category="2019" value="200"/>
+					<point category="2020" value="180"/>
+					<point category="2021" value="160"/>
+					<point category="2022" value="150"/>
+					<point category="2023" value="140"/>
+					<point category="2024" value="135"/>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="false"/>
 			<legend position="top" show="true"/>
@@ -723,10 +930,12 @@
 	<worksheet name="3D Cylinder Chart">
 		<chart title="Production Volume - Cylinder" type="column" >
 			<series title="Production" color="#FF6B35">
-				<point category="Factory A" value="1200"/>
-				<point category="Factory B" value="1500"/>
-				<point category="Factory C" value="980"/>
-				<point category="Factory D" value="1800"/>
+				<points>
+					<point category="Factory A" value="1200"/>
+					<point category="Factory B" value="1500"/>
+					<point category="Factory C" value="980"/>
+					<point category="Factory D" value="1800"/>
+				</points>
 			</series>
 			<view-3d shape="cylinder" rotation-x="20" rotation-y="30" perspective="35"/>
 			<grid show-horizontal="true" show-vertical="false"/>
@@ -739,10 +948,12 @@
 	<worksheet name="3D Cone Chart">
 		<chart title="Performance Metrics - Cone" type="column" >
 			<series title="Performance" color="#4ECDC4">
-				<point category="Metric 1" value="85"/>
-				<point category="Metric 2" value="92"/>
-				<point category="Metric 3" value="78"/>
-				<point category="Metric 4" value="96"/>
+				<points>
+					<point category="Metric 1" value="85"/>
+					<point category="Metric 2" value="92"/>
+					<point category="Metric 3" value="78"/>
+					<point category="Metric 4" value="96"/>
+				</points>
 			</series>
 			<view-3d shape="cone" rotation-x="25" rotation-y="40" perspective="30"/>
 			<grid show-horizontal="true" show-vertical="false"/>
@@ -755,10 +966,12 @@
 	<worksheet name="3D Pyramid Chart">
 		<chart title="Hierarchy Analysis - Pyramid" type="column" >
 			<series title="Hierarchy" color="#45B7D1">
-				<point category="Level 1" value="500"/>
-				<point category="Level 2" value="300"/>
-				<point category="Level 3" value="150"/>
-				<point category="Level 4" value="50"/>
+				<points>
+					<point category="Level 1" value="500"/>
+					<point category="Level 2" value="300"/>
+					<point category="Level 3" value="150"/>
+					<point category="Level 4" value="50"/>
+				</points>
 			</series>
 			<view-3d shape="pyramid" rotation-x="15" rotation-y="25" perspective="40"/>
 			<grid show-horizontal="true" show-vertical="false"/>
@@ -771,12 +984,14 @@
 	<worksheet name="3D Bubble Chart">
 		<chart title="3D Market Analysis" type="bubble" bubble-3d="true">
 			<series title="Market Data" color="#4ECDC4">
-				<point x="15" y="120" size="45"/>
-				<point x="25" y="180" size="70"/>
-				<point x="35" y="160" size="55"/>
-				<point x="45" y="240" size="85"/>
-				<point x="30" y="200" size="75"/>
-				<point x="20" y="140" size="50"/>
+				<points>
+					<point x="15" y="120" size="45"/>
+					<point x="25" y="180" size="70"/>
+					<point x="35" y="160" size="55"/>
+					<point x="45" y="240" size="85"/>
+					<point x="30" y="200" size="75"/>
+					<point x="20" y="140" size="50"/>
+				</points>
 			</series>
 			<grid show-horizontal="true" show-vertical="true"/>
 			<legend position="right" show="true"/>
@@ -879,21 +1094,23 @@
 						<glow color="FFD700" size="4pt" transparency="50" />
 					</effects>
 				</format>
-				<point category="A" value="85">
-					<format>
-						<fill>
-							<solid color="FF1493" />
-						</fill>
-					</format>
-					<value-labels show="true" position="outsideend">
-						<text-format>
-							<font color="FF1493" bold="true" />
-						</text-format>
-					</value-labels>
-				</point>
-				<point category="B" value="95" />
-				<point category="C" value="75" />
-				<point category="D" value="110" />
+				<points>
+					<point category="A" value="85">
+						<format>
+							<fill>
+								<solid color="FF1493" />
+							</fill>
+						</format>
+						<value-labels show="true" position="outsideend">
+							<text-format>
+								<font color="FF1493" bold="true" />
+							</text-format>
+						</value-labels>
+					</point>
+					<point category="B" value="95" />
+					<point category="C" value="75" />
+					<point category="D" value="110" />
+				</points>
 			</series>
 
 			<series title="İkinci Seri" color="3498DB">
@@ -907,10 +1124,12 @@
 						<solid color="2874A6" />
 					</line>
 				</format>
-				<point category="A" value="70" />
-				<point category="B" value="88" />
-				<point category="C" value="92" />
-				<point category="D" value="78" />
+				<points>
+					<point category="A" value="70" />
+					<point category="B" value="88" />
+					<point category="C" value="92" />
+					<point category="D" value="78" />
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -972,9 +1191,11 @@
 						  kerning="1px" spacing="0.5pt"/>
 				</text-format>
 
-				<point category="Jan" value="120"/>
-				<point category="Feb" value="135"/>
-				<point category="Mar" value="150"/>
+				<points>
+					<point category="Jan" value="120"/>
+					<point category="Feb" value="135"/>
+					<point category="Mar" value="150"/>
+				</points>
 			</series>
 
 			<series title="Sales Q2" marker-type="square" marker-size="6">
@@ -992,9 +1213,11 @@
 						  kerning="0px" spacing="0pt"/>
 				</text-format>
 
-				<point category="Jan" value="100"/>
-				<point category="Feb" value="115"/>
-				<point category="Mar" value="130"/>
+				<points>
+					<point category="Jan" value="100"/>
+					<point category="Feb" value="115"/>
+					<point category="Mar" value="130"/>
+				</points>
 			</series>
 		</chart>
 
@@ -1003,16 +1226,20 @@
 		<chart type="column" title="Quarterly Sales Report">
 			<!-- Chart verileri -->
 			<series title="Sales 2023" color="#0066CC">
-				<point category="Q1" value="150000" />
-				<point category="Q2" value="180000" />
-				<point category="Q3" value="160000" />
-				<point category="Q4" value="200000" />
+				<points>
+					<point category="Q1" value="150000" />
+					<point category="Q2" value="180000" />
+					<point category="Q3" value="160000" />
+					<point category="Q4" value="200000" />
+				</points>
 			</series>
 			<series title="Sales 2024" color="#FF6B35">
-				<point category="Q1" value="165000" />
-				<point category="Q2" value="195000" />
-				<point category="Q3" value="175000" />
-				<point category="Q4" value="220000" />
+				<points>
+					<point category="Q1" value="165000" />
+					<point category="Q2" value="195000" />
+					<point category="Q3" value="175000" />
+					<point category="Q4" value="220000" />
+				</points>
 			</series>
 			<!-- Plot Area - Renkli gradient arka plan -->
 			<plot-area>
@@ -1102,9 +1329,11 @@
 				</format>
 			</plot-area>
 			<series>
-				<point category="Jan" value="10"/>
-				<point category="Feb" value="15"/>
-				<point category="Mar" value="8"/>
+				<points>
+					<point category="Jan" value="10"/>
+					<point category="Feb" value="15"/>
+					<point category="Mar" value="8"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1128,9 +1357,11 @@
 				</format>
 			</plot-area>
 			<series>
-				<point category="Q1" value="20"/>
-				<point category="Q2" value="25"/>
-				<point category="Q3" value="18"/>
+				<points>
+					<point category="Q1" value="20"/>
+					<point category="Q2" value="25"/>
+					<point category="Q3" value="18"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1146,9 +1377,11 @@
 				</format>
 			</plot-area>
 			<series>
-				<point category="2019" value="5"/>
-				<point category="2020" value="7"/>
-				<point category="2021" value="6"/>
+				<points>
+					<point category="2019" value="5"/>
+					<point category="2020" value="7"/>
+					<point category="2021" value="6"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1176,11 +1409,13 @@
 			</legend>
 
 			<series title="2025 Satış">
-				<point category="Elektronik" value="45"/>
-				<point category="Mobilya" value="25"/>
-				<point category="Giyim" value="15"/>
-				<point category="Gıda" value="10"/>
-				<point category="Diğer" value="5"/>
+				<points>
+					<point category="Elektronik" value="45"/>
+					<point category="Mobilya" value="25"/>
+					<point category="Giyim" value="15"/>
+					<point category="Gıda" value="10"/>
+					<point category="Diğer" value="5"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1203,9 +1438,11 @@
 			</category-axis>
 
 			<series title="Series 1">
-				<point category="A" value="10"/>
-				<point category="B" value="20"/>
-				<point category="C" value="30"/>
+				<points>
+					<point category="A" value="10"/>
+					<point category="B" value="20"/>
+					<point category="C" value="30"/>
+				</points>
 			</series>
 
 		</chart>
@@ -1221,11 +1458,13 @@
 				</format>
 			</plot-area>
 			<series title="Beceri Analizi">
-				<point category="İletişim" value="85"/>
-				<point category="Liderlik" value="78"/>
-				<point category="Teknik" value="92"/>
-				<point category="Yaratıcılık" value="88"/>
-				<point category="Problem Çözme" value="90"/>
+				<points>
+					<point category="İletişim" value="85"/>
+					<point category="Liderlik" value="78"/>
+					<point category="Teknik" value="92"/>
+					<point category="Yaratıcılık" value="88"/>
+					<point category="Problem Çözme" value="90"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1239,16 +1478,20 @@
 				</format>
 			</plot-area>
 			<series title="Gelir">
-				<point category="Q1" value="200"/>
-				<point category="Q2" value="250"/>
-				<point category="Q3" value="180"/>
-				<point category="Q4" value="300"/>
+				<points>
+					<point category="Q1" value="200"/>
+					<point category="Q2" value="250"/>
+					<point category="Q3" value="180"/>
+					<point category="Q4" value="300"/>
+				</points>
 			</series>
 			<series title="Gider">
-				<point category="Q1" value="150"/>
-				<point category="Q2" value="180"/>
-				<point category="Q3" value="160"/>
-				<point category="Q4" value="220"/>
+				<points>
+					<point category="Q1" value="150"/>
+					<point category="Q2" value="180"/>
+					<point category="Q3" value="160"/>
+					<point category="Q4" value="220"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>
@@ -1265,16 +1508,20 @@
 				</format>
 			</plot-area>
 			<series title="2023">
-				<point category="İstanbul" value="500"/>
-				<point category="Ankara" value="300"/>
-				<point category="İzmir" value="250"/>
-				<point category="Bursa" value="200"/>
+				<points>
+					<point category="İstanbul" value="500"/>
+					<point category="Ankara" value="300"/>
+					<point category="İzmir" value="250"/>
+					<point category="Bursa" value="200"/>
+				</points>
 			</series>
 			<series title="2024">
-				<point category="İstanbul" value="550"/>
-				<point category="Ankara" value="320"/>
-				<point category="İzmir" value="280"/>
-				<point category="Bursa" value="230"/>
+				<points>
+					<point category="İstanbul" value="550"/>
+					<point category="Ankara" value="320"/>
+					<point category="İzmir" value="280"/>
+					<point category="Bursa" value="230"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>

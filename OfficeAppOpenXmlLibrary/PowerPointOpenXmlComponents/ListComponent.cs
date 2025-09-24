@@ -7,31 +7,26 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class ListComponent
     {
-        public static void AddList(SlidePart slidePart, XElement listElement, ref uint shapeId)
+        public static void  AddList(SlidePart slidePart, XElement listElement, ref uint shapeId)
         {
             List<XElement> items = listElement.Elements("item").ToList();
 
             (long x, long y, long cx, long cy) = CoordinatesParser.CoordinateParser(listElement, 2.54, 4.45, 20.32, 12.7);
 
-            string fontFamily = listElement.Attribute("fontFamily")?.Value ?? "Arial";
-            string textColor = listElement.Attribute("textColor")?.Value?.Replace("#", "") ?? "000000";
-            string backgroundColor = listElement.Attribute("backgroundColor")?.Value?.Replace("#", "") ?? "";
-            string zOrder = listElement.Attribute("zOrder")?.Value ?? "front";
+            string fontFamily       = listElement.Attribute("fontFamily")?.Value ?? "Arial";
+            string textColor        = listElement.Attribute("textColor")?.Value?.Replace("#", "") ?? "000000";
+            string backgroundColor  = listElement.Attribute("backgroundColor")?.Value?.Replace("#", "") ?? "";
+            string zOrder           = listElement.Attribute("zOrder")?.Value ?? "front";
 
-            bool bold = false;
+            bool bold   = false;
             bool italic = false;
 
-            bool.TryParse(listElement.Attribute("bold")?.Value, out bold);
+            bool.TryParse(listElement.Attribute("bold"  )?.Value, out bold);
             bool.TryParse(listElement.Attribute("italic")?.Value, out italic);
 
             int fontSize = int.TryParse(listElement.Attribute("fontSize")?.Value, out int parsedFontSize) ? parsedFontSize : 24;
 
-            Shape shape = CreateListShape(
-                shapeId++, "List Placeholder", items,
-                x, y, cx, cy,
-                fontSize, bold, italic,
-                backgroundColor, fontFamily, textColor
-            );
+            Shape shape = CreateListShape(shapeId++, "List Placeholder", items, x, y, cx, cy, fontSize, bold, italic, backgroundColor, fontFamily, textColor );
 
             Z_OrderComponent.ZOrder(shape, slidePart.Slide.CommonSlideData.ShapeTree, zOrder);
         }

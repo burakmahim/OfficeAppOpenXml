@@ -8,10 +8,6 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class CreateSlides
     {
-        public                                      OpenXmlPackage              MyFunc                                                                              ()                                                          
-        {
-            return null;
-        }
         public  static                              void                        CreateDefaultSlide                                                                  (SlidePart slidePart, XElement slideNode, ref uint shapeId) 
         {
             ShapeTree shapeTree = slidePart.Slide.CommonSlideData.ShapeTree;
@@ -28,7 +24,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 {
                     shape.TextBody = new TextBody(
                         new A.BodyProperties(),
-                        new A.ListStyle(),
+                        new A.ListStyle     (),
                         new A.Paragraph(
                             new A.Run(new A.Text(title))),
                             new A.ParagraphProperties()
@@ -39,8 +35,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 {
                     shape.TextBody = new TextBody(
                         new A.BodyProperties(),
-                        new A.ListStyle(),
-                        new A.Paragraph(new A.Run(new A.Text(content)))
+                        new A.ListStyle     (),
+                        new A.Paragraph     (new A.Run(new A.Text(content)))
                     );
                 }
 
@@ -50,7 +46,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         {
             ShapeTree shapeTree = slidePart.Slide.CommonSlideData.ShapeTree;
 
-            string title = slideNode.Element("title")?.Value ?? "";
+            string title    = slideNode.Element("title")?.Value ?? "";
             string subtitle = slideNode.Element("subtitle")?.Value ?? "";
 
             foreach (Shape shape in shapeTree.Descendants<Shape>())
@@ -59,12 +55,12 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                     .ApplicationNonVisualDrawingProperties?
                     .GetFirstChild<PlaceholderShape>();
 
-                if (placeholder != null && placeholder.Type == PlaceholderValues.Title)
+                if (placeholder != null && placeholder.Type == PlaceholderValues.Title)   
                 {
                     shape.TextBody = new TextBody(
                         new A.BodyProperties(),
-                        new A.ListStyle(),
-                        new A.Paragraph(new A.Run(new A.Text(title)))
+                        new A.ListStyle     (),
+                        new A.Paragraph     (new A.Run(new A.Text(title)))
                     );
                 }
 
@@ -72,8 +68,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 {
                     shape.TextBody = new TextBody(
                         new A.BodyProperties(),
-                        new A.ListStyle(),
-                        new A.Paragraph(new A.Run(new A.Text(subtitle)))
+                        new A.ListStyle     (),
+                        new A.Paragraph     (new A.Run(new A.Text(subtitle)))
                     );
                 }
             }
@@ -82,8 +78,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
         {
             ShapeTree? shapeTree = slidePart?.Slide?.CommonSlideData?.ShapeTree;
 
-            string title = slideNode.Element("title")?.Value ?? "";
-            string leftContent = slideNode.Element("leftContent")?.Value ?? "";
+            string title        = slideNode.Element("title"       )?.Value ?? "";
+            string leftContent  = slideNode.Element("leftContent" )?.Value ?? "";
             string rightContent = slideNode.Element("rightContent")?.Value ?? "";
 
             List<Shape> bodyShapes = shapeTree?.Descendants<Shape>()
@@ -95,9 +91,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 
             foreach (Shape shape in shapeTree.Descendants<Shape>())
             {
-                PlaceholderShape? placeholder = shape.NonVisualShapeProperties?
-                    .ApplicationNonVisualDrawingProperties?
-                    .GetFirstChild<PlaceholderShape>();
+                PlaceholderShape? placeholder = shape.NonVisualShapeProperties?.ApplicationNonVisualDrawingProperties?.GetFirstChild<PlaceholderShape>();
 
                 if (placeholder == null || placeholder.Type == null)
                     continue;
@@ -107,8 +101,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 {
                     shape.TextBody = new TextBody(
                         new A.BodyProperties(),
-                        new A.ListStyle(),
-                        new A.Paragraph(new A.Run(new A.Text(title)))
+                        new A.ListStyle     (),
+                        new A.Paragraph     (new A.Run(new A.Text(title)))
                     );
                 }
             }
@@ -117,8 +111,8 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             {
                 bodyShapes[0].TextBody = new TextBody(
                     new A.BodyProperties(),
-                    new A.ListStyle(),
-                    new A.Paragraph(new A.Run(new A.Text(leftContent)))
+                    new A.ListStyle     (),
+                    new A.Paragraph     (new A.Run(new A.Text(leftContent)))
                 );
             }
 

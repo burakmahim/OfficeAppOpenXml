@@ -57,11 +57,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
 			string? widthStr   = chartNode.Attribute("width")?.Value;
 			if (!string.IsNullOrEmpty(widthStr))
-				chartDefinition.Width  = Dimension.Parse(widthStr);
+				chartDefinition.Width      = Dimension.Parse(widthStr);
 
 			string? heightStr  = chartNode.Attribute("height")?.Value;
 			if (!string.IsNullOrEmpty(heightStr))
-				chartDefinition.Height = Dimension.Parse(heightStr);
+				chartDefinition.Height     = Dimension.Parse(heightStr);
+
+            string? leftMargin = chartNode.Attribute("left-margin")?.Value;
+			if (!string.IsNullOrEmpty(leftMargin))
+				chartDefinition.LeftMargin = Dimension.Parse(leftMargin);
+
+			string? topMargin = chartNode.Attribute("top-margin")?.Value;
+			if (!string.IsNullOrEmpty(topMargin))
+				chartDefinition.TopMargin  = Dimension.Parse(topMargin);
 
 			XElementAttributeGetter.AsBool      (chartNode, "vary-colors"                   , out bool varyColorsValue                                      );
             chartDefinition.VaryColors          = varyColorsValue;
@@ -1310,14 +1318,17 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
             P.GraphicFrame graphicFrame = slidePart.Slide.CommonSlideData.ShapeTree.AppendChild(new P.GraphicFrame());
             graphicFrame.NonVisualGraphicFrameProperties = new P.NonVisualGraphicFrameProperties(
-                new P.NonVisualDrawingProperties { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
+                new P.NonVisualDrawingProperties            { Id = (UInt32Value)1U, Name = "Chart" + Guid.NewGuid() },
                 new P.NonVisualGraphicFrameDrawingProperties(),
-                new P.ApplicationNonVisualDrawingProperties()
+                new P.ApplicationNonVisualDrawingProperties ()
             );
             graphicFrame.Transform = new P.Transform(
-                new A.Offset { X = 1524000L, Y = 1524000L },
+                new A.Offset  { 
+                    X = chartDefinition.LeftMargin?.ToEmu() ?? 1524000L,
+                    Y = chartDefinition.TopMargin?.ToEmu()  ?? 1524000L
+				},
                 new A.Extents {
-                    Cx = chartDefinition.Width?.ToEmu() ?? 6096000L,
+                    Cx = chartDefinition.Width?.ToEmu()  ?? 6096000L,
                     Cy = chartDefinition.Height?.ToEmu() ?? 4064000L
                 }
             );
@@ -4185,7 +4196,9 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         public          TitleDefinition         Title                       { get; set; }
         public          Dimension               Width                       { get; set; }
         public          Dimension               Height                      { get; set; }
-        public          int?                    GapWidth                    { get; set; }   // Bar, Column only
+        public          Dimension               TopMargin                   { get; set; }
+		public          Dimension               LeftMargin                  { get; set; }  
+		public          int?                    GapWidth                    { get; set; }   // Bar, Column only
         public          int?                    Overlap                     { get; set; }   // Bar, Column only
         public          ScatterStyle            ScatterStyle                { get; set; }
         public          RadarStyle              RadarStyle                  { get; set; }
