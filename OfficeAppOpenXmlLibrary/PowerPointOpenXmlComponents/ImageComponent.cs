@@ -7,7 +7,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class ImageComponent
     {
-        public static void AddImage(SlidePart slidePart, XElement imageNode, ref uint shapeId)
+        public static void AddImage   (SlidePart slidePart, XElement imageNode, ref uint shapeId)
         {
             string? path = imageNode?.Attribute("path")?.Value;
             string? zOrder = imageNode?.Attribute("zOrder")?.Value ?? "front";
@@ -126,7 +126,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             }
 
         }
-        public static void ZOrderImage(Picture picture, ShapeTree shapeTree, string zOrder)
+        public static void ZOrderImage(Picture picture, ShapeTree shapeTree, string zOrder)      
         {
             if (zOrder == "back")
             {

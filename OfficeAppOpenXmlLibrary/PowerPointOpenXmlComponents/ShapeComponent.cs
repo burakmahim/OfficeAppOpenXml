@@ -7,7 +7,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
 {
     public class ShapeComponent
     {
-        public static void AddShape(SlidePart slidePart, XElement shapeElement, ref uint shapeId)
+        public static void  AddShape         (SlidePart slidePart, XElement shapeElement, ref uint shapeId)
         {
             // XML'den parametreleri al
             string shapeType = shapeElement.Attribute("type")?.Value ?? "Rectangle";
@@ -38,11 +38,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
             Z_OrderComponent.ZOrder(shape, slidePart.Slide.CommonSlideData.ShapeTree, zOrder);
         }
 
-        public static Shape CreateCustomShape(uint id, string shapeType, string text, 
-            long x, long y, long cx, long cy,
-            int fontSize = 18, bool bold = false, bool italic = false, 
-            string fontFamily = "Arial", string textColor = "000000", 
-            string backgroundColor = "", string borderColor = "", int borderWidth = 1)
+        public static Shape CreateCustomShape(uint id, string shapeType, string text, long x, long y, long cx, long cy, int fontSize = 18, bool bold = false, bool italic = false,  string fontFamily = "Arial", string textColor = "000000",  string backgroundColor = "", string borderColor = "", int borderWidth = 1)
         {
             // ShapeType'ı direkt parse etmeye çalış
             A.ShapeTypeValues geometryType = A.ShapeTypeValues.Rectangle; // default
@@ -60,7 +56,7 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 ),
                 new ShapeProperties(
                     new A.Transform2D(
-                        new A.Offset() { X = x, Y = y },
+                        new A.Offset () { X  = x,  Y  = y },
                         new A.Extents() { Cx = cx, Cy = cy }
                     ),
                     new A.PresetGeometry(new A.AdjustValueList()) { Preset = geometryType }
@@ -101,14 +97,14 @@ namespace OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents
                 )
                 {
                     FontSize = fontSize * 100,
-                    Bold = bold,
-                    Italic = italic
+                    Bold     = bold,
+                    Italic   = italic
                 };
 
                 shape.TextBody = new TextBody(
                     new A.BodyProperties() 
                     { 
-                        Wrap = A.TextWrappingValues.Square,
+                        Wrap   = A.TextWrappingValues.Square,
                         Anchor = A.TextAnchoringTypeValues.Center
                     },
                     new A.ListStyle(),

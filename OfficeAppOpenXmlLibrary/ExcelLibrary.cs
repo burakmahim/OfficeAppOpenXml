@@ -17,8 +17,8 @@ namespace OfficeAppOpenXmlLibrary
             {
                 using (SpreadsheetDocument document = SpreadsheetDocument.Create(memoryStream, SpreadsheetDocumentType.Workbook))
                 {
-                    WorkbookPart workbookPart = document.AddWorkbookPart();
-                    workbookPart.Workbook = new Workbook();
+                    WorkbookPart workbookPart   = document.AddWorkbookPart();
+                    workbookPart.Workbook       = new Workbook();
 
                     Sheets sheets = new Sheets();
                     workbookPart.Workbook.Append(sheets);
@@ -37,8 +37,8 @@ namespace OfficeAppOpenXmlLibrary
 
                         worksheet.Append(sheetData);
 
-                        int rowCount = 0;
-                        int colCount = 0;
+                        int rowCount   = 0;
+                        int colCount   = 0;
                         int currentRow = 1;
 
                         worksheetPart.Worksheet = worksheet;
@@ -58,9 +58,9 @@ namespace OfficeAppOpenXmlLibrary
 
                         Sheet sheet = new Sheet()
                         {
-                            Id = workbookPart.GetIdOfPart(worksheetPart),
+                            Id      = workbookPart.GetIdOfPart(worksheetPart),
                             SheetId = (uint)sheetCounter,
-                            Name = sheetName
+                            Name    = sheetName
                         };
                         sheets.Append(sheet);
 
