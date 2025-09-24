@@ -24,14 +24,33 @@
 
         <textarea id="xmlEditor" rows="30">@xml</textarea>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadPptx">
-                PowerPoint Oluştur ve İndir
-            </button>
-            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadExcel">
-                Excel Oluştur ve İndir
-            </button>
-        </div>
+		<div class="mt-4">
+
+			<button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadPptx">
+				PowerPoint Oluştur ve İndir
+			</button>
+
+			<button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadExcel">
+				Excel Oluştur ve İndir
+			</button>
+
+			<button type="submit"
+					class="btn btn-success"
+					formaction="/Presentation/GenerateExcelPdf"
+					formtarget="pdfFrame"
+					onclick="document.getElementById('pdfContainer').classList.remove('d-none')">
+				Excel PDF Görüntüle
+			</button>
+
+			<button type="submit"
+					class="btn btn-primary me-2"
+					formaction="/Presentation/ViewPdf"
+					formtarget="pdfFrame"
+					onclick="document.getElementById('pdfContainer').classList.remove('d-none')">
+				PowerPoint PDF Görüntüle
+			</button>
+
+		</div>
     </form>
 
     <div class="d-none mt-4" id="pdfContainer">

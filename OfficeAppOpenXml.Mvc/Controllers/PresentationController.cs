@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using OfficeAppOpenXmlLibrary;
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
 
 namespace OfficeAppOpenXml.Mvc.Controllers
 {
@@ -44,5 +47,52 @@ namespace OfficeAppOpenXml.Mvc.Controllers
                 return Content("Hata oluştu: " + ex.Message);
             }
         }
-    }
+
+		[HttpPost]
+		[ValidateInput(false)]
+		public ActionResult ViewPdf(string xmlContent)
+		{
+			if (string.IsNullOrWhiteSpace(xmlContent))
+			{
+				ViewBag.Error = "XML içeriği boş gönderildi.";
+				return View("Index");
+			}
+
+			try
+			{
+				byte[] pdfBytes = PowerPointPdfConverter.ConvertToPdf(xmlContent);
+				return File(pdfBytes, "application/pdf");
+			}
+			catch (Exception ex)
+			{
+				ViewBag.Error = ex.Message;
+				return View("Index");
+			}
+		}
+
+		[HttpPost]
+		[ValidateInput(false)]
+		public ActionResult GenerateExcelPdf(string xmlContent)
+		{
+
+			if (string.IsNullOrWhiteSpace(xmlContent))
+			{
+				ViewBag.Error = "XML içeriği boş gönderildi.";
+				return View("Index");
+			}
+
+			try
+			{
+				byte[] pdfBytes = ExcelPdfConverter.ConvertToPdf(xmlContent);
+				return File(pdfBytes, "application/pdf");
+			}
+
+			catch (Exception ex)
+			{
+				ViewBag.Error = ex.Message;
+				return View("Index");
+			}
+
+		}
+	}
 }

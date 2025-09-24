@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OfficeAppOpenXmlLibrary;
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
 
 namespace OfficeAppOpenXml.Core.Controllers
 {
@@ -66,12 +67,12 @@ namespace OfficeAppOpenXml.Core.Controllers
         {
             try
             {
-                byte[] excelBytes = ExcelLibrary.CreateExcel(xmlContent);
-                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Rapor.xlsx");
+                byte[] pdfBytes = ExcelPdfConverter.ConvertToPdf(xmlContent);
+                return File(pdfBytes, "application/pdf", "excel-rapor.pdf");
             }
             catch (Exception ex)
             {
-                return Content("Hata oluştu: " + ex.Message);
+                return Content("PDF dönüştürme hatası: " + ex.Message);
             }
         }
     }
