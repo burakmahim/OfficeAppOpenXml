@@ -636,73 +636,77 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 }
 
-                IEnumerable<XElement> point         = seriesNode.Elements("point");
-                if (point           != null)
+                XElement? points                    = seriesNode.Element("points");
+                if (points          != null)
                 {
-                    foreach (XElement pointNode in point)
+                    IEnumerable<XElement> pointNodes = points.Elements("point");
+                    if (pointNodes != null)
                     {
-                        PointDefinition pointDefinition = new PointDefinition();
+						foreach (XElement pointNode in pointNodes)
+						{
+							PointDefinition pointDefinition = new PointDefinition();
 
-                        string? category                = XElementAttributeGetter.AsString(pointNode, "category");
-                        if (!string.IsNullOrEmpty(category))
-                            pointDefinition.Category    = category;
+							string? category = XElementAttributeGetter.AsString(pointNode, "category");
+							if (!string.IsNullOrEmpty(category))
+								pointDefinition.Category = category;
 
-                        if (XElementAttributeGetter.AsDouble(pointNode, "value" , out double value))
-                            pointDefinition.Value       = value;
+							if (XElementAttributeGetter.AsDouble(pointNode, "value", out double value))
+								pointDefinition.Value = value;
 
-                        if (XElementAttributeGetter.AsDouble(pointNode, "x"     , out double x))
-                            pointDefinition.X           = x;
+							if (XElementAttributeGetter.AsDouble(pointNode, "x", out double x))
+								pointDefinition.X = x;
 
-                        if (XElementAttributeGetter.AsDouble(pointNode, "y"     , out double y))
-                            pointDefinition.Y           = y;
+							if (XElementAttributeGetter.AsDouble(pointNode, "y", out double y))
+								pointDefinition.Y = y;
 
-                        if (XElementAttributeGetter.AsDouble(pointNode, "size"  , out double size))
-                            pointDefinition.Size        = size;
+							if (XElementAttributeGetter.AsDouble(pointNode, "size", out double size))
+								pointDefinition.Size = size;
 
-                        XElement? pointVolueLabel       = pointNode.Element("value-labels");
+							XElement? pointVolueLabel = pointNode.Element("value-labels");
 
-                        if (pointVolueLabel             != null)
-                        {
-                            pointDefinition.ValueLabels = new ValueLabelDefinition();
+							if (pointVolueLabel != null)
+							{
+								pointDefinition.ValueLabels = new ValueLabelDefinition();
 
-                            Nullable<DataLabelPosition> pointDataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition>(pointVolueLabel, "position");
+								Nullable<DataLabelPosition> pointDataLabelPosition = XElementAttributeGetter.AsEnum<DataLabelPosition>(pointVolueLabel, "position");
 
-                            if (pointDataLabelPosition.HasValue)
-                                pointDefinition.ValueLabels.Position            = pointDataLabelPosition.Value;
+								if (pointDataLabelPosition.HasValue)
+									pointDefinition.ValueLabels.Position = pointDataLabelPosition.Value;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show"                , out bool showP            ))
-                                pointDefinition.ValueLabels.Show                = showP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show", out bool showP))
+									pointDefinition.ValueLabels.Show = showP;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show-legend-key"     , out bool showLegendKeyP   ))
-                                pointDefinition.ValueLabels.ShowLegendKey       = showLegendKeyP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-legend-key", out bool showLegendKeyP))
+									pointDefinition.ValueLabels.ShowLegendKey = showLegendKeyP;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show-category-name"  , out bool showCategoryNameP))
-                                pointDefinition.ValueLabels.ShowCategoryName    = showCategoryNameP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-category-name", out bool showCategoryNameP))
+									pointDefinition.ValueLabels.ShowCategoryName = showCategoryNameP;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show-series-name"    , out bool showSeriesNameP  ))
-                                pointDefinition.ValueLabels.ShowSeriesName      = showSeriesNameP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-series-name", out bool showSeriesNameP))
+									pointDefinition.ValueLabels.ShowSeriesName = showSeriesNameP;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show-percent"        , out bool showPercentP     ))
-                                pointDefinition.ValueLabels.ShowPercent         = showPercentP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-percent", out bool showPercentP))
+									pointDefinition.ValueLabels.ShowPercent = showPercentP;
 
-                            if (XElementAttributeGetter.AsBool                  (pointVolueLabel, "show-bubble-size"    , out bool showBubbleSizeP  ))
-                                pointDefinition.ValueLabels.ShowBubbleSize      = showBubbleSizeP;
+								if (XElementAttributeGetter.AsBool(pointVolueLabel, "show-bubble-size", out bool showBubbleSizeP))
+									pointDefinition.ValueLabels.ShowBubbleSize = showBubbleSizeP;
 
-                            XElement? textFormatP                               = pointVolueLabel.Element("text-format");
-                            if (textFormatP != null)
-                            {
-                                pointDefinition.ValueLabels.TextFormat          = XElementAttributeGetter.ParseTextFormat(textFormatP);
-                            }
-                        }
+								XElement? textFormatP = pointVolueLabel.Element("text-format");
+								if (textFormatP != null)
+								{
+									pointDefinition.ValueLabels.TextFormat = XElementAttributeGetter.ParseTextFormat(textFormatP);
+								}
+							}
 
-                        if (pointNode.Element("format") != null)
-                        {
-                            pointDefinition.PointFormat  = XElementAttributeGetter.ParseFormatNode(pointNode.Element("format"));
-                        }
+							if (pointNode.Element("format") != null)
+							{
+								pointDefinition.PointFormat = XElementAttributeGetter.ParseFormatNode(pointNode.Element("format"));
+							}
 
-                        seriesDefinition.Points.Add(pointDefinition);
-                    }
-                }
+							seriesDefinition.Points.Add(pointDefinition);
+						}
+					}
+				}
 
 				string? titleAttrSeries = seriesNode.Attribute("title")?.Value;
 				XElement? titleSeries   = seriesNode.Element("title");
@@ -718,19 +722,19 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
         }
         public      static  class                       XElementAttributeGetter                                                                                     
         {
-            public   static string    AsString    (XElement element, string attributeName                                                 )
+            public   static string                      AsString                       (XElement element, string attributeName                                                 )
             {
                 return element?.Attribute(attributeName)?.Value ?? string.Empty;
             }
 
-            public   static bool      AsDouble    (XElement element, string attributeName, out double result                              )
+            public   static bool                        AsDouble                       (XElement element, string attributeName, out double result                              )
             {
                 result          = 0;
                 string value    = AsString(element, attributeName);
                 return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
             }
 
-            public   static bool      AsBool      (XElement element, string attributeName, out bool   result  , bool defaultValue = false )
+            public   static bool                        AsBool                         (XElement element, string attributeName, out bool   result  , bool defaultValue = false )
             {
                 string value = AsString(element, attributeName);
                 if (bool.TryParse(value, out result))
@@ -739,7 +743,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return false;
             }
 
-            public   static T?        AsEnum<T>   (XElement element, string attributeName                                                 )where T : struct, Enum
+            public   static T?                          AsEnum<T>                      (XElement element, string attributeName                                                 )where T : struct, Enum
             {
                 string value = AsString(element, attributeName);
                 if (string.IsNullOrWhiteSpace(value))
@@ -751,7 +755,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return null;
             }
 
-            public   static bool      AsInt32     (XElement element, string attributeName, out int    result                              )
+            public   static bool                        AsInt32                        (XElement element, string attributeName, out int    result                              )
             {
                 result = 0;
                 string value = AsString(element, attributeName);
@@ -759,7 +763,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             }
 
 
-            internal static FormatDefinition     ParseFormatNode(XElement formatNode    )   
+            internal static FormatDefinition            ParseFormatNode                (XElement formatNode    )               
             {
                 FormatDefinition formatDefinition       = new FormatDefinition();
 
@@ -777,7 +781,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return formatDefinition;
             }
-            internal static FillDefinition       ParseFill      (XElement fillNode      )   
+            internal static FillDefinition              ParseFill                      (XElement fillNode      )               
             {
                 FillDefinition fillDefinition = new FillDefinition();
 
@@ -815,7 +819,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return fillDefinition;
             }
-            internal static LineDefinition       ParseLine      (XElement lineNode      )   
+            internal static LineDefinition              ParseLine                      (XElement lineNode      )               
             {
                 LineDefinition lineDefinition = new LineDefinition();
 
@@ -875,7 +879,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return lineDefinition;
             }
-            internal static GradientDefinition   ParseGradient  (XElement gradientNode  )   
+            internal static GradientDefinition          ParseGradient                  (XElement gradientNode  )               
             {
                 GradientDefinition gradientDefinition = new GradientDefinition();
 
@@ -902,7 +906,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return gradientDefinition;
             }
-            internal static EffectsDefinition    ParseEffects   (XElement effectsNode   )   
+            internal static EffectsDefinition           ParseEffects                   (XElement effectsNode   )               
             {
                 EffectsDefinition effectsDefinition = new EffectsDefinition();
                     
@@ -933,7 +937,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return effectsDefinition;
             }
-            internal static ShadowDefinition     ParseShadow    (XElement shadowNode    )   
+            internal static ShadowDefinition            ParseShadow                    (XElement shadowNode    )               
             {
                 ShadowDefinition shadowDefinition = new ShadowDefinition();
 
@@ -962,7 +966,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return shadowDefinition;
             }
-            internal static GlowDefinition       ParseGlow      (XElement glowNode      )   
+            internal static GlowDefinition              ParseGlow                      (XElement glowNode      )               
             {
                 GlowDefinition glowDefinition = new GlowDefinition();
 
@@ -976,7 +980,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return glowDefinition;
             }
-            internal static ReflectionDefinition ParseReflection(XElement reflectionNode)   
+            internal static ReflectionDefinition        ParseReflection                (XElement reflectionNode)               
             {
                 ReflectionDefinition reflectionDefinition = new ReflectionDefinition();
 
@@ -1000,7 +1004,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return reflectionDefinition;
             }
-            internal static Format3DDefinition   ParseFormat3d  (XElement format3dNode  )   
+            internal static Format3DDefinition          ParseFormat3d                  (XElement format3dNode  )               
             {
                 Format3DDefinition format3DDefinition = new Format3DDefinition();
 
@@ -1058,8 +1062,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
                 return format3DDefinition;
             }
 
-
-            internal static TextFormatDefinition ParseTextFormat(XElement textFormatNode)   
+            internal static TextFormatDefinition        ParseTextFormat                (XElement textFormatNode)               
             {
                 TextFormatDefinition textFormat = new TextFormatDefinition();
 
@@ -1149,8 +1152,8 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
                 return textFormat;
             }
-
-            internal static TitleDefinition      ParseTitle     (XElement titleNode, XElement? attrNode)
+                                                                                        
+            internal static TitleDefinition             ParseTitle                     (XElement titleNode, XElement? attrNode)
             {
                 TitleDefinition titleDefinition = new TitleDefinition();
 
@@ -1202,7 +1205,6 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
 
 			}
 		}
-
         public      static  void                        ExcelAddChart           (WorksheetPart worksheetPart, XElement chartNode, int chartIndex = 0)               
         {
             ChartDefinition chartDefinition = GetChartDefinitionFromXml(chartNode);
