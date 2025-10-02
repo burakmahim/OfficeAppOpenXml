@@ -48,51 +48,5 @@ namespace OfficeAppOpenXml.Mvc.Controllers
             }
         }
 
-		[HttpPost]
-		[ValidateInput(false)]
-		public ActionResult ViewPdf(string xmlContent)
-		{
-			if (string.IsNullOrWhiteSpace(xmlContent))
-			{
-				ViewBag.Error = "XML içeriği boş gönderildi.";
-				return View("Index");
-			}
-
-			try
-			{
-				byte[] pdfBytes = PowerPointPdfConverter.ConvertToPdf(xmlContent);
-				return File(pdfBytes, "application/pdf");
-			}
-			catch (Exception ex)
-			{
-				ViewBag.Error = ex.Message;
-				return View("Index");
-			}
-		}
-
-		[HttpPost]
-		[ValidateInput(false)]
-		public ActionResult GenerateExcelPdf(string xmlContent)
-		{
-
-			if (string.IsNullOrWhiteSpace(xmlContent))
-			{
-				ViewBag.Error = "XML içeriği boş gönderildi.";
-				return View("Index");
-			}
-
-			try
-			{
-				byte[] pdfBytes = ExcelPdfConverter.ConvertToPdf(xmlContent);
-				return File(pdfBytes, "application/pdf");
-			}
-
-			catch (Exception ex)
-			{
-				ViewBag.Error = ex.Message;
-				return View("Index");
-			}
-
-		}
 	}
 }
