@@ -4,7 +4,6 @@
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
 
@@ -19,29 +18,51 @@
         <div class="alert alert-danger">@ViewBag.Error</div>
     }
 
+    <!-- TEK FORM: butonların formaction / formtarget ile farklı endpointlere post edeceğiz -->
     <form id="mainForm" method="post">
+        <!-- Sunulacak XML -->
         <textarea id="xmlContent" name="xmlContent" hidden>@xml</textarea>
         <textarea id="xmlEditor" rows="30">@xml</textarea>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadPptx">
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <!-- İNDİRME butonları -->
+            <button type="submit" class="btn btn-primary"
+                    formaction="/Presentation/DownloadPptx">
                 PowerPoint Oluştur ve İndir
             </button>
 
-            <button type="submit" class="btn btn-success me-2" formaction="/Presentation/GenerateExcelFromXml">
+            <button type="submit" class="btn btn-success"
+                    formaction="/Presentation/GenerateExcelFromXml">
                 Excel Oluştur ve İndir
             </button>
 
+            <!-- ÖNİZLEME (iframe) butonları -->
+            <button type="submit" id="btnPreviewPpt" class="btn btn-outline-primary"
+                    formaction="/Presentation/ViewPdf"
+                    formtarget="pdfFrame">
+                PowerPoint PDF Önizle
+            </button>
+
+            <button type="submit" id="btnPreviewXls" class="btn btn-outline-success"
+                    formaction="/Presentation/GenerateExcelPdf"
+                    formtarget="pdfFrame">
+                Excel PDF Önizle
+            </button>
         </div>
     </form>
 
-    <div class="d-none mt-4" id="pdfContainer">
-        <h4>📄 PDF Önizleme:</h4>
-        <iframe name="pdfFrame" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
+    <!-- Önizleme alanı: Preview butonları tıklandığında görünür olacak -->
+    <div class="mt-4 d-none" id="pdfContainer">
+        <h4>📄 PDF Önizleme</h4>
+        <div class="ratio ratio-16x9 border">
+            <iframe name="pdfFrame" title="PDF Preview" style="width:100%;height:100%;border:0;"></iframe>
+        </div>
+        <small class="text-muted">Not: PDF sunucudan <code>Content-Disposition: inline</code> ile döner.</small>
     </div>
 </div>
 
 <script>
+    // CodeMirror kurulumu
     const editor = CodeMirror.fromTextArea(document.getElementById("xmlEditor"), {
         mode: "application/xml",
         lineNumbers: true,
@@ -50,10 +71,19 @@
         indentUnit: 4,
         tabSize: 4
     });
-
     editor.setSize("100%", "700px");
 
+    // Her submit'te gizli textarea'yı güncelle
     document.getElementById("mainForm").addEventListener("submit", function () {
         document.getElementById("xmlContent").value = editor.getValue();
+    });
+
+    // Preview butonları tıklanınca önizleme konteynerini göster
+    const pdfContainer = document.getElementById("pdfContainer");
+    document.getElementById("btnPreviewPpt").addEventListener("click", () => {
+        pdfContainer.classList.remove("d-none");
+    });
+    document.getElementById("btnPreviewXls").addEventListener("click", () => {
+        pdfContainer.classList.remove("d-none");
     });
 </script>

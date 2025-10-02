@@ -174,12 +174,15 @@
 			<category-axis title="Satış"/>
 			<value-axis title="Kâr"/>
 			<legend show="true" position="top"/>
+
 			<series title="Bubble Data" color="#9B59B6">
-				<point x="100" y="30" size="40" category="Jan"/>
-				<point x="150" y="50" size="60" category="Feb"/>
-				<point x="200" y="70" size="80" category="Mar"/>
-				<point x="300" y="120" size="120" category="Jul"/>
-				<point x="400" y="170" size="150" category="Dec"/>
+				<points>
+					<point x="100" y="30" size="40" category="Jan"/>
+					<point x="150" y="50" size="60" category="Feb"/>
+					<point x="200" y="70" size="80" category="Mar"/>
+					<point x="300" y="120" size="120" category="Jul"/>
+					<point x="400" y="170" size="150" category="Dec"/>
+				</points>
 			</series>
 		</chart>
 	</worksheet>

@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<workbook>
+﻿<workbook>
 	<!-- 4. 3D Bar Chart -->
 	<worksheet name="Departman Bütçesi">
 		<chart type="bar" width="450px" height="300px" title="Departman Bütçesi"

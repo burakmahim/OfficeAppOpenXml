@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OfficeAppOpenXmlLibrary;
+using OfficeAppOpenXmlLibrary;                 // PowerPointLibrary / ExcelLibrary
+using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
+using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+  // IPowerPointPdfConverter, IExcelPdfConverter
 
 namespace OfficeAppOpenXml.Core.Controllers
 {
     public class PresentationController : Controller
     {
+
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -47,32 +52,7 @@ namespace OfficeAppOpenXml.Core.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult ViewPdf([FromForm] string xmlContent)
-        {
-            try
-            {
-                byte[] pptBytes = PowerPointLibrary.CreatePowerPointPresentation(xmlContent);
-                return File(pptBytes, "application/vnd.openxmlformats-officedocument.presentationml.presentation", "Sunum.pptx");
-            }
-            catch (Exception ex)
-            {
-                return Content("Hata oluştu: " + ex.Message);
-            }
-        }
 
-        [HttpPost]
-        public IActionResult GenerateExcelPdf([FromForm] string xmlContent)
-        {
-            try
-            {
-                byte[] excelBytes = ExcelLibrary.CreateExcel(xmlContent);
-                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Rapor.xlsx");
-            }
-            catch (Exception ex)
-            {
-                return Content("Hata oluştu: " + ex.Message);
-            }
-        }
+
     }
 }

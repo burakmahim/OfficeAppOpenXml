@@ -90,7 +90,7 @@ namespace OfficeAppOpenXmlLibrary.OpenXmlChartComponent
             chartDefinition.RoundedCorners      = roundedCornersValue;
 
             XElementAttributeGetter.AsBool      (chartNode, "bubble-3d"                     , out bool bubble3DValue                , defaultValue: false   );
-            chartDefinition.Bubble3D = bubble3DValue;   
+            chartDefinition.Bubble3D            = bubble3DValue;   
 
             XElementAttributeGetter.AsBool      (chartNode, "create-new-paragraph"          , out bool createNewParagraphValue                              );
             chartDefinition.CreateNewParagraph  = createNewParagraphValue;

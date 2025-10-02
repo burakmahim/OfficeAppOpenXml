@@ -1,0 +1,19 @@
+﻿@model IDictionary<string,string>
+@{
+    var fileName = ViewBag.FileName as string;
+}
+<h5 class="mb-3">@fileName için XML Parçaları</h5>
+<div class="accordion" id="acc">
+    @foreach (var p in Model)
+    {
+        var id = "p_" + p.Key.Replace("/", "_").Replace(".", "_").Replace("\\", "_");
+        <div class="accordion-item mb-2">
+            <h2 class="accordion-header" id="@id-h">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@id">@p.Key</button>
+            </h2>
+            <div id="@id" class="accordion-collapse collapse">
+                <div class="accordion-body"><textarea class="xml-view">@p.Value</textarea></div>
+            </div>
+        </div>
+    }
+</div>

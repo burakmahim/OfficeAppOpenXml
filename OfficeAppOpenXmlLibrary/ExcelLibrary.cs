@@ -17,8 +17,8 @@ namespace OfficeAppOpenXmlLibrary
             {
                 using (SpreadsheetDocument document = SpreadsheetDocument.Create(memoryStream, SpreadsheetDocumentType.Workbook))
                 {
-                    WorkbookPart workbookPart   = document.AddWorkbookPart();
-                    workbookPart.Workbook       = new Workbook();
+                    WorkbookPart workbookPart = document.AddWorkbookPart();
+                    workbookPart.Workbook = new Workbook();
 
                     Sheets sheets = new Sheets();
                     workbookPart.Workbook.Append(sheets);
@@ -34,21 +34,21 @@ namespace OfficeAppOpenXmlLibrary
 
                         Worksheet worksheet = new Worksheet();
                         SheetData sheetData = new SheetData();
-
                         worksheet.Append(sheetData);
-
-                        int rowCount   = 0;
-                        int colCount   = 0;
-                        int currentRow = 1;
-
                         worksheetPart.Worksheet = worksheet;
 
+                        int rowCount = 0;
+                        int colCount = 0;
+                        int currentRow = 1;
+
+                        // Tablolar
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
                             TableComponent.AddTable(tableElement, worksheet, out rowCount, out colCount, currentRow);
                             currentRow += rowCount + 1;
                         }
 
+                        // Grafikler
                         int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
@@ -58,14 +58,22 @@ namespace OfficeAppOpenXmlLibrary
 
                         Sheet sheet = new Sheet()
                         {
-                            Id      = workbookPart.GetIdOfPart(worksheetPart),
+                            Id = workbookPart.GetIdOfPart(worksheetPart),
                             SheetId = (uint)sheetCounter,
-                            Name    = sheetName
+                            Name = sheetName
                         };
                         sheets.Append(sheet);
 
                         sheetCounter++;
                     }
+
+                    // >>> DSL'i (xmlContent) XLSX içine göm — WorkbookPart ÜZERİNDEN <<<
+                    var custom = workbookPart.AddCustomXmlPart(CustomXmlPartType.CustomXml);
+                    using (var sw = new StreamWriter(custom.GetStream(FileMode.Create, FileAccess.Write)))
+                    {
+                        sw.Write(xmlContent);
+                    }
+                    // <<< gömme bitti
 
                     workbookPart.Workbook.Save();
                 }

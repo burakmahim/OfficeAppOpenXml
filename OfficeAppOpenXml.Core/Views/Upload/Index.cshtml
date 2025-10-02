@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "OpenXML XML Çıkar";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+
+<form id="mainForm" enctype="multipart/form-data">
+    <input class="form-control mb-2" type="file" name="file" accept=".docx,.xlsx,.pptx,.zip" />
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="includeRels" id="rels" checked />
+        <label class="form-check-label" for="rels">.rels dosyalarını da dahil et</label>
+    </div>
+    <div class="d-flex gap-2">
+        <button id="btnXml" class="btn btn-primary">XML’leri Göster</button>
+        <button id="btnDsl" class="btn btn-success">DSL’e Çevir ve Göster</button>
+        <button id="btnZip" class="btn btn-outline-secondary">XML’leri ZIP indir</button>
+    </div>
+</form>
+
+<hr />
+<div id="result"></div>
+
+<script>
+    const form = document.getElementById('mainForm');
+    document.getElementById('btnXml').addEventListener('click', e => { e.preventDefault(); post('@Url.Action("ExtractPartial", "Upload")'); });
+    document.getElementById('btnDsl').addEventListener('click', e => { e.preventDefault(); post('@Url.Action("ConvertToDslPartial", "Upload")'); });
+    document.getElementById('btnZip').addEventListener('click',  e => { e.preventDefault(); download('@Url.Action("DownloadZip", "Upload")'); });
+
+    async function post(url){
+      const fd = new FormData(form);
+      const r  = await fetch(url, { method:'POST', body: fd });
+      document.getElementById('result').innerHTML = await r.text();
+      initEditors();
+    }
+
+    async function download(url){
+      const fd = new FormData(form);
+      const r  = await fetch(url, { method:'POST', body: fd });
+      if(!r.ok){ alert('İndirme hatası'); return; }
+      const b  = await r.blob();
+      const a  = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = 'xml_parts.zip';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    }
+
+    function initEditors(){
+      document.querySelectorAll('textarea.xml-view, textarea.xml-dsl').forEach(ta=>{
+        const ed = CodeMirror.fromTextArea(ta, { mode:"application/xml", lineNumbers:true, theme:"eclipse", lineWrapping:true, readOnly:true });
+        ed.setSize("100%","400px");
+      });
+    }
+</script>
