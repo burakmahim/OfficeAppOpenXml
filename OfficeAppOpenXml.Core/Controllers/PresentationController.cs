@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OfficeAppOpenXmlLibrary;                 // PowerPointLibrary / ExcelLibrary
+using OfficeAppOpenXmlLibrary;
 using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
-using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
-  // IPowerPointPdfConverter, IExcelPdfConverter
 
 namespace OfficeAppOpenXml.Core.Controllers
 {
@@ -11,14 +9,14 @@ namespace OfficeAppOpenXml.Core.Controllers
 
 
         [HttpGet]
-        public IActionResult Index()
+        public  IActionResult   Index()                                                 
         {
             ViewBag.XmlContent = "";
             return View();
         }
 
         [HttpPost]
-        public IActionResult DownloadPptx([FromForm] string xmlContent)
+        public  IActionResult   DownloadPptx            ([FromForm] string xmlContent)  
         {
             try
             {
@@ -34,7 +32,7 @@ namespace OfficeAppOpenXml.Core.Controllers
         }
 
         [HttpPost]
-        public IActionResult GenerateExcelFromXml([FromForm] string xmlContent)
+        public  IActionResult   GenerateExcelFromXml    ([FromForm] string xmlContent)  
         {
             if (string.IsNullOrWhiteSpace(xmlContent))
                 return BadRequest("XML boş olamaz.");
@@ -51,8 +49,6 @@ namespace OfficeAppOpenXml.Core.Controllers
                 return StatusCode(500, $"Excel oluşturulamadı: {ex.Message}");
             }
         }
-
-
 
     }
 }

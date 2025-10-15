@@ -24,14 +24,18 @@
 
         <textarea id="xmlEditor" rows="30">@xml</textarea>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadPptx">
-                PowerPoint Oluştur ve İndir
-            </button>
-            <button type="submit" class="btn btn-primary me-2" formaction="/Presentation/DownloadExcel">
-                Excel Oluştur ve İndir
-            </button>
-        </div>
+		<div class="mt-4">
+			<input type="hidden" id="fileType" name="fileType" value="" />
+
+			<button type="button" class="btn btn-primary me-2" onclick="uploadToDB('PowerPoint')">
+				PowerPoint DB'ye Kaydet
+			</button>
+
+			<button type="button" class="btn btn-success me-2" onclick="uploadToDB('Excel')">
+				Excel DB'ye Kaydet
+			</button>
+
+		</div>
     </form>
 
     <div class="d-none mt-4" id="pdfContainer">
@@ -54,7 +58,12 @@
 
     editor.setSize("100%", "700px");
 
-    document.getElementById("mainForm").addEventListener("submit", function () {
+    function uploadToDB(type) {
         document.getElementById("xmlContent").value = editor.getValue();
-    });
+        document.getElementById("fileType").value = type;
+
+        var form = document.getElementById("mainForm");
+        form.action = "/Presentation/UploadToDB";
+        form.submit();
+    }
 </script>
