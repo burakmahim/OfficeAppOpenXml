@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System.Xml.Linq;
 using System.IO;
 using OfficeAppOpenXmlLibrary.PowerPointOpenXmlComponents;
+using DocumentFormat.OpenXml.Packaging;
 using OfficeAppOpenXmlLibrary.OpenXmlChartComponent;
 using OfficeAppOpenXmlLibrary.ExcelOpenXmlComponents;
 
@@ -34,21 +35,21 @@ namespace OfficeAppOpenXmlLibrary
 
                         Worksheet worksheet = new Worksheet();
                         SheetData sheetData = new SheetData();
+
                         worksheet.Append(sheetData);
-                        worksheetPart.Worksheet = worksheet;
 
                         int rowCount = 0;
                         int colCount = 0;
                         int currentRow = 1;
 
-                        // Tablolar
+                        worksheetPart.Worksheet = worksheet;
+
                         foreach (XElement tableElement in sheetElement.Elements("table"))
                         {
                             TableComponent.AddTable(tableElement, worksheet, out rowCount, out colCount, currentRow);
                             currentRow += rowCount + 1;
                         }
 
-                        // Grafikler
                         int chartIndex = 0;
                         foreach (XElement chartElement in sheetElement.Elements("chart"))
                         {
@@ -67,13 +68,6 @@ namespace OfficeAppOpenXmlLibrary
                         sheetCounter++;
                     }
 
-                    // >>> DSL'i (xmlContent) XLSX içine göm — WorkbookPart ÜZERİNDEN <<<
-                    var custom = workbookPart.AddCustomXmlPart(CustomXmlPartType.CustomXml);
-                    using (var sw = new StreamWriter(custom.GetStream(FileMode.Create, FileAccess.Write)))
-                    {
-                        sw.Write(xmlContent);
-                    }
-                    // <<< gömme bitti
 
                     workbookPart.Workbook.Save();
                 }

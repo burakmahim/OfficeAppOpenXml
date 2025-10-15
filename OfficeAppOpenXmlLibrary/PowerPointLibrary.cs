@@ -236,13 +236,6 @@ namespace OfficeAppOpenXmlLibrary
                     presentationPart.Presentation.Append(slideIdList);
                     presentationPart.Presentation.Save();
 
-                    // >>> DSL'i PPTX içine CustomXmlPart olarak göm (ROUND-TRIP) <<<
-                    var cx = presentationPart.AddCustomXmlPart(CustomXmlPartType.CustomXml);
-                    using (var sw = new StreamWriter(cx.GetStream(FileMode.Create, FileAccess.Write)))
-                    {
-                        sw.Write(xmlContent);
-                    }
-                    // <<< gömme bitti
                 }
 
                 // MemoryStream to byte[]
