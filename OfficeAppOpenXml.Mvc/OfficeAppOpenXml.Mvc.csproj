@@ -122,6 +122,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\PresentationController.cs" />
+    <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -153,6 +154,46 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\Uploads\veriler %281%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2810%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2811%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2812%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2813%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2814%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2815%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2816%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2817%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2818%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2819%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %282%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2820%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2821%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2822%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2823%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2824%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2825%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2826%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2827%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2828%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2829%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %283%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2830%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2831%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2832%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2833%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2834%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2835%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2836%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2837%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2838%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %2839%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %284%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %285%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %286%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %287%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %288%29.xlsx" />
+    <Content Include="Content\Uploads\veriler %289%29.xlsx" />
+    <Content Include="Content\Uploads\veriler.xlsx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -175,14 +216,14 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Presentation\Index.cshtml" />
+    <Content Include="Views\Search\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Models\" />
+    <Folder Include="Views\Search\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

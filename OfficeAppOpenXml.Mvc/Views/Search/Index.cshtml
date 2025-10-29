@@ -1,0 +1,84 @@
+@using System.Collections.Generic
+@using OfficeAppOpenXmlLibrary
+
+@{
+	ViewBag.Title = "Search";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Search</h2>
+		</div>
+	</div>
+
+	<div class="row mt-4">
+		<div class="col-md-12">
+			@using (Html.BeginForm("Index", "Search", FormMethod.Post, new { @class = "d-flex", id = "searchForm" }))
+			{
+				<input type="search" id="searchInput" name="Query"
+					   class="form-control rounded me-2"
+					   placeholder="Enter keyword to search"
+					   value="@ViewBag.Query" />
+				<button type="submit" class="btn btn-primary">Search</button>
+			}
+		</div>
+	</div>
+
+	@if (ViewBag.DebugInfo != null)
+	{
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<div class="alert alert-info">
+					<h5>Debug Info:</h5>
+					<ul>
+						@foreach (string info in (List<string>)ViewBag.DebugInfo)
+						{
+							<li>@info</li>
+						}
+					</ul>
+				</div>
+			</div>
+		</div>
+	}
+
+	@if (ViewBag.Results != null && ((List<SearchResult>)ViewBag.Results).Count > 0)
+	{
+		List<SearchResult> results = (List<SearchResult>)ViewBag.Results;
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<h4>Results (@results.Count):</h4>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>File Name</th>
+							<th>File Type</th>
+							<th>Location</th>
+							<th>Content</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (SearchResult result in results)
+						{
+							<tr>
+								<td>@result.FileName</td>
+								<td>@result.FileType</td>
+								<td>@result.Location</td>
+								<td>@result.Content</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	}
+	else if (!string.IsNullOrWhiteSpace((string)ViewBag.Query))
+	{
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<p>No results found for "<strong>@ViewBag.Query</strong>".</p>
+			</div>
+		</div>
+	}
+</div>

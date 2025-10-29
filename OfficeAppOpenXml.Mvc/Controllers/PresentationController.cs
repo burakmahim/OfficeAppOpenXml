@@ -79,6 +79,41 @@ namespace OfficeAppOpenXml.Mvc.Controllers
 			}
 		}
 
+		[HttpPost]
+		[ValidateInput(false)]
+		public ActionResult DownloadPptx(string xmlContent)
+		{
+			try
+			{
+				byte[] pptBytes = PowerPointLibrary.CreatePowerPointPresentation(xmlContent);
+				return File(pptBytes,
+					"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+					"Sunum.pptx");
+			}
+			catch (Exception ex)
+			{
+				return Content("Hata oluştu: " + ex.Message);
+			}
+		}
+
+		[HttpPost]
+		[ValidateInput(false)]
+		public ActionResult GenerateExcelFromXml(string xmlContent)
+		{
+
+			try
+			{
+				byte[] result = ExcelLibrary.CreateExcel(xmlContent);
+				return File(result,
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+					"veriler.xlsx");
+			}
+			catch (Exception ex)
+			{
+				Response.StatusCode = 500;
+				return Content("Excel oluşturulamadı: " + ex.Message);
+			}
+		}
 
 	}
 }

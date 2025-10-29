@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Sunum ve Excel Oluştur";
+    ViewBag.Title = "Office Oluştur";
     string xml = ViewBag.XmlContent as string ?? "";
 }
 
@@ -25,15 +25,25 @@
         <textarea id="xmlEditor" rows="30">@xml</textarea>
 
 		<div class="mt-4">
+
 			<input type="hidden" id="fileType" name="fileType" value="" />
 
-			<button type="button" class="btn btn-primary me-2" onclick="uploadToDB('PowerPoint')">
-				PowerPoint DB'ye Kaydet
+			<button type="button" class="btn btn-primary me-2" onclick="uploadToDB('PowerPoint')">PowerPoint DB'ye Kaydet</button>
+
+			<button type="button" class="btn btn-success me-2" onclick="uploadToDB('Excel')">Excel DB'ye Kaydet</button>
+
+			<button type="submit" class="btn btn-success me-2"
+					formaction="/Presentation/GenerateExcelFromXml"
+					onclick="document.getElementById('xmlContent').value = editor.getValue();">
+				Excel İndir
 			</button>
 
-			<button type="button" class="btn btn-success me-2" onclick="uploadToDB('Excel')">
-				Excel DB'ye Kaydet
+			<button type="submit" class="btn btn-success me-2"
+					formaction="/Presentation/DownloadPptx"
+					onclick="document.getElementById('xmlContent').value = editor.getValue();">
+				PowerPoint İndir
 			</button>
+
 
 		</div>
     </form>
