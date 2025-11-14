@@ -1,9 +1,7 @@
-@using System.Collections.Generic
 @using OfficeAppOpenXmlLibrary
 
 @{
-	ViewBag.Title = "Search";
-	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewData["Title"] = "Search";
 }
 
 <div class="container mt-4">
@@ -15,14 +13,13 @@
 
 	<div class="row mt-4">
 		<div class="col-md-12">
-			@using (Html.BeginForm("Index", "Search", FormMethod.Post, new { @class = "d-flex", id = "searchForm" }))
-			{
+			<form method="post" asp-controller="Search" asp-action="Index" class="d-flex" id="searchForm">
 				<input type="search" id="searchInput" name="Query"
 					   class="form-control rounded me-2"
 					   placeholder="Enter keyword to search"
 					   value="@ViewBag.Query" />
 				<button type="submit" class="btn btn-primary">Search</button>
-			}
+			</form>
 		</div>
 	</div>
 

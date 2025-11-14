@@ -1,20 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using OfficeAppOpenXmlLibrary;
 
-namespace OfficeAppOpenXml.Mvc.Controllers
+namespace OfficeAppOpenXml.Core.Controllers
 {
-    public class SearchController : Controller
-    {
-        public ActionResult Index()
-        {
-            return View();
-        }
+	public class SearchController : Controller
+	{
+		public IActionResult Index()
+		{
+			return View();
+		}
 
 		[HttpPost]
-		public ActionResult Index(string Query)
+		public IActionResult Index(string Query)
 		{
 			List<SearchResult> results = new List<SearchResult>();
 
@@ -25,17 +22,16 @@ namespace OfficeAppOpenXml.Mvc.Controllers
 					WindowsSearchService searcher = new WindowsSearchService();
 					results = searcher.Search(Query);
 				}
-				catch (System.Exception ex)
+				catch (Exception ex)
 				{
 					ViewBag.Error = "Hata: " + ex.Message;
 				}
 			}
 
-			ViewBag.Query   = Query;
+			ViewBag.Query = Query;
 			ViewBag.Results = results;
 
 			return View();
 		}
-
 	}
 }
