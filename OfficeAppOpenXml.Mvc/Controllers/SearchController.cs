@@ -8,7 +8,7 @@ namespace OfficeAppOpenXml.Mvc.Controllers
 {
     public class SearchController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Index()            
         {
             return View();
         }

@@ -6,9 +6,11 @@ namespace OfficeAppOpenXmlLibrary
 {
     public class SearchResult
     {
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
+        public string FileName      { get; set; }
+        public string FilePath      { get; set; }
         public string FileExtension { get; set; }
+        public string ItemType      { get; set; }
+        public string AutoSummary   { get; set; }
     }
 
     public class WindowsSearchService   
@@ -24,9 +26,10 @@ namespace OfficeAppOpenXmlLibrary
 
             string sql = @"SELECT System.ItemName,
                           System.ItemPathDisplay,
-                          System.ItemType
+                          System.ItemType,
+                          System.Search.AutoSummary
                           FROM SystemIndex
-                          WHERE FREETEXT(*, '" + query.Replace("'", "''") + @"')
+                          WHERE CONTAINS(*, '""" + query.Replace("'", "''").Replace("\"", "\"\"") + @"""')
                           AND (
                               System.FileExtension = '.doc'  OR
                               System.FileExtension = '.docx' OR
@@ -63,11 +66,14 @@ namespace OfficeAppOpenXmlLibrary
                             while (reader.Read())
                             {
                                 string fileName = reader["System.ItemName"]?.ToString() ?? "";
+
                                 SearchResult result = new SearchResult
                                 {
-                                    FileName = fileName,
-                                    FilePath = reader["System.ItemPathDisplay"]?.ToString() ?? "",
-                                    FileExtension = System.IO.Path.GetExtension(fileName)
+                                    FileName        = fileName,
+                                    FilePath        = reader["System.ItemPathDisplay"]?.ToString() ?? "",
+                                    FileExtension   = System.IO.Path.GetExtension(fileName),
+                                    ItemType        = reader["System.ItemType"]?.ToString() ?? "",
+                                    AutoSummary     = reader["System.Search.AutoSummary"]?.ToString() ?? ""
                                 };
 
                                 results.Add(result);

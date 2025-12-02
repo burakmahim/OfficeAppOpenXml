@@ -64,7 +64,9 @@
 					<thead>
 						<tr>
 							<th>File Name</th>
-							<th>Extension</th>
+							<th>Item Type</th>
+
+							<th>Summary</th>
 							<th>Full Path</th>
 						</tr>
 					</thead>
@@ -73,7 +75,19 @@
 						{
 							<tr>
 								<td>@result.FileName</td>
-								<td>@result.FileExtension</td>
+								<td><small>@result.ItemType</small></td>
+								<td style="max-width: 300px;">
+									<small>
+										@if (!string.IsNullOrEmpty(result.AutoSummary) && result.AutoSummary.Length > 150)
+										{
+											<span title="@result.AutoSummary">@(result.AutoSummary.Substring(0, 150))...</span>
+										}
+										else
+										{
+											@result.AutoSummary
+										}
+									</small>
+								</td>
 								<td><small>@result.FilePath</small></td>
 							</tr>
 						}
