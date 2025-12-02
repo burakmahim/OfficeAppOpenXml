@@ -1,0 +1,20 @@
+﻿
+@{
+    ViewBag.Title = "Upload";
+}
+<h2>Upload</h2>
+
+@using (Html.BeginForm("Upload", "Upload", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="file" name="file" />
+    <button type="submit" class="btn btn-primary">Yükle</button>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="text-danger">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {<div>@err.ErrorMessage</div>}
+    </div>
+}

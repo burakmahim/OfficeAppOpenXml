@@ -1,0 +1,50 @@
+﻿@model IEnumerable<OfficeAppOpenXmlLibrary.Models.SearchResult>
+@{
+    ViewBag.Title = "Arama";
+    var q = (string)ViewBag.Query ?? "";
+}
+
+<h2>Arama</h2>
+
+<form method="get" action="@Url.Action("Search","Upload")" class="form-inline">
+    <input type="text" name="q" value="@q" class="form-control" style="width:360px" placeholder="örn: staj, gün, diploma..." />
+    <button class="btn btn-primary">Ara</button>
+    @if (!string.IsNullOrWhiteSpace(q))
+    {<span class="text-muted"> &nbsp;“@q”</span>}
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-striped table-bordered" style="margin-top:15px">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Dosya</th>
+                <th>Tür</th>
+                <th>Rank</th>
+                <th>Oluşturma</th>
+                <th>İndir</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var x in Model)
+            {
+                <tr>
+                    <td>@x.Id</td>
+                    <td>@x.FileName</td>
+                    <td>@x.FileType</td>
+                    <td>@x.Rank</td>
+                    <td>@x.Created.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="@Url.Action("Download","Upload", new { id = x.Id })">İndir</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (!string.IsNullOrWhiteSpace(q))
+{
+    <p class="text-muted" style="margin-top:15px">Sonuç bulunamadı.</p>
+}

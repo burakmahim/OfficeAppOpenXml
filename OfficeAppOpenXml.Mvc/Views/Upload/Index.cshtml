@@ -1,0 +1,36 @@
+﻿@model IEnumerable<OfficeAppOpenXmlLibrary.Models.FileRow>
+@{
+    ViewBag.Title = "Dosyalar";
+}
+<h2>Dosyalar</h2>
+
+@if (TempData["ok"] != null)
+{<div class="text-success">@TempData["ok"]</div>}
+
+<p><a href="@Url.Action("Upload","Upload")" class="btn btn-success">Yeni Yükleme</a></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>FileName</th>
+            <th>FileType</th>
+            <th>MIME</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var x in Model)
+        {
+            <tr>
+                <td>@x.Id</td>
+                <td>@x.FileName</td>
+                <td>@x.FileType</td>
+                <td>@x.MIMEType</td>
+                <td>@x.Created.ToLocalTime()</td>
+                <td>@(x.Updated?.ToLocalTime().ToString() ?? "-")</td>
+            </tr>
+        }
+    </tbody>
+</table>
