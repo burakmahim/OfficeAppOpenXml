@@ -13,6 +13,14 @@
 		<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
 		<PackageReference Include="PdfPig" Version="0.1.12" />
+		<PackageReference Include="Syncfusion.DocIO.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.DocIORenderer.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.Licensing" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.Pdf.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.Presentation.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.PresentationRenderer.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.XlsIO.NET" Version="32.1.19" />
+		<PackageReference Include="Syncfusion.XlsIORenderer.NET" Version="32.1.19" />
 	</ItemGroup>
 
 	<!-- Sadece .NET 9 için gerekenler -->

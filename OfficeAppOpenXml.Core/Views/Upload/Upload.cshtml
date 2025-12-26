@@ -1,0 +1,16 @@
+﻿<h2>Upload</h2>
+
+<form asp-action="Upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit" class="btn btn-primary">Yükle</button>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="text-danger">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@err.ErrorMessage</div>
+        }
+    </div>
+}

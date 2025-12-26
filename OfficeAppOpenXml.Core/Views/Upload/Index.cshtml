@@ -1,13 +1,13 @@
 ﻿@model IEnumerable<OfficeAppOpenXmlLibrary.Models.FileRow>
-@{
-    ViewBag.Title = "Dosyalar";
-}
+
 <h2>Dosyalar</h2>
 
 @if (TempData["ok"] != null)
-{<div class="text-success">@TempData["ok"]</div>}
+{
+    <div class="text-success">@TempData["ok"]</div>
+}
 
-<p><a href="@Url.Action("Upload","Upload")" class="btn btn-success">Yeni Yükleme</a></p>
+<p><a href="/Upload/Upload" class="btn btn-success">Yeni Yükleme</a></p>
 
 <table class="table table-striped">
     <thead>
@@ -16,8 +16,9 @@
             <th>FileName</th>
             <th>FileType</th>
             <th>MIME</th>
-            <th>Created</th>Index.CSHTML
+            <th>Created</th>
             <th>Updated</th>
+            <th>İndir</th>
         </tr>
     </thead>
     <tbody>
@@ -30,6 +31,10 @@
                 <td>@x.MIMEType</td>
                 <td>@x.Created.ToLocalTime()</td>
                 <td>@(x.Updated?.ToLocalTime().ToString() ?? "-")</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="/Upload/Download/@x.Id">İndir</a>
+                </td>
             </tr>
         }
     </tbody>

@@ -1,0 +1,56 @@
+﻿@model IEnumerable<OfficeAppOpenXmlLibrary.Models.SearchResult>
+
+<h2>Arama</h2>
+
+<form method="get" asp-controller="SearchPage" asp-action="Index">
+    <input type="text" name="q"
+           value="@Context.Request.Query["q"]"
+           placeholder="Kelime..." />
+    <button type="submit">Ara</button>
+</form>
+
+<br />
+
+@if (Model != null)
+{
+    <table border="1" cellpadding="6" style="width:100%;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Dosya Adı</th>
+                <th>Tür</th>
+                <th>Tarih</th>
+                <th>Rank</th>
+                <th>İndir</th>   <!-- 🔥 Yeni kolon -->
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr>
+                    <td>@r.Id</td>
+                    <td>@r.FileName</td>
+                    <td>@r.FileType</td>
+                    <td>@r.Created</td>
+                    <td>@r.Rank</td>
+
+                    <td>
+                        <!-- 🔥 Hiç sayfa değiştirmez → sadece indirir -->
+                        <a href="/Download/File/@r.Id"
+                           class="btn btn-primary"
+                           style="padding:4px 10px;">
+                            İndir
+                        </a>
+
+                        <a class="btn btn-sm btn-danger"
+                           href="/Download/Pdf?id=@r.Id">
+                            PDF İndir
+                        </a>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

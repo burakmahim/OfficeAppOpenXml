@@ -1,0 +1,53 @@
+﻿@model IEnumerable<OfficeAppOpenXmlLibrary.Models.SearchResult>
+
+@{
+    ViewData["Title"] = "Search";
+}
+
+<h2>Arama</h2>
+
+<form method="get" asp-controller="Search" asp-action="Index">
+    <input type="text" name="q" value="@Context.Request.Query["q"]"
+           placeholder="Kelime yazın..." class="form-control" style="width:300px; display:inline-block;" />
+    <button type="submit" class="btn btn-primary">Ara</button>
+</form>
+
+<hr />
+
+@if (Model != null)
+{
+    if (!Model.Any())
+    {
+        <p><strong>Sonuç bulunamadı.</strong></p>
+    }
+    else
+    {
+        <h3>Arama Sonuçları</h3>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Dosya Adı</th>
+                    <th>Tür</th>
+                    <th>Tarih</th>
+                    <th>Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.FileName</td>
+                        <td>@item.FileType</td>
+                        <td>@item.Created.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@item.Rank</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    }
+}

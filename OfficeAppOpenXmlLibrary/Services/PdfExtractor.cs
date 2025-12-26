@@ -2,7 +2,7 @@
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
-namespace OfficeAppOpenXmlLibrary.Models
+namespace OfficeAppOpenXmlLibrary.Services
 {
     public class PdfExtractor
     {

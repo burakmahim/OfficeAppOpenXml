@@ -1,15 +1,23 @@
+using System.Text;
+using Syncfusion.Licensing;
+using OfficeAppOpenXmlLibrary.Services;
+
+SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JGaF5cXGpCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH1ccnRQRGBfV0BxXEtWYEs=");
 
 
 var builder = WebApplication.CreateBuilder(args);
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-
-
-// 2) Servisler
 builder.Services.AddControllersWithViews();
+
+// 1) Connection string'i oku
+string cs = builder.Configuration.GetConnectionString("OfficeFilesDb");
+
+// 2) FileService'i baðlantý ile ekle
+builder.Services.AddSingleton<FileService>(new FileService(cs));
 
 var app = builder.Build();
 
-// pipeline...
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -17,6 +25,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
